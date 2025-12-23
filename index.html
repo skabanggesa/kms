@@ -25,12 +25,22 @@
         .line-v { width: 2px; height: 20px; background: #cbd5e1; }
         .line-h { position: absolute; top: -10px; height: 2px; background: #cbd5e1; width: 70%; }
 
-        @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; font-size: 12pt; color: black; }
-            .no-print { display: none; }
-        }
+@media print {
+    /* Sembunyikan semua elemen kecuali kawasan cetakan */
+    body > *:not(#print-area) { display: none !important; }
+    
+    /* Paparkan kawasan cetakan secara paksa */
+    #print-area { 
+        display: block !important; 
+        position: absolute; 
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        background: white; 
+        color: black;
+    }
+    #print-area * { visibility: visible !important; }
+}
     </style>
 </head>
 <body>
@@ -57,11 +67,6 @@
                     <select id="year-selector" class="mt-1 bg-indigo-800 border-none text-[10px] font-black py-1 px-2 rounded cursor-pointer outline-none">
                         <option value="2024">SESI 2024/2025</option>
                         <option value="2025">SESI 2025/2026</option>
-                        <option value="2026">SESI 2026/2027</option>
-                        <option value="2027">SESI 2027/2028</option>
-                        <option value="2028">SESI 2028/2029</option>
-                        <option value="2029">SESI 2029/2030</option>
-                        <option value="2030">SESI 2030/2031</option>
                     </select>
                 </div>
             </div>
@@ -92,7 +97,7 @@
         </div>
     </div>
 
-    <div id="print-area" class="hidden"></div>
+<div id="print-area" style="display: none;"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -394,33 +399,33 @@
             btn.disabled = false; btn.innerText = "Simpan Rekod";
         };
 
-        window.printReport = async (id) => {
-            const docSnap = await getDoc(doc(db, "records", id));
-            if (!docSnap.exists()) return;
-            const d = docSnap.data();
-            const printArea = document.getElementById('print-area');
-            
-            printArea.innerHTML = `
-                <div style="text-align:center; border-bottom: 2px solid black; padding-bottom: 20px; margin-bottom: 20px;">
-                    <h1 style="font-size: 18pt; font-weight: bold; text-transform: uppercase;">LAPORAN AKTIVITI KOKURIKULUM</h1>
-                    <h2 style="font-size: 14pt; text-transform: uppercase;">${currentUnit} - ${currentYear}</h2>
-                </div>
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                    <tr><td style="width: 30%; font-weight: bold; padding: 8px;">TAJUK AKTIVITI</td><td style="padding: 8px;">: ${d.title}</td></tr>
-                    <tr><td style="font-weight: bold; padding: 8px;">TARIKH / TEMPAT</td><td style="padding: 8px;">: ${d.date} / ${d.venue}</td></tr>
-                    <tr><td style="font-weight: bold; padding: 8px;">KEHADIRAN</td><td style="padding: 8px;">: ${d.presentCount} ORANG</td></tr>
-                    <tr><td style="font-weight: bold; padding: 8px; vertical-align: top;">GURU PENASIHAT</td><td style="padding: 8px;">: ${d.teachers}</td></tr>
-                </table>
-                <div style="margin-bottom: 40px;">
-                    <h3 style="font-weight: bold; text-decoration: underline;">KETERANGAN AKTIVITI:</h3>
-                    <p style="text-align: justify; line-height: 1.6;">${d.description}</p>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 100px;">
-                    <div style="text-align: center; width: 200px; border-top: 1px solid black;">Disediakan Oleh</div>
-                    <div style="text-align: center; width: 200px; border-top: 1px solid black;">Disahkan Oleh</div>
-                </div>`;
-            window.print();
-        };
+window.printReport = async (id) => {
+    const docSnap = await getDoc(doc(db, "records", id));
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        const printArea = document.getElementById('print-area');
+        
+        // Bina template laporan
+        printArea.innerHTML = `
+            <div style="text-align:center; border-bottom:2px solid black; padding-bottom:10px; mb-5">
+                <h1 style="font-size:20px; font-weight:bold;">LAPORAN AKTIVITI KOKURIKULUM</h1>
+                <h2 style="font-size:16px;">${data.unit} - SESI ${data.year}</h2>
+            </div>
+            <table style="width:100%; border-collapse:collapse; mt-5">
+                <tr><td style="padding:8px; font-weight:bold; width:30%;">TAJUK</td><td>: ${data.title}</td></tr>
+                <tr><td style="padding:8px; font-weight:bold;">TARIKH</td><td>: ${data.date}</td></tr>
+                <tr><td style="padding:8px; font-weight:bold;">TEMPAT</td><td>: ${data.venue || '-'}</td></tr>
+                <tr><td style="padding:8px; font-weight:bold;">KEHADIRAN</td><td>: ${data.presentCount} ORANG</td></tr>
+                <tr><td style="padding:8px; font-weight:bold;">GURU</td><td>: ${data.teachers || '-'}</td></tr>
+            </table>
+            <div style="margin-top:20px;">
+                <h3 style="font-weight:bold; border-bottom:1px solid #ccc;">KETERANGAN:</h3>
+                <p style="white-space: pre-wrap;">${data.description}</p>
+            </div>
+        `;
+        window.print();
+    }
+};
 
         window.closeModal = (id) => document.getElementById(id).classList.replace('flex', 'hidden');
         window.deleteDocById = async (coll, id) => { if (confirm("Padam rekod?")) await deleteDoc(doc(db, coll, id)); };
