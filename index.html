@@ -13,10 +13,23 @@
         .loader-spin { border: 3px solid #f3f3f3; border-top: 3px solid #6366f1; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
+        /* CARTA ORGANISASI STYLING */
+        .org-container { display: flex; flex-direction: column; align-items: center; gap: 20px; padding-bottom: 50px; }
+        .org-row { display: flex; justify-content: center; gap: 20px; width: 100%; position: relative; }
+        .org-box { background: white; border: 2px solid #e2e8f0; border-radius: 1rem; padding: 15px; width: 280px; text-align: center; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .org-label { font-size: 10px; font-weight: 900; color: #64748b; text-transform: uppercase; margin-top: 6px; border-top: 1px solid #f1f5f9; padding-top: 6px; }
+        .org-input { width: 100%; border: none; text-align: center; font-weight: 700; font-size: 12px; text-transform: uppercase; outline: none; background: transparent; color: #1e293b; }
+        .org-input:focus { color: #4f46e5; }
+        
+        /* CONNECTOR LINES */
+        .line-v { width: 2px; height: 20px; background: #cbd5e1; }
+        .line-h { position: absolute; top: -10px; height: 2px; background: #cbd5e1; width: 70%; }
+
         @media print {
             body * { visibility: hidden; }
             #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; font-size: 12pt; color: black; }
+            .no-print { display: none; }
         }
     </style>
 </head>
@@ -44,6 +57,11 @@
                     <select id="year-selector" class="mt-1 bg-indigo-800 border-none text-[10px] font-black py-1 px-2 rounded cursor-pointer outline-none">
                         <option value="2024">SESI 2024/2025</option>
                         <option value="2025">SESI 2025/2026</option>
+                        <option value="2026">SESI 2026/2027</option>
+                        <option value="2027">SESI 2027/2028</option>
+                        <option value="2028">SESI 2028/2029</option>
+                        <option value="2029">SESI 2029/2030</option>
+                        <option value="2030">SESI 2030/2031</option>
                     </select>
                 </div>
             </div>
@@ -79,8 +97,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, getDocs, deleteDoc, doc, getDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, getDocs, deleteDoc, doc, getDoc, setDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDpahvPPRtSLJ7o6p63rQEOCNqMDHgxe7o",
@@ -95,10 +112,8 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
-        // Aktifkan Offline Persistence untuk kelajuan
-        enableIndexedDbPersistence(db).catch((err) => console.log("Persistence Off", err));
+        enableIndexedDbPersistence(db).catch(() => {});
 
         let currentYear = "2024";
         let currentUnit = null;
@@ -138,7 +153,6 @@
             }
         };
 
-        // --- SISTEM AUTHENTICATION ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('auth-view').classList.add('hidden');
@@ -152,35 +166,21 @@
 
         document.getElementById('login-form').onsubmit = async (e) => {
             e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-            } catch (err) {
-                alert("Ralat Login: " + err.message);
-            }
+            try { await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value); } catch (err) { alert("Ralat: " + err.message); }
         };
 
         document.getElementById('logout-btn').onclick = () => signOut(auth);
 
-        // --- SISTEM DASHBOARD ---
         window.renderDashboard = () => {
             currentUnit = null; currentFolder = null;
             const view = document.getElementById('content-view');
             let html = `<div class="text-center mb-12"><h2 class="text-3xl font-black text-slate-800 uppercase italic">E-KOKURIKULUM ${currentYear}</h2><p class="text-slate-400 font-medium tracking-widest text-[10px] uppercase font-bold">Dashboard Pengurusan Digital</p></div>`;
-            
             for (const [cat, data] of Object.entries(kokoData)) {
-                html += `<div class="mb-10">
-                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 border-l-4 border-indigo-500 pl-2 ml-2">${cat}</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    ${data.units.map(u => `
-                        <div onclick="selectUnit('${u.name}')" class="unit-card bg-white p-6 rounded-3xl border-2 border-slate-50 cursor-pointer shadow-sm transition-all flex flex-col items-center">
-                            <div class="w-14 h-14 ${data.bg} ${data.color} rounded-2xl flex items-center justify-center mb-3">
-                                ${u.iconFile ? `<img src="${u.iconFile}" class="w-8 h-8" onerror="this.outerHTML='<i class=\'${data.fallbackIcon} text-xl\'></i>'">` : `<i class="${u.icon} text-xl"></i>`}
-                            </div>
-                            <span class="font-black text-slate-700 text-[11px] text-center uppercase tracking-tight">${u.name}</span>
-                        </div>`).join('')}
-                </div></div>`;
+                html += `<div class="mb-10"><h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 border-l-4 border-indigo-500 pl-2 ml-2">${cat}</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    ${data.units.map(u => `<div onclick="selectUnit('${u.name}')" class="unit-card bg-white p-6 rounded-3xl border-2 border-slate-50 cursor-pointer shadow-sm transition-all flex flex-col items-center">
+                        <div class="w-14 h-14 ${data.bg} ${data.color} rounded-2xl flex items-center justify-center mb-3">
+                            ${u.iconFile ? `<img src="${u.iconFile}" class="w-8 h-8" onerror="this.outerHTML='<i class=\'${data.fallbackIcon} text-xl\'></i>'">` : `<i class="${u.icon} text-xl"></i>`}
+                        </div><span class="font-black text-slate-700 text-[11px] text-center uppercase tracking-tight">${u.name}</span></div>`).join('')}</div></div>`;
             }
             view.innerHTML = html;
         };
@@ -196,59 +196,132 @@
             const view = document.getElementById('content-view');
             view.innerHTML = `<button onclick="renderDashboard()" class="mb-6 text-xs font-bold text-slate-400 hover:text-indigo-600 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali Utama</button>
                 <div class="flex items-center space-x-4 mb-8"><div class="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg"><i class="fas fa-folder-open"></i></div><h2 class="text-2xl font-black text-slate-800 uppercase tracking-tighter">${currentUnit}</h2></div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    ${folders.map(f => `<div onclick="selectFolder('${f.name}')" class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center space-x-4 cursor-pointer hover:bg-slate-50 transition-all">
-                        <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center ${f.color} text-xl"><i class="${f.icon}"></i></div>
-                        <span class="font-black text-slate-700 uppercase text-sm tracking-wide">${f.name}</span>
-                    </div>`).join('')}
-                </div>`;
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${folders.map(f => `<div onclick="selectFolder('${f.name}')" class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center space-x-4 cursor-pointer hover:bg-slate-50 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center ${f.color} text-xl"><i class="${f.icon}"></i></div><span class="font-black text-slate-700 uppercase text-sm tracking-wide">${f.name}</span></div>`).join('')}</div>`;
         };
 
         window.selectFolder = (folder) => {
             currentFolder = folder;
             const view = document.getElementById('content-view');
-            view.innerHTML = `<div class="flex justify-between items-center mb-8">
-                    <button onclick="selectUnit('${currentUnit}')" class="text-xs font-bold text-slate-400 hover:text-indigo-600 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali</button>
-                    <button onclick="openModal()" class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all">Tambah Rekod</button>
-                </div>
-                <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 min-h-[500px]">
+            let actionBtn = folder === "Visi, Misi & Carta Organisasi" 
+                ? `<button onclick="saveOrgChart()" class="bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-emerald-700 transition-all"><i class="fas fa-save mr-2"></i> Simpan Carta</button>`
+                : `<button onclick="openModal()" class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all">Tambah Rekod</button>`;
+
+            view.innerHTML = `<div class="flex justify-between items-center mb-8"><button onclick="selectUnit('${currentUnit}')" class="text-xs font-bold text-slate-400 hover:text-indigo-600 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali</button>${actionBtn}</div>
+                <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 min-h-[500px] overflow-x-auto">
                     <h3 class="text-lg font-black text-slate-800 mb-8 uppercase italic border-b pb-4">${currentFolder}</h3>
-                    <div id="data-list" class="space-y-4"><div class="loader-spin mx-auto"></div></div>
+                    <div id="folder-content" class="space-y-4">
+                        <div id="data-list"><div class="loader-spin mx-auto"></div></div>
+                    </div>
                 </div>`;
-            fetchRecords();
+            
+            if (folder === "Visi, Misi & Carta Organisasi") renderOrgChartUI(); else fetchRecords();
         };
 
+        // --- CARTA ORGANISASI UI ---
+        async function renderOrgChartUI() {
+            const container = document.getElementById('data-list');
+            container.innerHTML = `
+                <div class="org-container py-10">
+                    <div class="org-box border-indigo-200">
+                        <input type="text" id="org-pengerusi" placeholder="NAMA PENGERUSI" class="org-input">
+                        <div class="org-label">Pengerusi (Guru Besar)</div>
+                    </div>
+                    <div class="line-v"></div>
+                    <div class="org-row">
+                        <div class="line-h"></div>
+                        <div class="flex flex-col items-center">
+                            <div class="line-v"></div>
+                            <div class="org-box">
+                                <input type="text" id="org-np1" placeholder="NAMA NAIB 1" class="org-input">
+                                <div class="org-label">Naib Pengerusi I (PK Kurikulum)</div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="line-v"></div>
+                            <div class="org-box border-indigo-500">
+                                <input type="text" id="org-timbalan" placeholder="NAMA TIMBALAN" class="org-input">
+                                <div class="org-label">Timbalan Pengerusi (PK Kokurikulum)</div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="line-v"></div>
+                            <div class="org-box">
+                                <input type="text" id="org-np2" placeholder="NAMA NAIB 2" class="org-input">
+                                <div class="org-label">Naib Pengerusi II (PK HEM)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="org-row mt-6">
+                        <div class="flex flex-col items-center mx-10">
+                            <div class="line-v"></div>
+                            <div class="org-box">
+                                <input type="text" id="org-extra1" placeholder="NAMA PEGAWAI" class="org-input">
+                                <div class="org-label">Setiausaha / Penyelaras</div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center mx-10">
+                            <div class="line-v"></div>
+                            <div class="org-box">
+                                <input type="text" id="org-extra2" placeholder="NAMA PEGAWAI" class="org-input">
+                                <div class="org-label">Penolong Setiausaha</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            const docSnap = await getDoc(doc(db, "org_charts", `${currentUnit}_${currentYear}`));
+            if (docSnap.exists()) {
+                const d = docSnap.data();
+                document.getElementById('org-pengerusi').value = d.pengerusi || "";
+                document.getElementById('org-np1').value = d.np1 || "";
+                document.getElementById('org-timbalan').value = d.timbalan || "";
+                document.getElementById('org-np2').value = d.np2 || "";
+                document.getElementById('org-extra1').value = d.extra1 || "";
+                document.getElementById('org-extra2').value = d.extra2 || "";
+            }
+        }
+
+        window.saveOrgChart = async () => {
+            const data = {
+                pengerusi: document.getElementById('org-pengerusi').value.toUpperCase(),
+                np1: document.getElementById('org-np1').value.toUpperCase(),
+                timbalan: document.getElementById('org-timbalan').value.toUpperCase(),
+                np2: document.getElementById('org-np2').value.toUpperCase(),
+                extra1: document.getElementById('org-extra1').value.toUpperCase(),
+                extra2: document.getElementById('org-extra2').value.toUpperCase()
+            };
+            try { await setDoc(doc(db, "org_charts", `${currentUnit}_${currentYear}`), data); alert("Carta Organisasi Tersimpan!"); } catch (e) { alert(e.message); }
+        };
+
+        // --- CRUD LOGIC ---
         function fetchRecords() {
             const list = document.getElementById('data-list');
             let coll = (currentFolder === "Pendaftaran Ahli") ? "members" : (currentFolder === "Rekod Kehadiran Mingguan" ? "attendance" : "records");
-            
             const q = query(collection(db, coll), where("unit", "==", currentUnit), where("year", "==", currentYear));
+            
             if (activeUnsub) activeUnsub();
-            activeUnsub = onSnapshot(q, (snapshot) => {
-                list.innerHTML = snapshot.empty ? `<p class="text-center text-slate-300 py-20 italic font-bold text-[10px]">TIADA DATA DITEMUI.</p>` : '';
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const id = docSnap.id;
+            activeUnsub = onSnapshot(q, (snap) => {
+                list.innerHTML = snap.empty ? `<p class="text-center text-slate-300 py-20 italic font-bold text-[10px]">TIADA DATA DITEMUI.</p>` : '';
+                snap.forEach(dSnap => {
+                    const data = dSnap.data();
+                    const id = dSnap.id;
                     const card = document.createElement('div');
-                    card.className = "p-4 bg-slate-50 rounded-2xl flex justify-between items-center border border-slate-100 hover:bg-white transition-all";
-                    let contentHTML = `<div><p class="font-black text-slate-800 text-sm uppercase">${data.title || data.name}</p>`;
-                    if (data.url) contentHTML += `<a href="${data.url}" target="_blank" class="text-[9px] text-indigo-500 font-black underline uppercase">FAIL</a>`;
-                    if (currentFolder === "Rekod Kehadiran Mingguan") contentHTML += `<p class="text-[9px] text-slate-400 font-bold uppercase mt-1">HADIR: ${data.presentCount}</p>`;
+                    card.className = "p-4 bg-slate-50 rounded-2xl flex justify-between items-center border border-slate-100 mb-2 hover:bg-white transition-all";
                     
+                    let contentHTML = `<div class="flex flex-col">
+                        <span class="font-black text-slate-800 text-sm uppercase">${data.title || data.name}</span>
+                        <span class="text-[9px] text-slate-400 font-bold uppercase">${data.date || ""}</span>
+                    </div>`;
+
+                    let buttons = `<div class="flex items-center space-x-2">`;
                     if (currentFolder === "Laporan Aktiviti") {
-                        contentHTML += `</div>`;
-                        card.innerHTML = `<div class="flex items-center space-x-4"><div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600"><i class="fas fa-file-alt"></i></div>${contentHTML}</div>
-                            <div class="flex space-x-2"><button onclick="printReport('${id}')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-[10px] font-black hover:bg-indigo-700">CETAK</button>
-                            <button onclick="deleteDocById('${coll}', '${id}')" class="text-slate-300 hover:text-red-500 p-2"><i class="fas fa-trash-alt"></i></button></div>`;
-                    } else {
-                        contentHTML += `</div>`;
-                        card.innerHTML = `<div class="flex items-center space-x-4"><div class="w-2 h-2 rounded-full bg-slate-400"></div>${contentHTML}</div>
-                            <button onclick="deleteDocById('${coll}', '${id}')" class="text-slate-300 hover:text-red-500 p-2"><i class="fas fa-trash-alt"></i></button>`;
+                        buttons += `<button onclick="printReport('${id}')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-[10px] font-black hover:bg-indigo-700">CETAK</button>`;
                     }
+                    buttons += `<button onclick="deleteDocById('${coll}', '${id}')" class="text-slate-300 hover:text-red-500 p-2"><i class="fas fa-trash-alt"></i></button></div>`;
+                    
+                    card.innerHTML = contentHTML + buttons;
                     list.appendChild(card);
                 });
-            }, (error) => {
-                console.error("Index Error:", error);
             });
         }
 
@@ -256,78 +329,101 @@
             const container = document.getElementById('modal-fields-container');
             const title = document.getElementById('modal-title');
             document.getElementById('crud-modal').classList.replace('hidden', 'flex');
-            container.innerHTML = `<div class="text-center py-10"><div class="loader-spin mx-auto"></div><p class="text-[10px] font-bold mt-2 uppercase text-slate-400">Menunggu Respon Firebase...</p></div>`;
-            
-            let html = "";
+            container.innerHTML = `<div class="text-center py-10"><div class="loader-spin mx-auto"></div></div>`;
+
             if (currentFolder === "Pendaftaran Ahli") {
                 title.innerText = "Daftar Ahli";
-                html = `<input type="text" id="m-name" placeholder="NAMA PENUH MURID" required class="w-full p-4 bg-slate-100 rounded-2xl border-none font-bold uppercase">`;
+                container.innerHTML = `<input type="text" id="m-name" placeholder="NAMA PENUH MURID" required class="w-full p-4 bg-slate-100 rounded-2xl font-bold uppercase">`;
             } 
             else if (currentFolder === "Rekod Kehadiran Mingguan") {
-                title.innerText = "Kehadiran";
-                html = `<input type="text" id="att-title" placeholder="TAJUK AKTIVITI" required class="w-full p-4 bg-slate-100 rounded-2xl border-none font-bold uppercase mb-2">
-                    <input type="date" id="att-date" required class="w-full p-4 bg-slate-100 rounded-2xl border-none mb-4">
-                    <div id="attendance-list" class="space-y-2 max-h-40 overflow-y-auto bg-slate-50 p-4 rounded-xl">Memuatkan nama...</div>`;
+                title.innerText = "Kehadiran Mingguan";
+                let html = `<input type="text" id="att-title" placeholder="TAJUK AKTIVITI" required class="w-full p-4 bg-slate-100 rounded-2xl font-bold uppercase mb-2">
+                    <input type="date" id="att-date" required class="w-full p-4 bg-slate-100 rounded-2xl mb-4">
+                    <div id="att-list" class="space-y-2 max-h-40 overflow-y-auto bg-slate-50 p-4 rounded-xl"></div>`;
                 container.innerHTML = html;
-                const q = query(collection(db, "members"), where("unit", "==", currentUnit), where("year", "==", currentYear));
-                const snap = await getDocs(q);
-                const listDiv = document.getElementById('attendance-list');
-                listDiv.innerHTML = snap.empty ? '<p class="text-xs text-red-500 font-bold uppercase">Sila daftar ahli terlebih dahulu.</p>' : '';
-                snap.forEach(d => listDiv.innerHTML += `<label class="flex items-center space-x-3 bg-white p-3 rounded-xl border border-slate-100"><input type="checkbox" name="student" value="${d.data().name}" class="w-5 h-5 rounded text-indigo-600"> <span class="text-[10px] font-bold text-slate-700 uppercase">${d.data().name}</span></label>`);
-                return;
+                const snap = await getDocs(query(collection(db, "members"), where("unit", "==", currentUnit), where("year", "==", currentYear)));
+                const list = document.getElementById('att-list');
+                snap.forEach(d => list.innerHTML += `<label class="flex items-center space-x-2 bg-white p-3 rounded-lg border text-[10px] font-bold uppercase cursor-pointer"><input type="checkbox" name="student" value="${d.data().name}" class="w-4 h-4"> <span>${d.data().name}</span></label>`);
             } 
             else if (currentFolder === "Laporan Aktiviti") {
-                title.innerText = "Laporan Baru";
+                title.innerText = "Laporan Aktiviti Baru";
                 const qAtt = query(collection(db, "attendance"), where("unit", "==", currentUnit), where("year", "==", currentYear));
                 const attSnap = await getDocs(qAtt);
                 let options = attSnap.empty ? '<option value="0">TIADA REKOD KEHADIRAN</option>' : '<option value="">-- PILIH SESI KEHADIRAN --</option>';
                 attSnap.forEach(d => options += `<option value="${d.data().presentCount}">${d.data().title} (${d.data().date})</option>`);
 
-                html = `<input type="text" id="rep-title" placeholder="TAJUK LAPORAN" required class="w-full p-4 bg-slate-100 rounded-2xl border-none font-bold uppercase">
-                    <div class="grid grid-cols-2 gap-3"><input type="date" id="rep-date" required class="w-full p-4 bg-slate-100 rounded-2xl border-none">
-                    <input type="text" id="rep-venue" placeholder="TEMPAT" required class="w-full p-4 bg-slate-100 rounded-2xl border-none font-bold uppercase"></div>
-                    <textarea id="rep-teachers" placeholder="GURU PENASIHAT" required class="w-full p-4 bg-slate-100 rounded-2xl border-none h-20 font-bold uppercase"></textarea>
-                    <div class="p-4 bg-amber-50 rounded-2xl border-2 border-amber-100">
-                        <select id="rep-sync" onchange="document.getElementById('rep-count').innerText = this.value" class="w-full p-3 bg-white rounded-xl text-[10px] font-black uppercase">${options}</select>
-                        <p class="mt-2 text-[10px] font-bold text-center uppercase">KEHADIRAN: <span id="rep-count" class="text-indigo-600 text-lg">0</span></p>
+                container.innerHTML = `
+                    <input type="text" id="rep-title" placeholder="TAJUK LAPORAN" required class="w-full p-4 bg-slate-100 rounded-2xl font-bold uppercase">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="date" id="rep-date" required class="w-full p-4 bg-slate-100 rounded-2xl">
+                        <input type="text" id="rep-venue" placeholder="TEMPAT" required class="w-full p-4 bg-slate-100 rounded-2xl font-bold uppercase">
                     </div>
-                    <textarea id="rep-desc" placeholder="KETERANGAN AKTIVITI..." required class="w-full p-4 bg-slate-100 rounded-2xl border-none h-28 text-sm outline-none"></textarea>`;
-            } 
-            else {
-                title.innerText = "Muat Naik Fail";
-                html = `<input type="text" id="f-title" placeholder="TAJUK FAIL" required class="w-full p-4 bg-slate-100 rounded-2xl border-none font-bold uppercase"><input type="date" id="f-date" required class="w-full p-4 bg-slate-100 rounded-2xl border-none mb-2"><input type="file" id="f-file" class="text-[10px] font-bold text-slate-400">`;
+                    <textarea id="rep-teachers" placeholder="GURU PENASIHAT (ASINGKAN DENGAN KOMA)" required class="w-full p-4 bg-slate-100 rounded-2xl h-20 font-bold uppercase"></textarea>
+                    <div class="p-4 bg-amber-50 rounded-2xl border-2 border-amber-100">
+                        <p class="text-[9px] font-black uppercase mb-2 text-amber-700">Sinkronisasi Kehadiran</p>
+                        <select id="rep-sync" onchange="document.getElementById('rep-count-view').innerText = this.value" class="w-full p-3 bg-white rounded-xl text-[10px] font-black uppercase outline-none">${options}</select>
+                        <p class="mt-2 text-[10px] font-bold text-center uppercase">JUMLAH HADIR: <span id="rep-count-view" class="text-indigo-600 text-lg">0</span></p>
+                    </div>
+                    <textarea id="rep-desc" placeholder="KETERANGAN AKTIVITI..." required class="w-full p-4 bg-slate-100 rounded-2xl h-28 text-sm outline-none"></textarea>`;
             }
-            container.innerHTML = html;
         };
 
         document.getElementById('crud-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('save-btn');
-            btn.disabled = true; btn.innerText = "SIMPAN...";
+            btn.disabled = true; btn.innerText = "MENYIMPAN...";
             try {
                 if (currentFolder === "Pendaftaran Ahli") {
                     await addDoc(collection(db, "members"), { name: document.getElementById('m-name').value.toUpperCase(), unit: currentUnit, year: currentYear });
                 } else if (currentFolder === "Rekod Kehadiran Mingguan") {
-                    const sel = Array.from(document.querySelectorAll('input[name="student"]:checked')).map(cb => cb.value);
-                    await addDoc(collection(db, "attendance"), { title: document.getElementById('att-title').value.toUpperCase(), date: document.getElementById('att-date').value, presentCount: sel.length, unit: currentUnit, year: currentYear });
+                    const sel = Array.from(document.querySelectorAll('input[name="student"]:checked')).length;
+                    await addDoc(collection(db, "attendance"), { title: document.getElementById('att-title').value.toUpperCase(), date: document.getElementById('att-date').value, presentCount: sel, unit: currentUnit, year: currentYear });
                 } else if (currentFolder === "Laporan Aktiviti") {
-                    await addDoc(collection(db, "records"), { title: document.getElementById('rep-title').value.toUpperCase(), date: document.getElementById('rep-date').value, venue: document.getElementById('rep-venue').value.toUpperCase(), teachers: document.getElementById('rep-teachers').value.toUpperCase(), presentCount: document.getElementById('rep-sync').value, description: document.getElementById('rep-desc').value, unit: currentUnit, year: currentYear, folder: "Laporan Aktiviti" });
-                } else {
-                    const file = document.getElementById('f-file').files[0];
-                    let url = "";
-                    if (file) {
-                        const sRef = ref(storage, `koko/${currentYear}/${currentUnit}/${Date.now()}_${file.name}`);
-                        await uploadBytes(sRef, file); url = await getDownloadURL(sRef);
-                    }
-                    await addDoc(collection(db, "records"), { title: document.getElementById('f-title').value.toUpperCase(), date: document.getElementById('f-date').value, url, unit: currentUnit, folder: currentFolder, year: currentYear });
+                    await addDoc(collection(db, "records"), { 
+                        title: document.getElementById('rep-title').value.toUpperCase(), 
+                        date: document.getElementById('rep-date').value, 
+                        venue: document.getElementById('rep-venue').value.toUpperCase(),
+                        teachers: document.getElementById('rep-teachers').value.toUpperCase(),
+                        presentCount: document.getElementById('rep-sync').value,
+                        description: document.getElementById('rep-desc').value,
+                        unit: currentUnit, year: currentYear, folder: "Laporan Aktiviti" 
+                    });
                 }
-                closeModal('crud-modal'); e.target.reset();
+                closeModal('crud-modal');
             } catch (err) { alert(err.message); }
             btn.disabled = false; btn.innerText = "Simpan Rekod";
         };
 
+        window.printReport = async (id) => {
+            const docSnap = await getDoc(doc(db, "records", id));
+            if (!docSnap.exists()) return;
+            const d = docSnap.data();
+            const printArea = document.getElementById('print-area');
+            
+            printArea.innerHTML = `
+                <div style="text-align:center; border-bottom: 2px solid black; padding-bottom: 20px; margin-bottom: 20px;">
+                    <h1 style="font-size: 18pt; font-weight: bold; text-transform: uppercase;">LAPORAN AKTIVITI KOKURIKULUM</h1>
+                    <h2 style="font-size: 14pt; text-transform: uppercase;">${currentUnit} - ${currentYear}</h2>
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <tr><td style="width: 30%; font-weight: bold; padding: 8px;">TAJUK AKTIVITI</td><td style="padding: 8px;">: ${d.title}</td></tr>
+                    <tr><td style="font-weight: bold; padding: 8px;">TARIKH / TEMPAT</td><td style="padding: 8px;">: ${d.date} / ${d.venue}</td></tr>
+                    <tr><td style="font-weight: bold; padding: 8px;">KEHADIRAN</td><td style="padding: 8px;">: ${d.presentCount} ORANG</td></tr>
+                    <tr><td style="font-weight: bold; padding: 8px; vertical-align: top;">GURU PENASIHAT</td><td style="padding: 8px;">: ${d.teachers}</td></tr>
+                </table>
+                <div style="margin-bottom: 40px;">
+                    <h3 style="font-weight: bold; text-decoration: underline;">KETERANGAN AKTIVITI:</h3>
+                    <p style="text-align: justify; line-height: 1.6;">${d.description}</p>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 100px;">
+                    <div style="text-align: center; width: 200px; border-top: 1px solid black;">Disediakan Oleh</div>
+                    <div style="text-align: center; width: 200px; border-top: 1px solid black;">Disahkan Oleh</div>
+                </div>`;
+            window.print();
+        };
+
         window.closeModal = (id) => document.getElementById(id).classList.replace('flex', 'hidden');
-        window.deleteDocById = async (coll, id) => { if (confirm("Padam rekod secara kekal?")) await deleteDoc(doc(db, coll, id)); };
+        window.deleteDocById = async (coll, id) => { if (confirm("Padam rekod?")) await deleteDoc(doc(db, coll, id)); };
         document.getElementById('year-selector').onchange = (e) => { currentYear = e.target.value; renderDashboard(); };
     </script>
 </body>
