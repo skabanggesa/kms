@@ -7,13 +7,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .unit-card:hover { transform: translateY(-5px); border-color: #6366f1; }
         .loader-spin { border: 3px solid #f3f3f3; border-top: 3px solid #6366f1; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* CARTA ORGANISASI STYLING */
         .org-container { display: flex; flex-direction: column; align-items: center; gap: 20px; padding-bottom: 50px; }
         .org-row { display: flex; justify-content: center; gap: 20px; width: 100%; position: relative; }
         .org-box { background: white; border: 2px solid #e2e8f0; border-radius: 1rem; padding: 15px; width: 280px; text-align: center; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
@@ -21,21 +21,27 @@
         .org-input { width: 100%; border: none; text-align: center; font-weight: 700; font-size: 12px; text-transform: uppercase; outline: none; background: transparent; color: #1e293b; }
         .org-input:focus { color: #4f46e5; }
         
-        /* CONNECTOR LINES */
         .line-v { width: 2px; height: 20px; background: #cbd5e1; }
         .line-h { position: absolute; top: -10px; height: 2px; background: #cbd5e1; width: 70%; }
 
+        .search-results { 
+            position: absolute; 
+            width: 100%; 
+            max-height: 200px; 
+            overflow-y: auto; 
+            background: white; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 1rem; 
+            z-index: 100; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
+            margin-top: 4px; 
+        }
+        .search-item { padding: 12px 16px; cursor: pointer; font-size: 11px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; }
+        .search-item:hover { background-color: #f8fafc; color: #4f46e5; }
+
         @media print {
             body > *:not(#print-area) { display: none !important; }
-            #print-area { 
-                display: block !important; 
-                position: absolute; 
-                left: 0; 
-                top: 0; 
-                width: 100%; 
-                background: white; 
-                color: black;
-            }
+            #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white; color: black; }
             #print-area * { visibility: visible !important; }
         }
     </style>
@@ -83,7 +89,7 @@
 
     <div id="crud-modal" class="fixed inset-0 bg-indigo-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden border border-white/20">
-            <div class="bg-indigo-800 p-6 text-white flex justify-between items-center">
+            <div id="modal-header" class="bg-indigo-800 p-6 text-white flex justify-between items-center">
                 <h2 id="modal-title" class="text-lg font-black uppercase">Tambah Rekod</h2>
                 <button onclick="closeModal('crud-modal')"><i class="fas fa-times text-xl"></i></button>
             </div>
@@ -91,6 +97,44 @@
                 <div id="modal-fields-container" class="space-y-4"></div>
                 <button type="submit" id="save-btn" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg hover:bg-indigo-700 uppercase tracking-widest text-sm transition-all mt-4">Simpan Rekod</button>
             </form>
+        </div>
+    </div>
+
+    <div id="overall-merit-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col h-[90vh]">
+            <div class="bg-slate-800 p-6 text-white flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-black uppercase italic">Pencapaian Keseluruhan Murid</h2>
+                    <p class="text-[10px] opacity-70 font-bold uppercase tracking-widest">Analisis Merit PAJSK Global</p>
+                </div>
+                <button onclick="closeModal('overall-merit-modal')"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            <div class="p-6 border-b bg-slate-50 flex flex-wrap gap-4">
+                <input type="text" id="filter-overall-name" onkeyup="filterOverallTable()" placeholder="Cari Nama Murid..." class="flex-grow p-3 rounded-xl border-none ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-bold uppercase">
+                <select id="filter-overall-level" onchange="filterOverallTable()" class="p-3 rounded-xl border-none ring-1 ring-slate-200 text-xs font-bold uppercase outline-none">
+                    <option value="">Semua Peringkat</option>
+                    <option value="SEKOLAH">Sekolah</option>
+                    <option value="ZON">Zon</option>
+                    <option value="DAERAH">Daerah</option>
+                    <option value="BAHAGIAN">Bahagian</option>
+                    <option value="NEGERI">Negeri</option>
+                    <option value="KEBANGSAAN">Kebangsaan</option>
+                    <option value="ANTARABANGSA">Antarabangsa</option>
+                </select>
+            </div>
+            <div class="flex-grow overflow-auto p-4">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-white shadow-sm">
+                        <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b">
+                            <th class="p-4">Nama Murid</th>
+                            <th class="p-4">Acara/Pertandingan</th>
+                            <th class="p-4">Peringkat</th>
+                            <th class="p-4 text-center">Markah</th>
+                        </tr>
+                    </thead>
+                    <tbody id="overall-table-body" class="text-[11px] font-bold text-slate-700"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -121,7 +165,8 @@
         let currentUnit = null;
         let currentFolder = null;
         let activeUnsub = null;
-        let selectedStudentNames = []; // Global temp variable for report sync
+        let selectedStudentNames = []; 
+        let studentsFromCSV = []; 
 
         const kokoData = {
             "Unit Beruniform": {
@@ -161,6 +206,7 @@
                 document.getElementById('auth-view').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
                 renderDashboard();
+                loadStudentsFromFirestore(); // Muat semula data murid setiap kali login
             } else {
                 document.getElementById('auth-view').classList.remove('hidden');
                 document.getElementById('app-container').classList.add('hidden');
@@ -174,6 +220,56 @@
 
         document.getElementById('logout-btn').onclick = () => signOut(auth);
 
+        // --- FUNGSI BARU: MUAT DATA DARI FIRESTORE ---
+        window.loadStudentsFromFirestore = async () => {
+            try {
+                const q = query(collection(db, "students_master"), where("year", "==", currentYear));
+                const querySnapshot = await getDocs(q);
+                studentsFromCSV = [];
+                querySnapshot.forEach((doc) => {
+                    studentsFromCSV.push(doc.data());
+                });
+                console.log(`Memuatkan ${studentsFromCSV.length} data murid dari Firestore.`);
+            } catch (e) {
+                console.error("Gagal muat data murid:", e);
+            }
+        };
+
+        // --- FUNGSI DIKEMASKINI: SIMPAN CSV KE FIRESTORE ---
+        window.processDatamerit = async (input) => {
+            const file = input.files[0];
+            if (!file) return;
+
+            Papa.parse(file, {
+                header: true, skipEmptyLines: true,
+                complete: async (results) => {
+                    const batchData = results.data.filter(row => row.nama || row.NAMA);
+                    let count = 0;
+                    
+                    if (confirm(`Adakah anda pasti mahu memuat naik ${batchData.length} nama murid ke pengkalan data awan?`)) {
+                        try {
+                            for (const student of batchData) {
+                                const sName = (student.nama || student.NAMA).toUpperCase().trim();
+                                const sKelas = (student.kelas || student.KELAS || "").toUpperCase().trim();
+                                
+                                // Guna setDoc dengan ID unik gabungan Nama + Tahun supaya tiada duplikasi
+                                await setDoc(doc(db, "students_master", `${sName}_${currentYear}`), {
+                                    nama: sName,
+                                    kelas: sKelas,
+                                    year: currentYear
+                                });
+                                count++;
+                            }
+                            alert(`Berjaya menyimpan ${count} data murid ke Cloud Firestore! Semua guru kini boleh melihat senarai ini.`);
+                            loadStudentsFromFirestore(); // Refresh senarai dalam memori aplikasi
+                        } catch (e) {
+                            alert("Ralat simpan ke Firestore: " + e.message);
+                        }
+                    }
+                }
+            });
+        };
+
         window.renderDashboard = () => {
             currentUnit = null; currentFolder = null;
             const view = document.getElementById('content-view');
@@ -185,6 +281,15 @@
                             ${u.iconFile ? `<img src="${u.iconFile}" class="w-8 h-8" onerror="this.outerHTML='<i class=\'${data.fallbackIcon} text-xl\'></i>'">` : `<i class="${u.icon} text-xl"></i>`}
                         </div><span class="font-black text-slate-700 text-[11px] text-center uppercase tracking-tight">${u.name}</span></div>`).join('')}</div></div>`;
             }
+
+            html += `<div class="mt-12 pt-10 border-t-2 border-slate-100">
+                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 border-l-4 border-rose-500 pl-2 ml-2">PENGURUSAN GLOBAL</h3>
+                <div onclick="selectFolder('Pencapaian Merit Pelajar')" class="bg-gradient-to-br from-rose-500 to-rose-600 p-8 rounded-[2.5rem] shadow-xl cursor-pointer hover:scale-[1.02] transition-all text-white flex items-center justify-between group">
+                    <div><h4 class="text-xl font-black uppercase italic tracking-tighter">Pencapaian Merit Pelajar</h4><p class="text-rose-100 text-[10px] font-bold uppercase tracking-widest mt-1">Rekod Kejayaan & Markah Merit PAJSK</p></div>
+                    <div class="text-4xl opacity-30 group-hover:opacity-100 transition-opacity"><i class="fas fa-trophy"></i></div>
+                </div>
+            </div>`;
+
             view.innerHTML = html;
         };
 
@@ -206,19 +311,98 @@
         window.selectFolder = (folder) => {
             currentFolder = folder;
             const view = document.getElementById('content-view');
-            let actionBtn = folder === "Visi, Misi & Carta Organisasi" 
-                ? `<button onclick="saveOrgChart()" class="bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-emerald-700 transition-all"><i class="fas fa-save mr-2"></i> Simpan Carta</button>`
-                : `<button onclick="openModal()" class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all">Tambah Rekod</button>`;
+            let backAction = currentUnit ? `selectUnit('${currentUnit}')` : `renderDashboard()`;
+            let actionBtn = "";
 
-            view.innerHTML = `<div class="flex justify-between items-center mb-8"><button onclick="selectUnit('${currentUnit}')" class="text-xs font-bold text-slate-400 hover:text-indigo-600 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali</button>${actionBtn}</div>
-                <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 min-h-[500px] overflow-x-auto">
-                    <h3 class="text-lg font-black text-slate-800 mb-8 uppercase italic border-b pb-4">${currentFolder}</h3>
-                    <div id="folder-content" class="space-y-4">
-                        <div id="data-list"><div class="loader-spin mx-auto"></div></div>
+            if (folder === "Pencapaian Merit Pelajar") {
+                actionBtn = `<div class="flex flex-wrap gap-2">
+                    <button onclick="showOverallMerit()" class="bg-slate-800 text-white px-6 py-4 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-black transition-all"><i class="fas fa-chart-line mr-2"></i> Analisis</button>
+                    <input type="file" id="csv-merit" accept=".csv" class="hidden" onchange="processDatamerit(this)">
+                    <button onclick="document.getElementById('csv-merit').click()" class="bg-emerald-600 text-white px-6 py-4 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-emerald-700 transition-all"><i class="fas fa-file-csv mr-2"></i> Import CSV</button>
+                    <button onclick="openModal()" class="bg-rose-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all">Tambah Rekod</button>
+                </div>`;
+            } else if (folder === "Visi, Misi & Carta Organisasi") {
+                actionBtn = `<button onclick="saveOrgChart()" class="bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-emerald-700 transition-all"><i class="fas fa-save mr-2"></i> Simpan Carta</button>`;
+            } else {
+                actionBtn = `<button onclick="openModal()" class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-105 transition-all">Tambah Rekod</button>`;
+            }
+
+            view.innerHTML = `<div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4"><button onclick="${backAction}" class="text-xs font-bold text-slate-400 hover:text-indigo-600 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali</button>${actionBtn}</div>
+                <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 min-h-[500px] overflow-x-auto shadow-sm">
+                    <div class="flex justify-between items-center mb-8 border-b pb-4">
+                        <h3 class="text-lg font-black text-slate-800 uppercase italic">${currentFolder}</h3>
+                        <div class="relative w-full max-w-xs">
+                            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" onkeyup="filterItems(this.value)" placeholder="CARI REKOD..." class="w-full pl-10 pr-4 py-2 bg-slate-100 rounded-xl text-[10px] font-bold outline-none">
+                        </div>
                     </div>
+                    <div id="data-list"><div class="loader-spin mx-auto"></div></div>
                 </div>`;
             
             if (folder === "Visi, Misi & Carta Organisasi") renderOrgChartUI(); else fetchRecords();
+        };
+
+        window.calculatePoints = () => {
+            const level = parseInt(document.getElementById('m-level').value) || 0;
+            const rank = parseInt(document.getElementById('m-rank').value) || 0;
+            const display = document.getElementById('merit-total-display');
+            if (display) display.innerText = level + rank;
+        };
+
+        window.filterStudentDropdown = (val) => {
+            const resultsDiv = document.getElementById('student-search-results');
+            if (!val) { resultsDiv.classList.add('hidden'); return; }
+            
+            const filtered = studentsFromCSV.filter(s => 
+                (s.nama || '').toLowerCase().includes(val.toLowerCase())
+            );
+
+            resultsDiv.innerHTML = filtered.map(s => `
+                <div class="search-item" onclick="selectStudentForMerit('${s.nama}', '${s.kelas}')">
+                    ${s.nama} <span class="opacity-50 text-[9px] ml-2">(${s.kelas})</span>
+                </div>
+            `).join('');
+            resultsDiv.classList.toggle('hidden', filtered.length === 0);
+        };
+
+        window.selectStudentForMerit = (name, kelas) => {
+            document.getElementById('m-student-search').value = name;
+            document.getElementById('m-student-hidden').value = name;
+            document.getElementById('student-search-results').classList.add('hidden');
+        };
+
+        window.showOverallMerit = async () => {
+            document.getElementById('overall-merit-modal').classList.replace('hidden', 'flex');
+            const tbody = document.getElementById('overall-table-body');
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-20"><div class="loader-spin mx-auto"></div></td></tr>`;
+            
+            const q = query(collection(db, "merits"), where("year", "==", currentYear));
+            const snap = await getDocs(q);
+            
+            let html = '';
+            snap.forEach(doc => {
+                const d = doc.data();
+                html += `
+                    <tr class="border-b hover:bg-slate-50 transition-all overall-row" data-name="${d.studentName}" data-level="${d.level}">
+                        <td class="p-4 uppercase">${d.studentName}</td>
+                        <td class="p-4 uppercase">${d.title}</td>
+                        <td class="p-4"><span class="px-2 py-1 bg-slate-100 rounded text-[9px] font-black uppercase">${d.level}</span></td>
+                        <td class="p-4 text-center font-black text-rose-600 text-sm">${d.points}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="4" class="text-center py-20 text-slate-400 font-bold">TIADA REKOD DITEMUI</td></tr>';
+        };
+
+        window.filterOverallTable = () => {
+            const nameVal = document.getElementById('filter-overall-name').value.toLowerCase();
+            const levelVal = document.getElementById('filter-overall-level').value.toUpperCase();
+            
+            document.querySelectorAll('.overall-row').forEach(row => {
+                const nameMatch = row.dataset.name.toLowerCase().includes(nameVal);
+                const levelMatch = levelVal === "" || row.dataset.level.toUpperCase() === levelVal;
+                row.style.display = (nameMatch && levelMatch) ? "table-row" : "none";
+            });
         };
 
         async function renderOrgChartUI() {
@@ -261,8 +445,10 @@
 
         function fetchRecords() {
             const list = document.getElementById('data-list');
-            let coll = (currentFolder === "Pendaftaran Ahli") ? "members" : (currentFolder === "Rekod Kehadiran Mingguan" ? "attendance" : "records");
-            const q = query(collection(db, coll), where("unit", "==", currentUnit), where("year", "==", currentYear));
+            let coll = (currentFolder === "Pendaftaran Ahli") ? "members" : (currentFolder === "Rekod Kehadiran Mingguan" ? "attendance" : (currentFolder === "Pencapaian Merit Pelajar" ? "merits" : "records"));
+            const q = currentFolder === "Pencapaian Merit Pelajar" 
+                ? query(collection(db, coll), where("year", "==", currentYear))
+                : query(collection(db, coll), where("unit", "==", currentUnit), where("year", "==", currentYear));
             
             if (activeUnsub) activeUnsub();
             activeUnsub = onSnapshot(q, (snap) => {
@@ -271,16 +457,20 @@
                     const data = dSnap.data();
                     const id = dSnap.id;
                     const card = document.createElement('div');
-                    card.className = "p-4 bg-slate-50 rounded-2xl flex justify-between items-center border border-slate-100 mb-2 hover:bg-white transition-all";
+                    card.className = "record-card p-4 bg-slate-50 rounded-2xl flex justify-between items-center border border-slate-100 mb-2 hover:bg-white transition-all";
                     
                     let contentHTML = `<div class="flex flex-col">
-                        <span class="font-black text-slate-800 text-sm uppercase">${data.title || data.name}</span>
-                        <span class="text-[9px] text-slate-400 font-bold uppercase">${data.date || ""}</span>
+                        <span class="font-black text-slate-800 text-sm uppercase">${data.studentName || data.title || data.name}</span>
+                        <span class="text-[9px] text-slate-400 font-bold uppercase">${data.achievement || data.date || "Aktif"}</span>
                     </div>`;
 
                     let buttons = `<div class="flex items-center space-x-2">`;
-                    if (currentFolder === "Laporan Aktiviti") {
-                        buttons += `<button onclick="printReport('${id}')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-[10px] font-black hover:bg-indigo-700 shadow-lg">CETAK</button>`;
+                    
+                    if (currentFolder === "Pencapaian Merit Pelajar") {
+                        buttons = `<div class="flex items-center space-x-4"><div class="text-center bg-white px-3 py-1 rounded-xl border-2 border-rose-100"><div class="text-[8px] font-black text-slate-400 uppercase leading-none">Markah</div><div class="text-lg font-black text-rose-600">${data.points || 0}</div></div>` + buttons;
+                        buttons += `<button onclick="printReportGeneric('merits', '${id}')" class="bg-rose-600 text-white px-4 py-2 rounded-xl text-[10px] font-black hover:bg-rose-700 shadow-lg">CETAK</button>`;
+                    } else if (currentFolder === "Laporan Aktiviti") {
+                        buttons += `<button onclick="printReportGeneric('records', '${id}')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-[10px] font-black hover:bg-indigo-700 shadow-lg">CETAK</button>`;
                     }
                     buttons += `<button onclick="deleteDocById('${coll}', '${id}')" class="text-slate-300 hover:text-red-500 p-2"><i class="fas fa-trash-alt"></i></button></div>`;
                     
@@ -293,14 +483,58 @@
         window.openModal = async () => {
             const container = document.getElementById('modal-fields-container');
             const title = document.getElementById('modal-title');
+            const header = document.getElementById('modal-header');
             document.getElementById('crud-modal').classList.replace('hidden', 'flex');
             container.innerHTML = `<div class="text-center py-10"><div class="loader-spin mx-auto"></div></div>`;
 
-            if (currentFolder === "Pendaftaran Ahli") {
+            if (currentFolder === "Pencapaian Merit Pelajar") {
+                header.className = "bg-rose-600 p-6 text-white flex justify-between items-center";
+                title.innerText = "Tambah Pencapaian Merit";
+                
+                container.innerHTML = `
+                    <div class="relative">
+                        <label class="text-[10px] font-black text-slate-400 uppercase">Cari & Pilih Murid</label>
+                        <input type="text" id="m-student-search" onkeyup="filterStudentDropdown(this.value)" placeholder="TAIP NAMA MURID..." autocomplete="off" class="w-full p-4 bg-slate-100 rounded-2xl font-bold uppercase outline-none focus:ring-2 ring-rose-500">
+                        <input type="hidden" id="m-student-hidden" required>
+                        <div id="student-search-results" class="search-results hidden border-rose-100"></div>
+                    </div>
+                    <input type="text" id="m-event" placeholder="NAMA PERTANDINGAN / ACARA" required class="w-full p-4 bg-slate-100 rounded-2xl font-bold uppercase outline-none">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[10px] uppercase font-black text-slate-400">Peringkat</label>
+                            <select id="m-level" onchange="calculatePoints()" class="w-full p-4 bg-slate-100 rounded-2xl font-bold outline-none text-xs">
+                                <option value="8">SEKOLAH (8)</option>
+                                <option value="9">ZON (9)</option>
+                                <option value="11">DAERAH (11)</option>
+                                <option value="12">BAHAGIAN (12)</option>
+                                <option value="14">NEGERI (14)</option>
+                                <option value="17">KEBANGSAAN (17)</option>
+                                <option value="20">ANTARABANGSA (20)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase font-black text-slate-400">Kedudukan</label>
+                            <select id="m-rank" onchange="calculatePoints()" class="w-full p-4 bg-slate-100 rounded-2xl font-bold outline-none text-xs">
+                                <option value="5">JOHAN (+5)</option>
+                                <option value="4">NAIB JOHAN (+4)</option>
+                                <option value="3">KETIGA (+3)</option>
+                                <option value="2">KEEMPAT (+2)</option>
+                                <option value="1">PENYERTAAN (+1)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="bg-rose-50 p-4 rounded-2xl border text-center font-black"><span class="text-rose-400 text-[10px] uppercase tracking-widest">Markah Merit PAJSK</span><div id="merit-total-display" class="text-3xl text-rose-600">13</div></div>
+                    <input type="date" id="m-date" required class="w-full p-4 bg-slate-100 rounded-2xl outline-none">
+                    <textarea id="m-desc" placeholder="CATATAN TAMBAHAN..." class="w-full p-4 bg-slate-100 rounded-2xl h-20 outline-none"></textarea>`;
+                calculatePoints();
+            } 
+            else if (currentFolder === "Pendaftaran Ahli") {
+                header.className = "bg-indigo-800 p-6 text-white flex justify-between items-center";
                 title.innerText = "Daftar Ahli";
                 container.innerHTML = `<input type="text" id="m-name" placeholder="NAMA PENUH MURID" required class="w-full p-4 bg-slate-100 rounded-2xl font-bold uppercase">`;
             } 
             else if (currentFolder === "Rekod Kehadiran Mingguan") {
+                header.className = "bg-indigo-800 p-6 text-white flex justify-between items-center";
                 title.innerText = "Kehadiran Mingguan";
                 container.innerHTML = `<input type="text" id="att-title" placeholder="TAJUK AKTIVITI" required class="w-full p-4 bg-slate-100 rounded-2xl font-bold uppercase mb-2">
                     <input type="date" id="att-date" required class="w-full p-4 bg-slate-100 rounded-2xl mb-4">
@@ -310,16 +544,15 @@
                 snap.forEach(d => list.innerHTML += `<label class="flex items-center space-x-2 bg-white p-3 rounded-lg border text-[10px] font-bold uppercase cursor-pointer"><input type="checkbox" name="student" value="${d.data().name}" class="w-4 h-4"> <span>${d.data().name}</span></label>`);
             } 
             else if (currentFolder === "Laporan Aktiviti") {
+                header.className = "bg-indigo-800 p-6 text-white flex justify-between items-center";
                 title.innerText = "Laporan Aktiviti Baru";
                 const attSnap = await getDocs(query(collection(db, "attendance"), where("unit", "==", currentUnit), where("year", "==", currentYear)));
                 let options = attSnap.empty ? '<option value="0">TIADA REKOD KEHADIRAN</option>' : '<option value="">-- PILIH SESI KEHADIRAN --</option>';
-                
                 attSnap.forEach(d => {
                     const data = d.data();
-                    const namesString = (data.studentNames || []).join('|'); // Store names list in a string
+                    const namesString = (data.studentNames || []).join('|');
                     options += `<option value="${data.presentCount}" data-names="${namesString}">${data.title} (${data.date})</option>`;
                 });
-
                 container.innerHTML = `
                     <input type="text" id="rep-title" placeholder="TAJUK LAPORAN" required class="w-full p-4 bg-slate-100 rounded-2xl font-bold uppercase">
                     <div class="grid grid-cols-2 gap-2">
@@ -328,7 +561,6 @@
                     </div>
                     <textarea id="rep-teachers" placeholder="GURU PENASIHAT" required class="w-full p-4 bg-slate-100 rounded-2xl h-20 font-bold uppercase"></textarea>
                     <div class="p-4 bg-amber-50 rounded-2xl border-2 border-amber-100">
-                        <p class="text-[9px] font-black uppercase mb-2 text-amber-700">Sinkronisasi Kehadiran</p>
                         <select id="rep-sync" onchange="handleSyncChange(this)" class="w-full p-3 bg-white rounded-xl text-[10px] font-black uppercase outline-none">${options}</select>
                         <p class="mt-2 text-[10px] font-bold text-center uppercase">JUMLAH HADIR: <span id="rep-count-view" class="text-indigo-600 text-lg">0</span></p>
                     </div>
@@ -336,7 +568,6 @@
             }
         };
 
-        // Helper to handle sync data selection
         window.handleSyncChange = (select) => {
             const selectedOption = select.options[select.selectedIndex];
             document.getElementById('rep-count-view').innerText = selectedOption.value;
@@ -347,98 +578,87 @@
         document.getElementById('crud-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('save-btn');
-            btn.disabled = true; btn.innerText = "MENYIMPAN...";
+            btn.disabled = true;
             try {
-                if (currentFolder === "Pendaftaran Ahli") {
+                if (currentFolder === "Pencapaian Merit Pelajar") {
+                    const total = parseInt(document.getElementById('m-level').value) + parseInt(document.getElementById('m-rank').value);
+                    const levelTxt = document.getElementById('m-level').options[document.getElementById('m-level').selectedIndex].text.split('(')[0].trim();
+                    const rankTxt = document.getElementById('m-rank').options[document.getElementById('m-rank').selectedIndex].text.split('(')[0].trim();
+                    await addDoc(collection(db, "merits"), { 
+                        studentName: document.getElementById('m-student-hidden').value.toUpperCase(), 
+                        title: document.getElementById('m-event').value.toUpperCase(), 
+                        level: levelTxt, achievement: rankTxt, points: total, 
+                        date: document.getElementById('m-date').value, 
+                        description: document.getElementById('m-desc').value, 
+                        year: currentYear, timestamp: new Date().getTime() 
+                    });
+                } 
+                else if (currentFolder === "Pendaftaran Ahli") {
                     await addDoc(collection(db, "members"), { name: document.getElementById('m-name').value.toUpperCase(), unit: currentUnit, year: currentYear });
                 } 
                 else if (currentFolder === "Rekod Kehadiran Mingguan") {
-                    const selCheckboxes = Array.from(document.querySelectorAll('input[name="student"]:checked'));
-                    const selNames = selCheckboxes.map(cb => cb.value);
-                    await addDoc(collection(db, "attendance"), { 
-                        title: document.getElementById('att-title').value.toUpperCase(), 
-                        date: document.getElementById('att-date').value, 
-                        presentCount: selNames.length, 
-                        studentNames: selNames, // SAVE NAMES LIST
-                        unit: currentUnit, year: currentYear 
-                    });
+                    const selNames = Array.from(document.querySelectorAll('input[name="student"]:checked')).map(cb => cb.value);
+                    await addDoc(collection(db, "attendance"), { title: document.getElementById('att-title').value.toUpperCase(), date: document.getElementById('att-date').value, presentCount: selNames.length, studentNames: selNames, unit: currentUnit, year: currentYear });
                 } 
                 else if (currentFolder === "Laporan Aktiviti") {
-                    await addDoc(collection(db, "records"), { 
-                        title: document.getElementById('rep-title').value.toUpperCase(), 
-                        date: document.getElementById('rep-date').value, 
-                        venue: document.getElementById('rep-venue').value.toUpperCase(),
-                        teachers: document.getElementById('rep-teachers').value.toUpperCase(),
-                        presentCount: document.getElementById('rep-sync').value,
-                        studentNames: selectedStudentNames, // SAVE SYNCED NAMES
-                        description: document.getElementById('rep-desc').value,
-                        unit: currentUnit, year: currentYear, folder: "Laporan Aktiviti" 
-                    });
+                    await addDoc(collection(db, "records"), { title: document.getElementById('rep-title').value.toUpperCase(), date: document.getElementById('rep-date').value, venue: document.getElementById('rep-venue').value.toUpperCase(), teachers: document.getElementById('rep-teachers').value.toUpperCase(), presentCount: document.getElementById('rep-sync').value, studentNames: selectedStudentNames, description: document.getElementById('rep-desc').value, unit: currentUnit, year: currentYear });
                     selectedStudentNames = [];
                 }
                 closeModal('crud-modal');
             } catch (err) { alert(err.message); }
-            btn.disabled = false; btn.innerText = "Simpan Rekod";
+            btn.disabled = false;
         };
 
-        window.printReport = async (id) => {
-            const docSnap = await getDoc(doc(db, "records", id));
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const printArea = document.getElementById('print-area');
-                
-                // Build attendance list HTML
-                let namesHTML = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 10px;">';
-                if (data.studentNames && data.studentNames.length > 0) {
-                    data.studentNames.forEach((name, index) => {
-                        namesHTML += `<div>${index + 1}. ${name}</div>`;
-                    });
-                } else {
-                    namesHTML += '<div style="grid-column: span 2;">Tiada data kehadiran direkodkan.</div>';
-                }
-                namesHTML += '</div>';
+        window.printReportGeneric = async (coll, id) => {
+            const docSnap = await getDoc(doc(db, coll, id));
+            if (!docSnap.exists()) return;
+            const data = docSnap.data();
+            const area = document.getElementById('print-area');
+            let contentHTML = "";
 
-                printArea.innerHTML = `
-                    <div style="text-align:center; border-bottom:2px solid black; padding-bottom:15px; margin-bottom:20px;">
-                        <img src="logo.png" style="height: 80px; margin-bottom: 10px;" onerror="this.src='kms.png'; this.onerror=null;">
-                        <h1 style="font-size:22px; font-weight:900; text-transform:uppercase; margin:0;">LAPORAN AKTIVITI KOKURIKULUM</h1>
-                        <h2 style="font-size:16px; margin:5px 0 0 0;">${data.unit} - SESI ${data.year}</h2>
+            if (coll === 'merits') {
+                contentHTML = `
+                    <div style="text-align:center; border-bottom:3px solid #000; padding-bottom:15px; margin-bottom:20px;">
+                        <h1 style="font-size:22px; font-weight:900; margin:0;">REKOD PENCAPAIAN MERIT PELAJAR</h1>
+                        <h2 style="font-size:14px; margin:5px 0 0 0;">SESI AKADEMIK ${data.year}</h2>
                     </div>
-                    
-                    <table style="width:100%; border-collapse:collapse; margin-bottom:25px; font-size:12px;">
-                        <tr><td style="padding:6px; font-weight:bold; width:25%;">TAJUK AKTIVITI</td><td>: ${data.title}</td></tr>
-                        <tr><td style="padding:6px; font-weight:bold;">TARIKH AKTIVITI</td><td>: ${data.date}</td></tr>
-                        <tr><td style="padding:6px; font-weight:bold;">TEMPAT</td><td>: ${data.venue || '-'}</td></tr>
-                        <tr><td style="padding:6px; font-weight:bold;">GURU PENASIHAT</td><td>: ${data.teachers || '-'}</td></tr>
-                        <tr><td style="padding:6px; font-weight:bold;">JUMLAH KEHADIRAN</td><td>: ${data.presentCount} ORANG</td></tr>
+                    <table style="width:100%; border-collapse: collapse; font-size:14px;">
+                        <tr><td style="padding:10px; border:1px solid #000; font-weight:bold; width:30%;">NAMA MURID</td><td style="padding:10px; border:1px solid #000; text-transform:uppercase;">${data.studentName}</td></tr>
+                        <tr><td style="padding:10px; border:1px solid #000; font-weight:bold;">ACARA / PERTANDINGAN</td><td style="padding:10px; border:1px solid #000; text-transform:uppercase;">${data.title}</td></tr>
+                        <tr><td style="padding:10px; border:1px solid #000; font-weight:bold;">PERINGKAT</td><td style="padding:10px; border:1px solid #000;">${data.level}</td></tr>
+                        <tr><td style="padding:10px; border:1px solid #000; font-weight:bold;">PENCAPAIAN</td><td style="padding:10px; border:1px solid #000; font-weight:bold;">${data.achievement}</td></tr>
+                        <tr style="background:#f1f5f9;"><td style="padding:15px; border:1px solid #000; font-weight:bold; font-size:16px;">MARKAH MERIT PAJSK</td><td style="padding:15px; border:1px solid #000; font-weight:900; font-size:24px; color:red;">${data.points || 0}</td></tr>
                     </table>
-
-                    <div style="margin-bottom:25px;">
-                        <h3 style="font-weight:bold; border-bottom:1px solid #000; font-size:14px; margin-bottom:10px;">KETERANGAN AKTIVITI:</h3>
-                        <p style="white-space: pre-wrap; font-size:12px; text-align:justify; line-height:1.5;">${data.description}</p>
+                    <div style="margin-top:20px;"><p style="font-size:12px;"><strong>Catatan:</strong> ${data.description || '-'}</p></div>`;
+            } else {
+                let namesHTML = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 10px;">' + (data.studentNames || []).map((n, i) => `<div>${i + 1}. ${n}</div>`).join('') + '</div>';
+                contentHTML = `
+                    <div style="text-align:center; border-bottom:2px solid black; padding-bottom:15px; margin-bottom:20px;">
+                        <h1 style="font-size:22px; font-weight:900; text-transform:uppercase;">LAPORAN AKTIVITI KOKURIKULUM</h1>
+                        <h2 style="font-size:16px;">${data.unit} - SESI ${data.year}</h2>
                     </div>
-
-                    <div style="margin-bottom:20px;">
-                        <h3 style="font-weight:bold; border-bottom:1px solid #000; font-size:14px; margin-bottom:10px;">SENARAI NAMA MURID YANG HADIR:</h3>
-                        ${namesHTML}
-                    </div>
-
-                    <div style="display: flex; justify-content: space-between; margin-top: 80px;">
-                        <div style="text-align: center; width: 200px; border-top: 1px solid black; padding-top: 5px; font-size: 10px;">
-                            Disediakan Oleh:<br><br><br><br>................................................
-                        </div>
-                        <div style="text-align: center; width: 200px; border-top: 1px solid black; padding-top: 5px; font-size: 10px;">
-                            Disahkan Oleh:<br><br><br><br>................................................
-                        </div>
-                    </div>
-                `;
-                window.print();
+                    <p><strong>TAJUK:</strong> ${data.title}</p><p><strong>TARIKH:</strong> ${data.date}</p><p><strong>JUMLAH HADIR:</strong> ${data.presentCount}</p>
+                    <div style="border:1px solid #000; padding:15px; min-height:150px; margin-top:10px;"><strong>KETERANGAN:</strong><br>${data.description}</div>
+                    <div style="margin-top:20px;"><strong>SENARAI KEHADIRAN:</strong><br>${namesHTML}</div>`;
             }
+
+            area.innerHTML = contentHTML + `
+                <div style="display: flex; justify-content: space-between; margin-top: 80px;">
+                    <div style="text-align: center; width: 220px; border-top: 1px solid black; padding-top: 5px; font-size: 11px;">Disediakan Oleh</div>
+                    <div style="text-align: center; width: 220px; border-top: 1px solid black; padding-top: 5px; font-size: 11px;">Disahkan Oleh</div>
+                </div>`;
+            window.print();
         };
 
+        window.filterItems = (val) => { document.querySelectorAll('.record-card').forEach(item => { item.style.display = item.innerText.toLowerCase().includes(val.toLowerCase()) ? "flex" : "none"; }); };
         window.closeModal = (id) => document.getElementById(id).classList.replace('flex', 'hidden');
         window.deleteDocById = async (coll, id) => { if (confirm("Padam rekod secara kekal?")) await deleteDoc(doc(db, coll, id)); };
-        document.getElementById('year-selector').onchange = (e) => { currentYear = e.target.value; renderDashboard(); };
+        
+        document.getElementById('year-selector').onchange = (e) => { 
+            currentYear = e.target.value; 
+            renderDashboard(); 
+            loadStudentsFromFirestore(); // Sinkron semula data jika tukar tahun
+        };
     </script>
 </body>
 </html>
