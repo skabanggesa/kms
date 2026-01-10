@@ -211,21 +211,43 @@ const unitLogos = {
 
         document.getElementById('logout-btn').onclick = () => signOut(auth);
 
-        window.renderDashboard = () => {
+window.renderDashboard = () => {
             const view = document.getElementById('content-view');
-            let html = `<div class="text-center mb-10"><h2 class="text-3xl font-black text-slate-800 italic uppercase">KMS DIGITAL ${currentYear}</h2><p class="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest italic">Sistem Pengurusan Kokurikulum</p></div>`;
+            let html = `<div class="text-center mb-10">
+                            <h2 class="text-3xl font-black text-slate-800 italic uppercase">KMS DIGITAL ${currentYear}</h2>
+                            <p class="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest italic">Sistem Pengurusan Kokurikulum</p>
+                        </div>`;
 
             if (userProfile.role === 'admin') {
-                html += `<div class="mb-8 flex justify-center"><button onclick="openModal('csv-modal')" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-black text-xs uppercase shadow-lg hover:bg-emerald-700">Import Ahli Murid (CSV)</button></div>`;
+                html += `<div class="mb-8 flex justify-center">
+                            <button onclick="openModal('csv-modal')" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-black text-xs uppercase shadow-lg">Import Ahli Murid (CSV)</button>
+                         </div>`;
+                
                 for (const [cat, units] of Object.entries(kokoData)) {
                     html += `<h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 border-l-4 border-indigo-500 pl-2">${cat}</h3>
-                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">${units.map(u => `<div onclick="selectUnit('${u}')" class="unit-card bg-white p-6 rounded-3xl border shadow-sm cursor-pointer text-center font-black text-xs uppercase text-slate-700 hover:text-indigo-600 transition-all">${u}</div>`).join('')}</div>`;
+                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">`;
+                    
+                    units.forEach(u => {
+                        // LOGIK IKON UNTUK ADMIN
+                        const iconImg = unitLogos[u] 
+                            ? `<img src="${unitLogos[u]}" class="h-10 mx-auto mb-2" onerror="this.style.display='none'">` 
+                            : `<i class="fas fa-users text-indigo-500 mb-2"></i>`;
+                            
+                        html += `
+                            <div onclick="selectUnit('${u}')" class="unit-card bg-white p-6 rounded-3xl border shadow-sm cursor-pointer text-center hover:text-indigo-600 transition-all">
+                                ${iconImg}
+                                <div class="font-black text-[10px] uppercase text-slate-700">${u}</div>
+                            </div>`;
+                    });
+                    
+                    html += `</div>`;
                 }
             } else {
+                // Paparan untuk Guru (Sedia ada)
                 const units = [userProfile.uniform, userProfile.club, userProfile.sport].filter(x => x);
                 html += `<div class="grid grid-cols-1 md:grid-cols-3 gap-6">${units.map(u => {
-                    const logo = unitLogos[u] ? `<img src="${unitLogos[u]}" class="h-16 mx-auto mb-4">` : `<i class="fas fa-star text-indigo-500 mb-4 text-2xl"></i>`;
-                    return `<div onclick="selectUnit('${u}')" class="unit-card bg-white p-10 rounded-[2.5rem] border-4 border-slate-50 shadow-xl cursor-pointer text-center hover:border-indigo-200 transition-all">${logo}<br><span class="font-black text-sm uppercase">${u}</span></div>`;
+                    const icon = unitLogos[u] ? `<img src="${unitLogos[u]}" class="h-16 mx-auto mb-4" onerror="this.src='https://via.placeholder.com/60?text=ICO'">` : `<i class="fas fa-star text-indigo-500 mb-4 text-2xl"></i>`;
+                    return `<div onclick="selectUnit('${u}')" class="unit-card bg-white p-10 rounded-[2.5rem] border-4 border-slate-50 shadow-xl cursor-pointer text-center hover:border-indigo-200 transition-all">${icon}<br><span class="font-black text-sm uppercase">${u}</span></div>`;
                 }).join('')}</div>`;
             }
             view.innerHTML = html;
@@ -464,6 +486,7 @@ const unitLogos = {
     </script>
 </body>
 </html>
+
 
 
 
