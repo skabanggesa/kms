@@ -341,26 +341,58 @@
         };
 
         // --- CSV PROCESSING (ENROLMEN DENGAN JANTINA) ---
-        window.processCSV = (input) => {
+window.processCSV = (input) => {
             Papa.parse(input.files[0], {
-                header: true, skipEmptyLines: true,
+                header: true, 
+                skipEmptyLines: true,
                 complete: async (res) => {
                     document.getElementById('csv-content-normal').classList.add('hidden');
                     document.getElementById('csv-content-loading').classList.remove('hidden');
+                    
                     let count = 0;
                     for(const s of res.data) {
+                        // 1. Ambil Nama
                         const name = (s.Nama || s.nama || '').toUpperCase().trim();
-                        const gender = (s.Jantina || s.jantina || '').toUpperCase().trim();
-                        let rawUnit = (s.Unit || s.unit || '').trim();
-                        let matched = ""; for (const cat in kokoData) { if(kokoData[cat].includes(rawUnit)) matched = rawUnit; }
+                        
+                        // 2. Ambil Jantina & Tukar ke format L atau P
+                        let rawGender = (s.Jantina || s.jantina || '').toUpperCase().trim();
+                        let gender = 'L'; // Default
+                        if (rawGender === 'P' || rawGender === 'PEREMPUAN') {
+                            gender = 'P';
+                        } else if (rawGender === 'L' || rawGender === 'LELAKI') {
+                            gender = 'L';
+                        }
+
+                        // 3. Ambil Unit & Padankan dengan kokoData (Case-Insensitive)
+                        let rawUnit = (s.Unit || s.unit || '').trim().toUpperCase();
+                        let matched = ""; 
+                        
+                        for (const cat in kokoData) {
+                            // Cari unit yang ejaannya sama dalam kokoData (tidak kira huruf besar/kecil)
+                            const found = kokoData[cat].find(u => u.toUpperCase() === rawUnit);
+                            if (found) {
+                                matched = found; // Ambil ejaan asal dari kokoData (cth: "Pengakap")
+                                break;
+                            }
+                        }
+
+                        // 4. Simpan ke Firestore jika nama dan unit wujud
                         if(name && matched) {
-                            await addDoc(collection(db, "students_master"), { 
-                                name, gender: (gender === 'L' || gender === 'P') ? gender : 'L', unit: matched, year: currentYear 
-                            });
-                            count++;
+                            try {
+                                await addDoc(collection(db, "students_master"), { 
+                                    name: name, 
+                                    gender: gender, 
+                                    unit: matched, 
+                                    year: currentYear 
+                                });
+                                count++;
+                            } catch (e) {
+                                console.error("Ralat simpan data: ", e);
+                            }
                         }
                     }
-                    alert(`Berjaya import ${count} murid!`); location.reload();
+                    alert(`Berjaya import ${count} murid ke dalam sistem!`); 
+                    location.reload();
                 }
             });
         };
@@ -466,3 +498,4 @@
     </script>
 </body>
 </html>
+
