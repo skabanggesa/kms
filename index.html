@@ -81,7 +81,6 @@
                 <button onclick="document.getElementById('csv-input').click()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black uppercase text-sm mb-4 hover:bg-indigo-700 transition-all">Pilih Fail CSV</button>
                 <button onclick="closeModal('csv-modal')" class="text-xs font-bold text-slate-400 uppercase">Batal</button>
             </div>
-
             <div id="csv-content-loading" class="hidden flex flex-col items-center py-6">
                 <div class="loader-spin mb-6"></div>
                 <h3 class="font-black text-slate-800 uppercase">Sedang Memproses...</h3>
@@ -135,6 +134,14 @@
             "Unit Beruniform": ["Pengakap", "Bulan Sabit Merah", "Pergerakan Puteri Islam", "Tunas Kadet Remaja Sekolah"],
             "Kelab & Persatuan": ["Bahasa Melayu", "Bahasa Inggeris", "STEM", "Alam Sekitar", "TV PSS"],
             "Sukan & Permainan": ["Bola Sepak", "Bola Jaring", "Olahraga", "Hoki", "Memanah", "Catur"]
+        };
+
+        // Data Logo Unit
+        const unitLogos = {
+            "Pengakap": "https://upload.wikimedia.org/wikipedia/ms/thumb/0/0e/Logo_Pengakap_Malaysia.svg/1200px-Logo_Pengakap_Malaysia.svg.png",
+            "Bulan Sabit Merah": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Logo_of_the_Malaysian_Red_Crescent_Society.svg/1200px-Logo_of_the_Malaysian_Red_Crescent_Society.svg.png",
+            "Pergerakan Puteri Islam": "https://upload.wikimedia.org/wikipedia/ms/1/1a/Logo_PPIM.png",
+            "Tunas Kadet Remaja Sekolah": "https://upload.wikimedia.org/wikipedia/ms/thumb/1/10/Logo_KRS.svg/1200px-Logo_KRS.svg.png"
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -200,7 +207,10 @@
                 }
             } else {
                 const units = [userProfile.uniform, userProfile.club, userProfile.sport].filter(x => x);
-                html += `<div class="grid grid-cols-1 md:grid-cols-3 gap-6">${units.map(u => `<div onclick="selectUnit('${u}')" class="unit-card bg-white p-10 rounded-[2.5rem] border-4 border-slate-50 shadow-xl cursor-pointer text-center hover:border-indigo-200 transition-all"><i class="fas fa-star text-indigo-500 mb-4 text-2xl"></i><br><span class="font-black text-sm uppercase">${u}</span></div>`).join('')}</div>`;
+                html += `<div class="grid grid-cols-1 md:grid-cols-3 gap-6">${units.map(u => {
+                    const logo = unitLogos[u] ? `<img src="${unitLogos[u]}" class="h-16 mx-auto mb-4">` : `<i class="fas fa-star text-indigo-500 mb-4 text-2xl"></i>`;
+                    return `<div onclick="selectUnit('${u}')" class="unit-card bg-white p-10 rounded-[2.5rem] border-4 border-slate-50 shadow-xl cursor-pointer text-center hover:border-indigo-200 transition-all">${logo}<br><span class="font-black text-sm uppercase">${u}</span></div>`;
+                }).join('')}</div>`;
             }
             view.innerHTML = html;
         };
@@ -210,12 +220,19 @@
             const folders = [
                 { name: "Senarai Ahli Murid", icon: "fas fa-users", color: "text-blue-500" },
                 { name: "Rekod Kehadiran", icon: "fas fa-calendar-check", color: "text-amber-500" },
-                { name: "Laporan Aktiviti", icon: "fas fa-file-signature", color: "text-indigo-500" }
+                { name: "Laporan Aktiviti", icon: "fas fa-file-signature", color: "text-indigo-500" },
+                { name: "Pencapaian Merit", icon: "fas fa-trophy", color: "text-emerald-500" }
             ];
+            
+            const logoHtml = unitLogos[unit] ? `<img src="${unitLogos[unit]}" class="h-12 w-auto mr-4">` : "";
+
             document.getElementById('content-view').innerHTML = `
                 <button onclick="renderDashboard()" class="mb-6 text-[10px] font-black text-slate-400 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali Utama</button>
-                <h2 class="text-2xl font-black text-slate-800 uppercase mb-8 border-b-4 border-indigo-600 inline-block pb-1">${currentUnit}</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">${folders.map(f => `<div onclick="selectFolder('${f.name}')" class="bg-white p-6 rounded-3xl border shadow-sm flex items-center space-x-4 cursor-pointer hover:bg-slate-50 transition-all">
+                <div class="flex items-center mb-8">
+                    ${logoHtml}
+                    <h2 class="text-2xl font-black text-slate-800 uppercase border-b-4 border-indigo-600 inline-block pb-1">${currentUnit}</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">${folders.map(f => `<div onclick="selectFolder('${f.name}')" class="bg-white p-6 rounded-3xl border shadow-sm flex items-center space-x-4 cursor-pointer hover:bg-slate-50 transition-all">
                     <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center ${f.color} text-xl"><i class="${f.icon}"></i></div><span class="font-black text-slate-700 uppercase text-[10px]">${f.name}</span></div>`).join('')}</div>`;
         };
 
@@ -234,15 +251,28 @@
 
         async function fetchData() {
             const list = document.getElementById('data-list');
-            let coll = currentFolder === "Senarai Ahli Murid" ? "students_master" : (currentFolder === "Rekod Kehadiran" ? "attendance" : "reports");
+            let coll = "reports"; 
+            if(currentFolder === "Senarai Ahli Murid") coll = "students_master";
+            else if(currentFolder === "Rekod Kehadiran") coll = "attendance";
+            else if(currentFolder === "Pencapaian Merit") coll = "merits";
+
             const q = query(collection(db, coll), where("unit", "==", currentUnit), where("year", "==", currentYear));
             const snap = await getDocs(q);
             list.innerHTML = snap.empty ? `<p class="text-center py-10 text-slate-300 font-bold uppercase text-[10px]">Tiada Rekod Dijumpai</p>` : "";
+            
             snap.forEach(d => {
                 const data = d.data();
                 const div = document.createElement('div');
                 div.className = "p-4 bg-slate-50 rounded-xl flex justify-between items-center border border-slate-100 hover:bg-white transition-all";
-                div.innerHTML = `<div><p class="font-black uppercase text-xs text-slate-800">${data.title || data.name}</p><p class="text-[9px] font-bold text-slate-400 uppercase">${data.date || 'Ahli Unit'}</p></div>
+                
+                let mainText = data.title || data.name;
+                let subText = data.date || 'Ahli Unit';
+                if(currentFolder === "Pencapaian Merit") {
+                    mainText = `${data.studentName} - ${data.achievement}`;
+                    subText = `TAHAP: ${data.level} | MARKAH: ${data.score}`;
+                }
+
+                div.innerHTML = `<div><p class="font-black uppercase text-xs text-slate-800">${mainText}</p><p class="text-[9px] font-bold text-slate-400 uppercase">${subText}</p></div>
                     <div class="flex space-x-2">
                         ${currentFolder !== "Senarai Ahli Murid" ? `<button onclick="printRecord('${coll}', '${d.id}')" class="bg-slate-200 px-3 py-1 rounded-lg text-[9px] font-black uppercase">Cetak</button>` : ""}
                         <button onclick="deleteDocById('${coll}', '${d.id}')" class="text-red-500 p-2"><i class="fas fa-trash-alt"></i></button>
@@ -251,62 +281,14 @@
             });
         }
 
-        window.processCSV = (input) => {
-            const normalView = document.getElementById('csv-content-normal');
-            const loadingView = document.getElementById('csv-content-loading');
-            const statusText = document.getElementById('csv-status');
-            const progressBar = document.getElementById('csv-progress-bar');
-
-            Papa.parse(input.files[0], {
-                header: true, skipEmptyLines: true,
-                complete: async (res) => {
-                    // Tukar paparan ke loading
-                    normalView.classList.add('hidden');
-                    loadingView.classList.remove('hidden');
-
-                    let count = 0;
-                    const total = res.data.length;
-
-                    for(const s of res.data) {
-                        const name = (s.Nama || s.nama || '').toUpperCase().trim();
-                        let rawUnit = (s.Unit || s.unit || '').trim().toUpperCase();
-                        
-                        // AUTO-MATCHING Unit (Handle Case Sensitivity)
-                        let matchedUnit = "";
-                        for (const cat in kokoData) {
-                            const found = kokoData[cat].find(u => u.toUpperCase() === rawUnit);
-                            if (found) { matchedUnit = found; break; }
-                        }
-
-                        if(name && matchedUnit) {
-                            await addDoc(collection(db, "students_master"), { name, unit: matchedUnit, year: currentYear });
-                        }
-                        
-                        count++;
-                        // Kemaskini progress
-                        const percent = (count / total) * 100;
-                        progressBar.style.width = `${percent}%`;
-                        statusText.innerText = `Memproses: ${count} / ${total}`;
-                    }
-
-                    setTimeout(() => {
-                        alert(`Berjaya import ${count} rekod! Sila semak dalam unit.`);
-                        closeModal('csv-modal');
-                        // Reset semula view untuk kegunaan akan datang
-                        normalView.classList.remove('hidden');
-                        loadingView.classList.add('hidden');
-                        progressBar.style.width = '0%';
-                        input.value = ""; // Clear file input
-                    }, 500);
-                }
-            });
-        };
-
         window.openCRUD = async () => {
             const fields = document.getElementById('modal-fields');
             const title = document.getElementById('modal-title');
             fields.innerHTML = "";
             openModal('crud-modal');
+
+            // Ambil senarai murid untuk dropdown
+            const sSnap = await getDocs(query(collection(db, "students_master"), where("unit", "==", currentUnit), where("year", "==", currentYear)));
 
             if (currentFolder === "Rekod Kehadiran") {
                 title.innerText = "Tambah Sesi Kehadiran";
@@ -315,7 +297,6 @@
                                     <p class="text-[9px] font-black uppercase text-slate-400 mt-4 italic">Tanda Kehadiran Murid:</p>
                                     <div id="student-list" class="space-y-1 mt-2 max-h-48 overflow-y-auto bg-white p-3 rounded-xl border"></div>`;
                 
-                const sSnap = await getDocs(query(collection(db, "students_master"), where("unit", "==", currentUnit), where("year", "==", currentYear)));
                 const container = document.getElementById('student-list');
                 if(sSnap.empty) container.innerHTML = `<p class="text-[9px] text-red-500 uppercase font-black p-4">Tiada murid dijumpai. Sila import senarai murid dahulu!</p>`;
                 sSnap.forEach(s => {
@@ -329,6 +310,21 @@
                 const aSnap = await getDocs(query(collection(db, "attendance"), where("unit", "==", currentUnit), where("year", "==", currentYear)));
                 const select = document.getElementById('f-link');
                 aSnap.forEach(a => select.innerHTML += `<option value="${a.id}">${a.data().title} (${a.data().date})</option>`);
+            } else if (currentFolder === "Pencapaian Merit") {
+                title.innerText = "Tambah Pencapaian Merit";
+                let studentOptions = sSnap.docs.map(s => `<option value="${s.data().name}">${s.data().name}</option>`).join('');
+                fields.innerHTML = `
+                    <select id="m-name" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none mb-4"><option value="">-- PILIH MURID --</option>${studentOptions}</select>
+                    <input type="text" id="m-achieve" placeholder="NAMA PENCAPAIAN (Cth: Johan Merentas Desa)" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none mb-4">
+                    <select id="m-level" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none mb-4">
+                        <option value="SEKOLAH">SEKOLAH</option>
+                        <option value="ZON/DAERAH">ZON/DAERAH</option>
+                        <option value="NEGERI">NEGERI</option>
+                        <option value="KEBANGSAAN">KEBANGSAAN</option>
+                        <option value="ANTARABANGSA">ANTARABANGSA</option>
+                    </select>
+                    <input type="number" id="m-score" placeholder="MARKAH MERIT (Cth: 10)" required class="w-full p-4 bg-slate-100 rounded-xl font-bold text-xs outline-none">
+                `;
             }
         };
 
@@ -346,6 +342,14 @@
                         title: attData.title, date: attData.date, names: attData.names, 
                         description: document.getElementById('f-desc').value, unit: currentUnit, year: currentYear 
                     });
+                } else if (currentFolder === "Pencapaian Merit") {
+                    await addDoc(collection(db, "merits"), {
+                        studentName: document.getElementById('m-name').value,
+                        achievement: document.getElementById('m-achieve').value.toUpperCase(),
+                        level: document.getElementById('m-level').value,
+                        score: document.getElementById('m-score').value,
+                        unit: currentUnit, year: currentYear
+                    });
                 }
                 closeModal('crud-modal'); selectFolder(currentFolder);
             } catch (err) { alert(err.message); }
@@ -355,31 +359,92 @@
         window.printRecord = async (coll, id) => {
             const d = await getDoc(doc(db, coll, id)); const data = d.data();
             const area = document.getElementById('print-area');
-            const namesList = (data.names || []).map((n, i) => `<li>${n}</li>`).join('');
-            area.innerHTML = `
-                <div style="text-align:center; border-bottom:3px solid black; padding-bottom:15px; margin-bottom:30px;">
-                    <h1 style="text-transform:uppercase; margin:0; font-size:22px;">Laporan Rekod Kokurikulum</h1>
-                    <h3 style="margin:5px 0; font-size:14px;">UNIT: ${currentUnit} | SESI: ${currentYear}</h3>
-                </div>
-                <div style="font-family: Arial; line-height: 1.6; font-size: 13px;">
-                    <p><strong>TAJUK AKTIVITI:</strong> ${data.title}</p>
-                    <p><strong>TARIKH PERJUMPAAN:</strong> ${data.date}</p>
-                    ${data.description ? `<div style="margin:15px 0; border:1px solid #ddd; padding:15px; background:#f9f9f9; min-height:100px;"><strong>RINGKASAN AKTIVITI:</strong><br>${data.description}</div>` : ''}
-                    <div style="margin-top:20px;">
-                        <strong style="border-bottom:1px solid #000; display:inline-block; margin-bottom:10px;">SENARAI KEHADIRAN MURID (${(data.names || []).length} ORANG):</strong>
-                        <ol style="column-count: 2; margin-top:10px; text-transform:uppercase; font-size:10px;">${namesList}</ol>
+            const logo = unitLogos[currentUnit] ? `<img src="${unitLogos[currentUnit]}" style="height:80px; margin-bottom:10px;">` : "";
+
+            if(coll === "merits") {
+                area.innerHTML = `
+                    <div style="text-align:center; border:5px double black; padding:40px; font-family:serif;">
+                        ${logo}
+                        <h1 style="text-transform:uppercase; margin:10px 0;">Sijil Penghargaan Merit</h1>
+                        <p style="font-size:18px;">Dengan ini disahkan bahawa</p>
+                        <h2 style="text-transform:uppercase; border-bottom:2px solid #000; display:inline-block; padding:0 20px;">${data.studentName}</h2>
+                        <p style="font-size:18px;">Telah mencapai keputusan cemerlang dalam:</p>
+                        <h3 style="text-transform:uppercase;">${data.achievement}</h3>
+                        <p>PERINGKAT: ${data.level} | MARKAH MERIT: ${data.score}</p>
+                        <div style="margin-top:50px; display:flex; justify-content:space-around;">
+                             <div style="width:200px; border-top:1px solid black;">Tandatangan Guru</div>
+                             <div style="width:200px; border-top:1px solid black;">Tarikh</div>
+                        </div>
+                    </div>`;
+            } else {
+                const namesList = (data.names || []).map((n, i) => `<li>${n}</li>`).join('');
+                area.innerHTML = `
+                    <div style="text-align:center; border-bottom:3px solid black; padding-bottom:15px; margin-bottom:30px;">
+                        ${logo}<br>
+                        <h1 style="text-transform:uppercase; margin:0; font-size:22px;">Laporan Rekod Kokurikulum</h1>
+                        <h3 style="margin:5px 0; font-size:14px;">UNIT: ${currentUnit} | SESI: ${currentYear}</h3>
                     </div>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 80px; text-align:center; font-size:11px; font-weight:bold; text-transform:uppercase;">
-                    <div style="width: 200px; border-top: 1px solid black; padding-top: 5px;">Disediakan Oleh</div>
-                    <div style="width: 200px; border-top: 1px solid black; padding-top: 5px;">Disahkan Oleh</div>
-                </div>`;
+                    <div style="font-family: Arial; line-height: 1.6; font-size: 13px;">
+                        <p><strong>TAJUK AKTIVITI:</strong> ${data.title}</p>
+                        <p><strong>TARIKH PERJUMPAAN:</strong> ${data.date}</p>
+                        ${data.description ? `<div style="margin:15px 0; border:1px solid #ddd; padding:15px; background:#f9f9f9; min-height:100px;"><strong>RINGKASAN AKTIVITI:</strong><br>${data.description}</div>` : ''}
+                        <div style="margin-top:20px;">
+                            <strong style="border-bottom:1px solid #000; display:inline-block; margin-bottom:10px;">SENARAI KEHADIRAN MURID (${(data.names || []).length} ORANG):</strong>
+                            <ol style="column-count: 2; margin-top:10px; text-transform:uppercase; font-size:10px;">${namesList}</ol>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 80px; text-align:center; font-size:11px; font-weight:bold; text-transform:uppercase;">
+                        <div style="width: 200px; border-top: 1px solid black; padding-top: 5px;">Disediakan Oleh</div>
+                        <div style="width: 200px; border-top: 1px solid black; padding-top: 5px;">Disahkan Oleh</div>
+                    </div>`;
+            }
             window.print();
+        };
+
+        window.processCSV = (input) => {
+            const normalView = document.getElementById('csv-content-normal');
+            const loadingView = document.getElementById('csv-content-loading');
+            const statusText = document.getElementById('csv-status');
+            const progressBar = document.getElementById('csv-progress-bar');
+
+            Papa.parse(input.files[0], {
+                header: true, skipEmptyLines: true,
+                complete: async (res) => {
+                    normalView.classList.add('hidden');
+                    loadingView.classList.remove('hidden');
+                    let count = 0;
+                    const total = res.data.length;
+
+                    for(const s of res.data) {
+                        const name = (s.Nama || s.nama || '').toUpperCase().trim();
+                        let rawUnit = (s.Unit || s.unit || '').trim().toUpperCase();
+                        let matchedUnit = "";
+                        for (const cat in kokoData) {
+                            const found = kokoData[cat].find(u => u.toUpperCase() === rawUnit);
+                            if (found) { matchedUnit = found; break; }
+                        }
+                        if(name && matchedUnit) {
+                            await addDoc(collection(db, "students_master"), { name, unit: matchedUnit, year: currentYear });
+                        }
+                        count++;
+                        const percent = (count / total) * 100;
+                        progressBar.style.width = `${percent}%`;
+                        statusText.innerText = `Memproses: ${count} / ${total}`;
+                    }
+
+                    setTimeout(() => {
+                        alert(`Berjaya import ${count} rekod!`);
+                        closeModal('csv-modal');
+                        normalView.classList.remove('hidden');
+                        loadingView.classList.add('hidden');
+                    }, 500);
+                }
+            });
         };
 
         window.openModal = (id) => document.getElementById(id).classList.replace('hidden', 'flex');
         window.closeModal = (id) => document.getElementById(id).classList.replace('flex', 'hidden');
-        window.deleteDocById = async (coll, id) => { if(confirm("Hapus rekod ini secara kekal?")) { await deleteDoc(doc(db, coll, id)); selectFolder(currentFolder); } };
+        window.deleteDocById = async (coll, id) => { if(confirm("Hapus rekod ini?")) { await deleteDoc(doc(db, coll, id)); fetchData(); } };
     </script>
 </body>
 </html>
