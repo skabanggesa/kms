@@ -15,6 +15,11 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hidden { display: none; }
         
+        /* Carian Style */
+        .search-results { position: absolute; width: 100%; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; z-index: 50; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .search-item { padding: 10px 15px; cursor: pointer; font-size: 11px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; }
+        .search-item:hover { background-color: #f8fafc; color: #4f46e5; }
+
         @media print {
             body > *:not(#print-area) { display: none !important; }
             #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white; padding: 20px; }
@@ -94,7 +99,7 @@
                 <h2 id="modal-title" class="font-black uppercase italic text-sm">Rekod</h2>
                 <button onclick="closeModal('crud-modal')"><i class="fas fa-times"></i></button>
             </div>
-            <form id="crud-form" class="p-8 space-y-4 max-h-[80vh] overflow-y-auto">
+            <form id="crud-form" autocomplete="off" class="p-8 space-y-4 max-h-[80vh] overflow-y-auto">
                 <div id="modal-fields" class="space-y-4"></div>
                 <button type="submit" id="save-btn" class="w-full bg-indigo-600 text-white font-black py-4 rounded-xl uppercase shadow-lg mt-4">Simpan Rekod</button>
             </form>
@@ -124,6 +129,7 @@
         let userProfile = null;
         let currentUnit = null;
         let currentFolder = null;
+        let allStudentsMaster = []; // Simpan semua nama murid untuk carian pantas
         const currentYear = "2024";
 
         const kokoData = {
@@ -132,7 +138,6 @@
             "Sukan & Permainan": ["Bola Sepak", "Bola Jaring", "Olahraga", "Hoki", "Memanah", "Catur"]
         };
 
-        // --- PEMBAIKAN FUNGSI ICON (ICO) ---
         const unitLogos = {
             "Pengakap": "pengakap.ico", "Bulan Sabit Merah": "pbsm.ico", "Pergerakan Puteri Islam": "ppim.ico", "Tunas Kadet Remaja Sekolah": "tkrs.ico",
             "Bahasa Melayu": "fas fa-book-open-reader", "Bahasa Inggeris": "fas fa-spell-check", "STEM": "fas fa-microscope", "Alam Sekitar": "fas fa-leaf", "TV PSS": "fas fa-clapperboard",
@@ -144,7 +149,6 @@
             if (!icon) return `<i class="fas fa-users ${faClass} text-slate-300"></i>`;
             return icon.endsWith('.ico') ? `<img src="${icon}" class="${imgClass} mx-auto" onerror="this.style.display='none'">` : `<i class="${icon} ${faClass} text-indigo-500"></i>`;
         };
-        // ------------------------------------
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -154,11 +158,18 @@
                 document.getElementById('auth-view').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
                 renderDashboard();
+                fetchAllStudents(); // Pra-muat data murid untuk carian
             } else {
                 document.getElementById('auth-view').classList.remove('hidden');
                 document.getElementById('app-container').classList.add('hidden');
             }
         });
+
+        async function fetchAllStudents() {
+            const q = query(collection(db, "students_master"), where("year", "==", currentYear));
+            const snap = await getDocs(q);
+            allStudentsMaster = snap.docs.map(doc => doc.data().name);
+        }
 
         window.toggleAuth = (isReg) => {
             document.getElementById('login-container').classList.toggle('hidden', isReg);
@@ -175,19 +186,6 @@
         document.getElementById('login-form').onsubmit = (e) => {
             e.preventDefault();
             signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value).catch(() => alert("Gagal Masuk."));
-        };
-
-        document.getElementById('register-form').onsubmit = async (e) => {
-            e.preventDefault();
-            try {
-                const cred = await createUserWithEmailAndPassword(auth, document.getElementById('reg-email').value, document.getElementById('reg-password').value);
-                await setDoc(doc(db, "users", cred.user.uid), {
-                    name: document.getElementById('reg-name').value.toUpperCase(),
-                    uniform: document.getElementById('reg-uniform').value, club: document.getElementById('reg-club').value, sport: document.getElementById('reg-sport').value,
-                    role: 'teacher', email: document.getElementById('reg-email').value
-                });
-                alert("Berjaya!"); location.reload();
-            } catch (err) { alert(err.message); }
         };
 
         document.getElementById('logout-btn').onclick = () => signOut(auth);
@@ -264,10 +262,31 @@
             });
         }
 
+        // --- FUNGSI CARIAN MURID (AUTOCOMPLETE) ---
+        window.filterStudents = (e) => {
+            const val = e.value.toUpperCase();
+            const container = document.getElementById('search-container');
+            container.innerHTML = "";
+            if (!val) return;
+            const matches = allStudentsMaster.filter(s => s.includes(val)).slice(0, 10);
+            matches.forEach(m => {
+                const div = document.createElement('div');
+                div.className = "search-item";
+                div.innerText = m;
+                div.onclick = () => {
+                    e.value = m;
+                    container.innerHTML = "";
+                };
+                container.appendChild(div);
+            });
+        };
+
         window.openCRUD = async () => {
             const fields = document.getElementById('modal-fields');
             const title = document.getElementById('modal-title');
             fields.innerHTML = ""; openModal('crud-modal');
+            
+            // Murid mengikut unit (untuk Kehadiran sahaja)
             const sSnap = await getDocs(query(collection(db, "students_master"), where("unit", "==", currentUnit), where("year", "==", currentYear)));
 
             if (currentFolder === "Rekod Kehadiran") {
@@ -284,7 +303,11 @@
                     <textarea id="f-desc" placeholder="RINGKASAN AKTIVITI..." required class="w-full p-4 bg-slate-100 rounded-xl h-32 font-bold text-xs outline-none"></textarea>`;
             } else if (currentFolder === "Pencapaian Merit") {
                 title.innerText = "Tambah Pencapaian Merit";
-                fields.innerHTML = `<select id="m-name" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="">-- PILIH MURID --</option>${sSnap.docs.map(s => `<option value="${s.data().name}">${s.data().name}</option>`).join('')}</select>
+                fields.innerHTML = `
+                    <div class="relative">
+                        <input type="text" id="m-name" placeholder="TAIP NAMA MURID (CARI...)" required onkeyup="filterStudents(this)" class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none">
+                        <div id="search-container" class="search-results"></div>
+                    </div>
                     <input type="text" id="m-event" placeholder="NAMA PERTANDINGAN/ACARA" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none">
                     <select id="m-level" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none">
                         <option value="">-- TAHAP PERINGKAT --</option>
@@ -321,7 +344,7 @@
                     const lvl = document.getElementById('m-level').value;
                     const ach = document.getElementById('m-achieve').value;
                     const score = (lvlMap[lvl] || 0) + (achMap[ach] || 0);
-                    await addDoc(collection(db, "merits"), { studentName: document.getElementById('m-name').value, event: document.getElementById('m-event').value.toUpperCase(), level: lvl, achievement: ach, score: score, unit: currentUnit, year: currentYear });
+                    await addDoc(collection(db, "merits"), { studentName: document.getElementById('m-name').value.toUpperCase(), event: document.getElementById('m-event').value.toUpperCase(), level: lvl, achievement: ach, score: score, unit: currentUnit, year: currentYear });
                 }
                 closeModal('crud-modal'); selectFolder(currentFolder);
             } catch (err) { alert(err.message); }
@@ -348,7 +371,6 @@
             area.innerHTML = contentHTML; window.print();
         };
 
-        // --- FUNGSI JANA LAPORAN MERIT BERJADUAL ---
         window.printMeritSummary = async () => {
             const q = query(collection(db, "merits"), where("unit", "==", currentUnit), where("year", "==", currentYear));
             const snap = await getDocs(q);
