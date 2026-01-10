@@ -137,11 +137,34 @@
         };
 
 // PENGGUNAAN FAIL .ICO TEMPATAN
-        const unitLogos = {
+const unitLogos = {
+            // Unit Beruniform
             "Pengakap": "pengakap.ico",
             "Bulan Sabit Merah": "pbsm.ico",
             "Pergerakan Puteri Islam": "ppim.ico",
-            "Tunas Kadet Remaja Sekolah": "tkrs.ico"
+            "Tunas Kadet Remaja Sekolah": "tkrs.ico",
+
+            "Kelab & Persatuan": {
+                units: [
+                    { name: "Bahasa Melayu", icon: "fas fa-book-open-reader" },
+                    { name: "Bahasa Inggeris", icon: "fas fa-spell-check" },
+                    { name: "STEM", icon: "fas fa-microscope" },
+                    { name: "Alam Sekitar", icon: "fas fa-leaf" },
+                    { name: "TV PSS", icon: "fas fa-clapperboard" }
+                ],
+                fallbackIcon: "fas fa-brain", color: "text-indigo-600", bg: "bg-indigo-50"
+            },
+            "Sukan & Permainan": {
+                units: [
+                    { name: "Bola Sepak", icon: "fas fa-futbol" },
+                    { name: "Bola Jaring", icon: "fas fa-volleyball" },
+                    { name: "Olahraga", icon: "fas fa-person-running" },
+                    { name: "Hoki", icon: "fas fa-hockey-puck" },
+                    { name: "Memanah", icon: "fas fa-bullseye" },
+                    { name: "Catur", icon: "fas fa-chess-knight" }
+                ],
+                fallbackIcon: "fas fa-medal", color: "text-orange-500", bg: "bg-orange-50"
+            }
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -448,4 +471,5 @@
     </script>
 </body>
 </html>
+
 
