@@ -17,7 +17,6 @@
         @media print {
             body > *:not(#print-area) { display: none !important; }
             #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white; padding: 40px; }
-            .no-print { display: none !important; }
         }
     </style>
 </head>
@@ -180,7 +179,6 @@
 
         document.getElementById('logout-btn').onclick = () => signOut(auth);
 
-        // UI RENDER
         window.getUnitIcon = (unit, imgClass = "h-10", faClass = "text-2xl") => {
             const icon = unitLogos[unit];
             if (!icon) return `<i class="fas fa-users ${faClass} text-slate-300"></i>`;
@@ -213,7 +211,7 @@
                 { name: "Pencapaian Merit", icon: "fas fa-trophy", color: "text-emerald-500" }
             ];
             document.getElementById('content-view').innerHTML = `
-                <button onclick="renderDashboard()" class="mb-6 text-[10px] font-black text-slate-400 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali</button>
+                <button onclick="renderDashboard()" class="mb-6 text-[10px] font-black text-slate-400 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali Utama</button>
                 <div class="flex items-center mb-8">${getUnitIcon(unit, "h-12", "text-3xl")}<h2 class="ml-4 text-2xl font-black text-slate-800 uppercase border-b-4 border-indigo-600 pb-1">${currentUnit}</h2></div>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">${folders.map(f => `<div onclick="selectFolder('${f.name}')" class="bg-white p-6 rounded-3xl border shadow-sm flex items-center space-x-4 cursor-pointer hover:bg-slate-50 transition-all"><div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center ${f.color} text-xl"><i class="${f.icon}"></i></div><span class="font-black text-slate-700 uppercase text-[10px]">${f.name}</span></div>`).join('')}</div>`;
         };
@@ -235,7 +233,7 @@
             let coll = (currentFolder === "Rekod Kehadiran") ? "attendance" : (currentFolder === "Laporan Aktiviti" ? "reports" : (currentFolder === "Pencapaian Merit" ? "merits" : "students_master"));
             const q = query(collection(db, coll), where("unit", "==", currentUnit), where("year", "==", currentYear));
             const snap = await getDocs(q);
-            list.innerHTML = snap.empty ? `<p class="text-center py-10 text-slate-300 font-bold uppercase text-[10px]">Tiada Rekod</p>` : "";
+            list.innerHTML = snap.empty ? `<p class="text-center py-10 text-slate-300 font-bold uppercase text-[10px]">Tiada Rekod Dijumpai</p>` : "";
             snap.forEach(d => {
                 const data = d.data();
                 const div = document.createElement('div');
@@ -253,94 +251,133 @@
 
         window.openCRUD = async () => {
             const fields = document.getElementById('modal-fields');
+            const title = document.getElementById('modal-title');
             fields.innerHTML = ""; openModal('crud-modal');
             const sSnap = await getDocs(query(collection(db, "students_master"), where("unit", "==", currentUnit), where("year", "==", currentYear)));
 
             if (currentFolder === "Rekod Kehadiran") {
+                title.innerText = "Tambah Sesi Kehadiran";
                 fields.innerHTML = `<input type="text" id="f-title" placeholder="NAMA PERJUMPAAN" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none">
                     <input type="date" id="f-date" required class="w-full p-4 bg-slate-100 rounded-xl font-bold outline-none">
-                    <p class="text-[9px] font-black uppercase text-slate-400 mt-4">Tanda Kehadiran:</p>
+                    <p class="text-[9px] font-black uppercase text-slate-400 mt-4 italic">Tanda Kehadiran Murid:</p>
                     <div class="space-y-1 mt-2 max-h-48 overflow-y-auto">${sSnap.docs.map(s => `<label class="flex items-center space-x-3 p-2 bg-slate-50 rounded-lg border text-[10px] font-black uppercase cursor-pointer"><input type="checkbox" name="present" value="${s.data().name}" class="w-4 h-4"><span>${s.data().name}</span></label>`).join('')}</div>`;
             } else if (currentFolder === "Laporan Aktiviti") {
+                title.innerText = "Tambah Laporan Aktiviti";
                 const aSnap = await getDocs(query(collection(db, "attendance"), where("unit", "==", currentUnit), where("year", "==", currentYear)));
-                fields.innerHTML = `<select id="f-link" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="">-- PILIH REKOD KEHADIRAN --</option>${aSnap.docs.map(a => `<option value="${a.id}">${a.data().title} (${a.data().date})</option>`).join('')}</select>
+                fields.innerHTML = `<p class="text-[9px] font-black uppercase text-indigo-500 mb-1">Pilih Rekod Kehadiran (Senarai murid akan ditarik automatik):</p>
+                    <select id="f-link" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="">-- PILIH REKOD KEHADIRAN --</option>${aSnap.docs.map(a => `<option value="${a.id}">${a.data().title} (${a.data().date})</option>`).join('')}</select>
                     <textarea id="f-desc" placeholder="RINGKASAN AKTIVITI..." required class="w-full p-4 bg-slate-100 rounded-xl h-32 font-bold text-xs outline-none"></textarea>`;
             } else if (currentFolder === "Pencapaian Merit") {
+                title.innerText = "Tambah Pencapaian Merit";
                 fields.innerHTML = `<select id="m-name" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="">-- PILIH MURID --</option>${sSnap.docs.map(s => `<option value="${s.data().name}">${s.data().name}</option>`).join('')}</select>
                     <input type="text" id="m-event" placeholder="NAMA PERTANDINGAN/ACARA" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none">
                     <select id="m-level" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none">
-                        <option value="">-- TAHAP PERINGKAT --</option><option value="SEKOLAH">SEKOLAH</option><option value="ZON">ZON</option><option value="DAERAH">DAERAH</option><option value="NEGERI">NEGERI</option><option value="KEBANGSAAN">KEBANGSAAN</option>
+                        <option value="">-- TAHAP PERINGKAT --</option>
+                        <option value="SEKOLAH">SEKOLAH (2 MATA)</option>
+                        <option value="ZON">ZON (4 MATA)</option>
+                        <option value="DAERAH">DAERAH (6 MATA)</option>
+                        <option value="NEGERI">NEGERI (10 MATA)</option>
+                        <option value="KEBANGSAAN">KEBANGSAAN (15 MATA)</option>
                     </select>
                     <select id="m-achieve" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none">
-                        <option value="">-- PENCAPAIAN --</option><option value="JOHAN">JOHAN</option><option value="KEDUA">KEDUA</option><option value="KETIGA">KETIGA</option><option value="PENYERTAAN">PENYERTAAN</option>
+                        <option value="">-- PENCAPAIAN --</option>
+                        <option value="JOHAN">JOHAN (10 MATA)</option>
+                        <option value="KEDUA">KEDUA (5 MATA)</option>
+                        <option value="KETIGA">KETIGA (3 MATA)</option>
+                        <option value="PENYERTAAN">PENYERTAAN (1 MATA)</option>
                     </select>`;
             }
         };
 
         document.getElementById('crud-form').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('save-btn'); btn.disabled = true;
+            const btn = document.getElementById('save-btn'); btn.disabled = true; btn.innerText = "MENYIMPAN...";
             try {
                 if (currentFolder === "Rekod Kehadiran") {
                     const present = Array.from(document.querySelectorAll('input[name="present"]:checked')).map(c => c.value);
                     await addDoc(collection(db, "attendance"), { title: document.getElementById('f-title').value.toUpperCase(), date: document.getElementById('f-date').value, names: present, unit: currentUnit, year: currentYear });
                 } else if (currentFolder === "Laporan Aktiviti") {
                     const attDoc = await getDoc(doc(db, "attendance", document.getElementById('f-link').value));
-                    await addDoc(collection(db, "reports"), { title: attDoc.data().title, date: attDoc.data().date, names: attDoc.data().names, description: document.getElementById('f-desc').value.toUpperCase(), unit: currentUnit, year: currentYear });
+                    const attData = attDoc.data();
+                    await addDoc(collection(db, "reports"), { 
+                        title: attData.title, date: attData.date, names: attData.names, 
+                        description: document.getElementById('f-desc').value.toUpperCase(), unit: currentUnit, year: currentYear 
+                    });
                 } else if (currentFolder === "Pencapaian Merit") {
                     const lvl = document.getElementById('m-level').value;
                     const ach = document.getElementById('m-achieve').value;
                     const lvlMap = { "SEKOLAH": 2, "ZON": 4, "DAERAH": 6, "NEGERI": 10, "KEBANGSAAN": 15 };
                     const achMap = { "JOHAN": 10, "KEDUA": 5, "KETIGA": 3, "PENYERTAAN": 1 };
                     const totalScore = (lvlMap[lvl] || 0) + (achMap[ach] || 0);
-                    await addDoc(collection(db, "merits"), { studentName: document.getElementById('m-name').value, event: document.getElementById('m-event').value.toUpperCase(), level: lvl, achievement: ach, score: totalScore, unit: currentUnit, year: currentYear });
+                    
+                    await addDoc(collection(db, "merits"), { 
+                        studentName: document.getElementById('m-name').value, 
+                        event: document.getElementById('m-event').value.toUpperCase(), 
+                        level: lvl, 
+                        achievement: ach, 
+                        score: totalScore, 
+                        unit: currentUnit, 
+                        year: currentYear 
+                    });
                 }
                 closeModal('crud-modal'); selectFolder(currentFolder);
             } catch (err) { alert(err.message); }
-            btn.disabled = false;
+            btn.disabled = false; btn.innerText = "SIMPAN REKOD";
         };
 
         window.printRecord = async (coll, id) => {
             const d = await getDoc(doc(db, coll, id)); const data = d.data();
             const area = document.getElementById('print-area');
+            const logo = unitLogos[currentUnit] && unitLogos[currentUnit].endsWith('.ico') ? `<img src="${unitLogos[currentUnit]}" style="height:80px; margin-bottom:10px;">` : "";
+
             let contentHTML = `
-                <div style="text-align:center; border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:20px;">
-                    <h1 style="text-transform:uppercase; font-size:20px; margin:0;">SK KAMPUNG MINYAK</h1>
-                    <p style="font-size:12px; margin:5px 0;">LAPORAN ${currentFolder.toUpperCase()}</p>
+                <div style="text-align:center; border-bottom:3px solid black; padding-bottom:15px; margin-bottom:30px;">
+                    ${logo}
+                    <h1 style="text-transform:uppercase; margin:0; font-size:22px;">SK KAMPUNG MINYAK</h1>
+                    <h3 style="margin:5px 0; font-size:14px; text-transform:uppercase;">LAPORAN ${currentFolder} | UNIT: ${currentUnit}</h3>
                 </div>
-                <div style="font-size:12px; line-height:1.6;">
-                    <p><strong>UNIT:</strong> ${currentUnit}</p>
+                <div style="font-family: Arial; line-height: 1.6; font-size: 13px;">
                     <p><strong>TAJUK/ACARA:</strong> ${data.title || data.event}</p>
                     <p><strong>TARIKH:</strong> ${data.date || '-'}</p>
-                    ${data.level ? `<p><strong>TAHAP:</strong> ${data.level}</p><p><strong>PENCAPAIAN:</strong> ${data.achievement}</p><p><strong>MARKAH MERIT:</strong> ${data.score}</p>` : ''}
-                    ${data.description ? `<p><strong>RINGKASAN:</strong><br>${data.description}</p>` : ''}
-                    ${data.names ? `<div style="margin-top:20px;"><strong>SENARAI MURID HADIR:</strong><ol style="margin-top:5px;">${data.names.map(n => `<li>${n}</li>`).join('')}</ol></div>` : ''}
+                    ${data.level ? `<p><strong>PERINGKAT:</strong> ${data.level}</p><p><strong>PENCAPAIAN:</strong> ${data.achievement}</p><p><strong>JUMLAH MARKAH MERIT:</strong> ${data.score} MATA</p>` : ''}
+                    ${data.description ? `<div style="margin:15px 0; border:1px solid #ddd; padding:15px; background:#f9f9f9;"><strong>RINGKASAN AKTIVITI:</strong><br>${data.description}</div>` : ''}
+                    ${data.names ? `<div style="margin-top:20px;">
+                        <strong style="border-bottom:1px solid #000;">SENARAI MURID HADIR (${data.names.length} ORANG):</strong>
+                        <ol style="column-count: 2; margin-top:10px; font-size:11px; text-transform:uppercase;">${data.names.map(n => `<li>${n}</li>`).join('')}</ol>
+                    </div>` : ''}
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 80px; text-align:center; font-size:11px; font-weight:bold; text-transform:uppercase;">
+                    <div style="width: 200px; border-top: 1px solid black; padding-top: 5px;">Disediakan Oleh</div>
+                    <div style="width: 200px; border-top: 1px solid black; padding-top: 5px;">Disahkan Oleh</div>
                 </div>`;
             area.innerHTML = contentHTML; window.print();
         };
 
         window.processCSV = (input) => {
-            const statusText = document.getElementById('csv-status');
             Papa.parse(input.files[0], {
                 header: true, skipEmptyLines: true,
                 complete: async (res) => {
                     document.getElementById('csv-content-normal').classList.add('hidden');
                     document.getElementById('csv-content-loading').classList.remove('hidden');
+                    let count = 0;
                     for(const s of res.data) {
                         const name = (s.Nama || s.nama || '').toUpperCase().trim();
-                        const rawUnit = (s.Unit || s.unit || '').trim();
+                        let rawUnit = (s.Unit || s.unit || '').trim();
                         let matched = "";
                         for (const cat in kokoData) { if(kokoData[cat].includes(rawUnit)) matched = rawUnit; }
-                        if(name && matched) await addDoc(collection(db, "students_master"), { name, unit: matched, year: currentYear });
+                        if(name && matched) {
+                            await addDoc(collection(db, "students_master"), { name, unit: matched, year: currentYear });
+                            count++;
+                        }
                     }
-                    alert("Selesai!"); closeModal('csv-modal'); location.reload();
+                    alert(`Berjaya import ${count} murid!`); closeModal('csv-modal'); location.reload();
                 }
             });
         };
 
         window.openModal = (id) => document.getElementById(id).classList.replace('hidden', 'flex');
         window.closeModal = (id) => document.getElementById(id).classList.replace('flex', 'hidden');
-        window.deleteDocById = async (coll, id) => { if(confirm("Padam?")) { await deleteDoc(doc(db, coll, id)); fetchData(); } };
+        window.deleteDocById = async (coll, id) => { if(confirm("Padam rekod ini secara kekal?")) { await deleteDoc(doc(db, coll, id)); fetchData(); } };
     </script>
 </body>
 </html>
