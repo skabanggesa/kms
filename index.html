@@ -15,15 +15,13 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hidden { display: none; }
         
-        /* Gaya Cetakan Laporan */
         @media print {
             body > *:not(#print-area) { display: none !important; }
             #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white; padding: 20px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #333; padding: 10px; text-align: left; font-size: 12px; }
-            th { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; }
-            .total-row { font-weight: bold; background-color: #fafafa !important; }
-            .header-print { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+            th, td { border: 1px solid black; padding: 8px; text-align: left; font-size: 12px; }
+            th { background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; }
+            .total-row { font-weight: bold; background-color: #eee !important; }
         }
     </style>
 </head>
@@ -134,6 +132,20 @@
             "Sukan & Permainan": ["Bola Sepak", "Bola Jaring", "Olahraga", "Hoki", "Memanah", "Catur"]
         };
 
+        // --- PEMBAIKAN FUNGSI ICON (ICO) ---
+        const unitLogos = {
+            "Pengakap": "pengakap.ico", "Bulan Sabit Merah": "pbsm.ico", "Pergerakan Puteri Islam": "ppim.ico", "Tunas Kadet Remaja Sekolah": "tkrs.ico",
+            "Bahasa Melayu": "fas fa-book-open-reader", "Bahasa Inggeris": "fas fa-spell-check", "STEM": "fas fa-microscope", "Alam Sekitar": "fas fa-leaf", "TV PSS": "fas fa-clapperboard",
+            "Bola Sepak": "fas fa-futbol", "Bola Jaring": "fas fa-volleyball", "Olahraga": "fas fa-person-running", "Hoki": "fas fa-hockey-puck", "Memanah": "fas fa-bullseye", "Catur": "fas fa-chess-knight"
+        };
+
+        window.getUnitIcon = (unit, imgClass = "h-10", faClass = "text-2xl") => {
+            const icon = unitLogos[unit];
+            if (!icon) return `<i class="fas fa-users ${faClass} text-slate-300"></i>`;
+            return icon.endsWith('.ico') ? `<img src="${icon}" class="${imgClass} mx-auto" onerror="this.style.display='none'">` : `<i class="${icon} ${faClass} text-indigo-500"></i>`;
+        };
+        // ------------------------------------
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const d = await getDoc(doc(db, "users", user.uid));
@@ -187,12 +199,12 @@
                 html += `<div class="mb-8 flex justify-center"><button onclick="openModal('csv-modal')" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-black text-xs uppercase shadow-lg">Import Murid (CSV)</button></div>`;
                 for (const [cat, units] of Object.entries(kokoData)) {
                     html += `<h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 border-l-4 border-indigo-500 pl-2">${cat}</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">`;
-                    units.forEach(u => { html += `<div onclick="selectUnit('${u}')" class="unit-card bg-white p-6 rounded-3xl border shadow-sm cursor-pointer text-center hover:text-indigo-600 transition-all"><i class="fas fa-users text-2xl mb-2 text-indigo-500"></i><div class="font-black text-[10px] uppercase text-slate-700">${u}</div></div>`; });
+                    units.forEach(u => { html += `<div onclick="selectUnit('${u}')" class="unit-card bg-white p-6 rounded-3xl border shadow-sm cursor-pointer text-center hover:text-indigo-600 transition-all"><div>${getUnitIcon(u)}</div><div class="font-black text-[10px] uppercase text-slate-700 mt-2">${u}</div></div>`; });
                     html += `</div>`;
                 }
             } else {
                 const units = [userProfile.uniform, userProfile.club, userProfile.sport].filter(x => x);
-                html += `<div class="grid grid-cols-1 md:grid-cols-3 gap-6">${units.map(u => `<div onclick="selectUnit('${u}')" class="unit-card bg-white p-10 rounded-[2.5rem] border-4 border-slate-50 shadow-xl cursor-pointer text-center hover:border-indigo-200 transition-all"><i class="fas fa-users text-5xl text-indigo-500 mb-4"></i><div class="font-black text-sm uppercase">${u}</div></div>`).join('')}</div>`;
+                html += `<div class="grid grid-cols-1 md:grid-cols-3 gap-6">${units.map(u => `<div onclick="selectUnit('${u}')" class="unit-card bg-white p-10 rounded-[2.5rem] border-4 border-slate-50 shadow-xl cursor-pointer text-center hover:border-indigo-200 transition-all"><div>${getUnitIcon(u, "h-16", "text-5xl")}</div><div class="mt-4 font-black text-sm uppercase">${u}</div></div>`).join('')}</div>`;
             }
             view.innerHTML = html;
         };
@@ -207,7 +219,7 @@
             ];
             document.getElementById('content-view').innerHTML = `
                 <button onclick="renderDashboard()" class="mb-6 text-[10px] font-black text-slate-400 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali Utama</button>
-                <div class="flex items-center mb-8"><h2 class="text-2xl font-black text-slate-800 uppercase border-b-4 border-indigo-600 pb-1">${currentUnit}</h2></div>
+                <div class="flex items-center mb-8">${getUnitIcon(unit, "h-12", "text-3xl")}<h2 class="ml-4 text-2xl font-black text-slate-800 uppercase border-b-4 border-indigo-600 pb-1">${currentUnit}</h2></div>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">${folders.map(f => `<div onclick="selectFolder('${f.name}')" class="bg-white p-6 rounded-3xl border shadow-sm flex items-center space-x-4 cursor-pointer hover:bg-slate-50 transition-all"><div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center ${f.color} text-xl"><i class="${f.icon}"></i></div><span class="font-black text-slate-700 uppercase text-[10px]">${f.name}</span></div>`).join('')}</div>`;
         };
 
@@ -267,7 +279,7 @@
             } else if (currentFolder === "Laporan Aktiviti") {
                 title.innerText = "Tambah Laporan Aktiviti";
                 const aSnap = await getDocs(query(collection(db, "attendance"), where("unit", "==", currentUnit), where("year", "==", currentYear)));
-                fields.innerHTML = `<p class="text-[9px] font-black uppercase text-indigo-500 mb-1">Pilih Rekod Kehadiran (Auto-fetch murid):</p>
+                fields.innerHTML = `<p class="text-[9px] font-black uppercase text-indigo-500 mb-1">Pilih Rekod Kehadiran (Auto-fetch):</p>
                     <select id="f-link" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="">-- PILIH REKOD KEHADIRAN --</option>${aSnap.docs.map(a => `<option value="${a.id}">${a.data().title} (${a.data().date})</option>`).join('')}</select>
                     <textarea id="f-desc" placeholder="RINGKASAN AKTIVITI..." required class="w-full p-4 bg-slate-100 rounded-xl h-32 font-bold text-xs outline-none"></textarea>`;
             } else if (currentFolder === "Pencapaian Merit") {
@@ -319,22 +331,28 @@
         window.printRecord = async (coll, id) => {
             const d = await getDoc(doc(db, coll, id)); const data = d.data();
             const area = document.getElementById('print-area');
-            let contentHTML = `<div class="header-print"><h1>KMS DIGITAL</h1><h3>LAPORAN ${currentFolder} | UNIT: ${currentUnit}</h3></div>
-                <div style="font-size: 13px; line-height: 1.8;">
-                    <p><strong>TAJUK:</strong> ${data.title || data.event}</p>
+            const logo = getUnitIcon(currentUnit, "h-20", "text-4xl");
+            let contentHTML = `
+                <div style="text-align:center; border-bottom:3px solid black; padding-bottom:15px; margin-bottom:30px;">
+                    ${logo}
+                    <h1 style="text-transform:uppercase; margin:10px 0 0 0; font-size:20px;">KMS DIGITAL</h1>
+                    <h3 style="margin:5px 0; font-size:14px; text-transform:uppercase;">LAPORAN ${currentFolder} | UNIT: ${currentUnit}</h3>
+                </div>
+                <div style="font-family: Arial; line-height: 1.6; font-size: 13px;">
+                    <p><strong>TAJUK/ACARA:</strong> ${data.title || data.event}</p>
                     <p><strong>TARIKH:</strong> ${data.date || '-'}</p>
                     ${data.level ? `<p><strong>PERINGKAT:</strong> ${data.level}</p><p><strong>PENCAPAIAN:</strong> ${data.achievement}</p><p><strong>MARKAH:</strong> ${data.score} MATA</p>` : ''}
-                    ${data.description ? `<div style="border:1px solid #ddd; padding:10px; margin-top:10px;"><strong>RINGKASAN:</strong><br>${data.description}</div>` : ''}
-                    ${data.names ? `<div style="margin-top:15px;"><strong>SENARAI HADIR:</strong><ol style="column-count:2; padding-left:20px;">${data.names.map(n => `<li>${n}</li>`).join('')}</ol></div>` : ''}
+                    ${data.description ? `<div style="margin:15px 0; border:1px solid #ddd; padding:15px;"><strong>RINGKASAN:</strong><br>${data.description}</div>` : ''}
+                    ${data.names ? `<div style="margin-top:20px;"><strong>SENARAI HADIR:</strong><ol style="column-count: 2; margin-top:10px;">${data.names.map(n => `<li>${n}</li>`).join('')}</ol></div>` : ''}
                 </div>`;
             area.innerHTML = contentHTML; window.print();
         };
 
-        // FUNGSI JANA LAPORAN MERIT KESELURUHAN (BARU)
+        // --- FUNGSI JANA LAPORAN MERIT BERJADUAL ---
         window.printMeritSummary = async () => {
             const q = query(collection(db, "merits"), where("unit", "==", currentUnit), where("year", "==", currentYear));
             const snap = await getDocs(q);
-            if(snap.empty) return alert("Tiada data merit ditemui.");
+            if(snap.empty) return alert("Tiada data merit untuk dijana.");
 
             const grouped = {};
             snap.forEach(d => {
@@ -343,11 +361,13 @@
                 grouped[data.studentName].push(data);
             });
 
+            const logo = getUnitIcon(currentUnit, "h-20", "text-4xl");
             let tableHTML = `
-                <div class="header-print">
-                    <h1 style="margin:0; font-size:24px;">KMS DIGITAL</h1>
-                    <h3 style="margin:5px 0; text-transform:uppercase;">LAPORAN ANALISIS PENCAPAIAN MERIT</h3>
-                    <p style="font-size:12px; font-weight:bold;">UNIT: ${currentUnit} | TAHUN: ${currentYear}</p>
+                <div style="text-align:center; margin-bottom:30px; border-bottom:2px solid black; padding-bottom:20px;">
+                    ${logo}
+                    <h1 style="text-transform:uppercase; margin:10px 0 0 0; font-size:22px;">KMS DIGITAL</h1>
+                    <h3 style="margin:5px 0; font-size:14px; text-transform:uppercase;">LAPORAN ANALISIS PENCAPAIAN MERIT</h3>
+                    <p style="text-transform:uppercase; font-size:12px; font-weight:bold;">UNIT: ${currentUnit} | TAHUN: ${currentYear}</p>
                 </div>
                 <table>
                     <thead>
@@ -356,15 +376,15 @@
                             <th>NAMA PERTANDINGAN</th>
                             <th>TAHAP/PERINGKAT</th>
                             <th>PENCAPAIAN</th>
-                            <th>JUMLAH MARKAH</th>
+                            <th>MARKAH</th>
                         </tr>
                     </thead>
                     <tbody>`;
 
             for (const student in grouped) {
-                let studentSubTotal = 0;
+                let studentTotal = 0;
                 grouped[student].forEach((item, index) => {
-                    studentSubTotal += item.score;
+                    studentTotal += item.score;
                     tableHTML += `
                         <tr>
                             <td>${index === 0 ? student : ''}</td>
@@ -377,16 +397,11 @@
                 tableHTML += `
                     <tr class="total-row">
                         <td colspan="4" style="text-align:right;">JUMLAH MATA KESELURUHAN</td>
-                        <td>${studentSubTotal} MATA</td>
+                        <td>${studentTotal} MATA</td>
                     </tr>`;
             }
 
-            tableHTML += `</tbody></table>
-                <div style="display:flex; justify-content:space-between; margin-top:60px; font-size:11px; text-transform:uppercase;">
-                    <div style="width:200px; border-top:1px solid #000; text-align:center; padding-top:5px;">Disediakan Oleh</div>
-                    <div style="width:200px; border-top:1px solid #000; text-align:center; padding-top:5px;">Disahkan Oleh</div>
-                </div>`;
-            
+            tableHTML += `</tbody></table>`;
             document.getElementById('print-area').innerHTML = tableHTML;
             window.print();
         };
@@ -404,14 +419,14 @@
                         for (const cat in kokoData) { if(kokoData[cat].includes(rawUnit)) matched = rawUnit; }
                         if(name && matched) await addDoc(collection(db, "students_master"), { name, unit: matched, year: currentYear });
                     }
-                    alert("Selesai Import!"); closeModal('csv-modal'); location.reload();
+                    alert("Selesai!"); closeModal('csv-modal'); location.reload();
                 }
             });
         };
 
         window.openModal = (id) => document.getElementById(id).classList.replace('hidden', 'flex');
         window.closeModal = (id) => document.getElementById(id).classList.replace('flex', 'hidden');
-        window.deleteDocById = async (coll, id) => { if(confirm("Hapus rekod ini?")) { await deleteDoc(doc(db, coll, id)); fetchData(); } };
+        window.deleteDocById = async (coll, id) => { if(confirm("Padam?")) { await deleteDoc(doc(db, coll, id)); fetchData(); } };
     </script>
 </body>
 </html>
