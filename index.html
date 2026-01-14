@@ -623,6 +623,7 @@ window.renderAnalysis = async () => {
     const reportCounts = []; // Untuk data laporan
 
     const tableBody = document.getElementById('analysis-table-body');
+    const units = Object.values(kokoData).flat();
     
     // Ambil semua laporan untuk pengiraan pantas
     const reportSnap = await getDocs(query(collection(db, "reports"), where("year", "==", currentYear)));
@@ -894,6 +895,7 @@ window.printAllTakwim = async () => {
     </script>
 </body>
 </html>
+
 
 
 
