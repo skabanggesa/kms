@@ -725,72 +725,6 @@ async function compressImage(file) {
         window.printRecord = async (coll, id) => {
             const d = await getDoc(doc(db, coll, id)); const data = d.data();
             const area = document.getElementById('print-area');
-
-            window.printAllTakwim = async () => {
-    const q = query(collection(db, "takwim"), where("unit", "==", currentUnit), where("year", "==", currentYear));
-    const snap = await getDocs(q);
-    
-    if (snap.empty) {
-        alert("Tiada rekod takwim untuk dicetak.");
-        return;
-    }
-
-    // Susun data mengikut tarikh
-    const docs = snap.docs.map(d => d.data()).sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    const area = document.getElementById('print-area');
-    
-    let tableRows = "";
-    docs.forEach((data, index) => {
-        // Tukar format tarikh kepada DD/MM/YYYY
-        const dateObj = new Date(data.date);
-        const formattedDate = dateObj.toLocaleDateString('en-GB');
-        
-        tableRows += `
-            <tr>
-                <td style="text-align:center;">${index + 1}</td>
-                <td style="text-align:center;">${formattedDate}</td>
-                <td style="text-transform:uppercase;">${data.title}</td>
-                <td style="text-align:center;">AKTIF</td>
-            </tr>`;
-    });
-
-    area.innerHTML = `
-        <div style="text-align:center; margin-bottom:30px; border-bottom:3px double #000; padding-bottom:10px;">
-            <h1 style="text-transform:uppercase; margin:0; font-size:20px;">JADUAL TAKWIM TAHUNAN KOKURIKULUM</h1>
-            <h2 style="text-transform:uppercase; margin:5px 0; font-size:16px;">SK ABANG GESA</h2>
-            <h3 style="text-transform:uppercase; margin:0; font-size:14px;">UNIT: ${currentUnit} | TAHUN: ${currentYear}</h3>
-        </div>
-        <table style="width:100%; border-collapse:collapse; margin-top:20px;">
-            <thead>
-                <tr style="background-color: #f2f2f2;">
-                    <th style="border:1px solid #000; padding:10px; width:50px;">BIL</th>
-                    <th style="border:1px solid #000; padding:10px; width:150px;">TARIKH</th>
-                    <th style="border:1px solid #000; padding:10px;">AKTIVITI / PERJUMPAAN</th>
-                    <th style="border:1px solid #000; padding:10px; width:100px;">STATUS</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${tableRows}
-            </tbody>
-        </table>
-        <div style="margin-top:50px; display:flex; justify-content:space-between;">
-            <div style="text-align:center; width:200px;">
-                <p>Disediakan oleh,</p>
-                <br><br>
-                <p>..........................................</p>
-                <p style="font-size:10px; font-weight:bold;">Ketua Penasihat Unit</p>
-            </div>
-            <div style="text-align:center; width:200px;">
-                <p>Disahkan oleh,</p>
-                <br><br>
-                <p>..........................................</p>
-                <p style="font-size:10px; font-weight:bold;">GPK Kokurikulum</p>
-            </div>
-        </div>`;
-
-    window.print();
-};
             
             // Generate list murid dalam bentuk bernombor untuk cetakan
             let namesHTML = "";
@@ -822,9 +756,93 @@ async function compressImage(file) {
             window.print();
         };
 
+        // DAFTARKAN KE WINDOW SUPAYA BOLEH DIPANGGIL OLEH ONCLICK
+window.printAllTakwim = async () => {
+    try {
+        // Ambil data takwim untuk unit & tahun semasa
+        const q = query(
+            collection(db, "takwim"), 
+            where("unit", "==", currentUnit), 
+            where("year", "==", currentYear)
+        );
+        
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+            alert("Tiada rekod takwim untuk dicetak.");
+            return;
+        }
+
+        // Susun data mengikut tarikh (A-Z)
+        const docs = snap.docs.map(d => d.data()).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const area = document.getElementById('print-area');
+        
+        let tableRows = "";
+        docs.forEach((data, index) => {
+            const dateObj = new Date(data.date);
+            const formattedDate = dateObj.toLocaleDateString('en-GB'); // Format DD/MM/YYYY
+            
+            tableRows += `
+                <tr>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">${index + 1}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">${formattedDate}</td>
+                    <td style="border:1px solid #000; padding:8px; text-transform:uppercase;">${data.title}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">AKTIF</td>
+                </tr>`;
+        });
+
+        area.innerHTML = `
+            <div style="font-family: Arial, sans-serif; padding: 20px;">
+                <div style="text-align:center; margin-bottom:30px; border-bottom:3px double #000; padding-bottom:10px;">
+                    <h1 style="text-transform:uppercase; margin:0; font-size:18px;">TAKWIM TAHUNAN AKTIVITI KOKURIKULUM</h1>
+                    <h2 style="text-transform:uppercase; margin:5px 0; font-size:16px;">SK ABANG GESA, BELAWAI</h2>
+                    <h3 style="text-transform:uppercase; margin:0; font-size:14px;">UNIT: ${currentUnit} | TAHUN: ${currentYear}</h3>
+                </div>
+                
+                <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+                    <thead>
+                        <tr style="background-color: #f2f2f2;">
+                            <th style="border:1px solid #000; padding:10px; width:50px;">BIL</th>
+                            <th style="border:1px solid #000; padding:10px; width:120px;">TARIKH</th>
+                            <th style="border:1px solid #000; padding:10px;">AKTIVITI / PERJUMPAAN / TOPIK</th>
+                            <th style="border:1px solid #000; padding:10px; width:100px;">CATATAN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+
+                <div style="margin-top:60px; display:flex; justify-content:space-between;">
+                    <div style="text-align:center; width:250px;">
+                        <p>Disediakan oleh,</p>
+                        <br><br><br>
+                        <p>..................................................</p>
+                        <p style="font-size:11px; font-weight:bold; text-transform:uppercase;">(Ketua Penasihat ${currentUnit})</p>
+                    </div>
+                    <div style="text-align:center; width:250px;">
+                        <p>Disahkan oleh,</p>
+                        <br><br><br>
+                        <p>..................................................</p>
+                        <p style="font-size:11px; font-weight:bold; text-transform:uppercase;">(GPK KOKURIKULUM)</p>
+                    </div>
+                </div>
+            </div>`;
+
+        // Jalankan arahan cetak pelayar
+        window.print();
+        
+    } catch (error) {
+        console.error("Ralat cetakan:", error);
+        alert("Gagal menjana jadual cetakan.");
+    }
+};
+
     </script>
 </body>
 </html>
+
 
 
 
