@@ -676,15 +676,17 @@ async function compressImage(file) {
             };
         };
 
-        window.renderDashboard = () => {
+// --- DASHBOARD & MENU NAVIGATION ---
+
+window.renderDashboard = () => {
     window.showMenu();
 };
 
-// Pastikan showMenu juga boleh diakses secara global
 window.showMenu = async () => {
     currentView = 'units';
     const view = document.getElementById('content-view');
-    
+    if (!view) return;
+
     // Mulakan grid menu
     let menuHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">`;
 
@@ -722,51 +724,29 @@ window.showMenu = async () => {
             </div>`;
     }
 
-    menuHTML += `</div>`; // TUTUP grid div di sini
+    menuHTML += `</div>`;
     view.innerHTML = menuHTML;
 };
-    
-    // Paparan Menu Utama (Dashboard)
-    view.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div onclick="renderAnalysis()" class="unit-card bg-white p-10 rounded-[3rem] shadow-sm border border-slate-50 cursor-pointer group">
-                <div class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 text-indigo-600 group-hover:scale-110 transition-transform">
-                    <i class="fas fa-chart-line text-2xl"></i>
-                </div>
-                <h3 class="font-black uppercase italic tracking-widest text-slate-800">Analisis & Enrolmen</h3>
-                <p class="text-slate-400 text-[10px] font-bold mt-2 uppercase">Statistik Keseluruhan</p>
-            </div>
 
-            <div onclick="renderUnits()" class="unit-card bg-white p-10 rounded-[3rem] shadow-sm border border-slate-50 cursor-pointer group">
-                <div class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 text-emerald-600 group-hover:scale-110 transition-transform">
-                    <i class="fas fa-users text-2xl"></i>
-                </div>
-                <h3 class="font-black uppercase italic tracking-widest text-slate-800">Pengurusan Unit</h3>
-                <p class="text-slate-400 text-[10px] font-bold mt-2 uppercase">Laporan & Kehadiran</p>
-            </div>
+// --- ANALISIS DATA ---
 
-            <div onclick="renderMasterData()" class="unit-card bg-white p-10 rounded-[3rem] shadow-sm border border-slate-50 cursor-pointer group">
-                <div class="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 text-rose-600 group-hover:scale-110 transition-transform">
-                    <i class="fas fa-database text-2xl"></i>
-                </div>
-                <h3 class="font-black uppercase italic tracking-widest text-slate-800">Data Master</h3>
-                <p class="text-slate-400 text-[10px] font-bold mt-2 uppercase">Import/Eksport Pelajar</p>
-            </div>
-        </div>
-    `;
-};
-        
-        // --- ANALISIS DATA ---
 window.renderAnalysis = async () => {
     const view = document.getElementById('content-view');
     view.innerHTML = `
         <div class="space-y-8">
-            <h2 class="text-2xl font-black uppercase italic text-slate-800 tracking-widest">Analisis Keseluruhan (${currentYear})</h2>
+            <div class="flex items-center justify-between">
+                <h2 class="text-2xl font-black uppercase italic text-slate-800 tracking-widest">Analisis Keseluruhan (${currentYear})</h2>
+                <button onclick="renderDashboard()" class="text-[10px] font-bold bg-slate-100 px-4 py-2 rounded-full hover:bg-slate-200 transition-colors uppercase tracking-widest">
+                    <i class="fas fa-arrow-left mr-2"></i>Kembali
+                </button>
+            </div>
+            
             <div class="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-50">
-                <div class="chart-container">
+                <div class="h-[400px] relative">
                     <canvas id="mainChart"></canvas>
                 </div>
             </div>
+
             <div class="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-50 overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -779,14 +759,16 @@ window.renderAnalysis = async () => {
                             <th class="py-4 px-2 text-center text-emerald-500">Skor Merit</th>
                         </tr>
                     </thead>
-                    <tbody id="analysis-table-body"></tbody>
+                    <tbody id="analysis-table-body">
+                        <tr><td colspan="6" class="text-center py-10 text-slate-400 animate-pulse">Memuatkan data analisis...</td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>`;
 
     const labels = [];
     const studentCounts = [];
-    const reportCounts = []; // Untuk data laporan
+    const reportCounts = [];
 
     const tableBody = document.getElementById('analysis-table-body');
     const units = Object.values(kokoData).flat();
@@ -799,34 +781,35 @@ window.renderAnalysis = async () => {
         reportDataMap[d.unit] = (reportDataMap[d.unit] || 0) + 1;
     });
 
-for (const unit of units) {
-    const q = query(collection(db, "students"), where("unit", "==", unit), where("year", "==", currentYear));
-    const snap = await getDocs(q);
-    const studs = snap.docs.map(d => d.data());
-    
-    // Gunakan field 'jantina' bukan 'gender'
-    const L = studs.filter(s => {
-        const g = (s.jantina || "").toUpperCase(); 
-        return g === "L" || g === "LELAKI";
-    }).length;
+    let tableRowsHTML = "";
 
-    const P = studs.filter(s => {
-        const g = (s.jantina || "").toUpperCase();
-        return g === "P" || g === "PEREMPUAN";
-    }).length;
+    for (const unit of units) {
+        const q = query(collection(db, "students"), where("unit", "==", unit), where("year", "==", currentYear));
+        const snap = await getDocs(q);
+        const studs = snap.docs.map(d => d.data());
+        
+        const L = studs.filter(s => {
+            const g = (s.jantina || "").toUpperCase(); 
+            return g === "L" || g === "LELAKI";
+        }).length;
 
-    const jumLaporan = reportDataMap[unit] || 0;
+        const P = studs.filter(s => {
+            const g = (s.jantina || "").toUpperCase();
+            return g === "P" || g === "PEREMPUAN";
+        }).length;
+
+        const jumLaporan = reportDataMap[unit] || 0;
 
         // Ambil jumlah skor merit
         const mq = query(collection(db, "merits"), where("unit", "==", unit), where("year", "==", currentYear));
         const mSnap = await getDocs(mq);
-        const totalScore = mSnap.docs.reduce((sum, d) => sum + (d.data().score || 0), 0);
+        const totalScore = mSnap.docs.reduce((sum, d) => sum + (Number(d.data().score) || 0), 0);
 
         labels.push(unit);
         studentCounts.push(studs.length);
         reportCounts.push(jumLaporan);
 
-        tableBody.innerHTML += `
+        tableRowsHTML += `
             <tr class="border-b hover:bg-slate-50 transition-colors">
                 <td class="py-4 px-2 text-[11px] font-bold text-slate-600 uppercase">${unit}</td>
                 <td class="py-4 px-2 text-center text-[11px]">${L}</td>
@@ -837,7 +820,9 @@ for (const unit of units) {
             </tr>`;
     }
 
-    // Bina Carta dengan tetapan IndexAxis: 'y' untuk paparan 15 unit yang lebih jelas
+    tableBody.innerHTML = tableRowsHTML;
+
+    // Bina Carta
     new Chart(document.getElementById('mainChart'), {
         type: 'bar',
         data: {
@@ -847,18 +832,18 @@ for (const unit of units) {
                     label: 'Jumlah Murid',
                     data: studentCounts,
                     backgroundColor: '#6366f1',
-                    borderRadius: 10
+                    borderRadius: 8
                 },
                 {
                     label: 'Jumlah Laporan',
                     data: reportCounts,
                     backgroundColor: '#f43f5e',
-                    borderRadius: 10
+                    borderRadius: 8
                 }
             ]
         },
         options: {
-            indexAxis: 'y', // Tukar ke melintang (Horizontal Bar) supaya 15 unit tak sempit
+            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
             scales: {
@@ -866,12 +851,11 @@ for (const unit of units) {
                 y: { ticks: { font: { size: 9, weight: 'bold' }, autoSkip: false } }
             },
             plugins: {
-                legend: { position: 'top', labels: { font: { size: 11, weight: '900' } } }
+                legend: { position: 'top', labels: { font: { size: 11, weight: '700' } } }
             }
         }
     });
 };
-
         // --- UTILITIES & HELPERS ---
         window.processCSV = (input) => {
             if(!input.files[0]) return;
