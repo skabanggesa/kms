@@ -675,6 +675,45 @@ async function compressImage(file) {
             };
         };
 
+        window.renderDashboard = () => {
+    window.showMenu();
+};
+
+// Pastikan showMenu juga boleh diakses secara global
+window.showMenu = async () => {
+    currentView = 'units';
+    const view = document.getElementById('content-view');
+    
+    // Paparan Menu Utama (Dashboard)
+    view.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div onclick="renderAnalysis()" class="unit-card bg-white p-10 rounded-[3rem] shadow-sm border border-slate-50 cursor-pointer group">
+                <div class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 text-indigo-600 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-chart-line text-2xl"></i>
+                </div>
+                <h3 class="font-black uppercase italic tracking-widest text-slate-800">Analisis & Enrolmen</h3>
+                <p class="text-slate-400 text-[10px] font-bold mt-2 uppercase">Statistik Keseluruhan</p>
+            </div>
+
+            <div onclick="renderUnits()" class="unit-card bg-white p-10 rounded-[3rem] shadow-sm border border-slate-50 cursor-pointer group">
+                <div class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 text-emerald-600 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-users text-2xl"></i>
+                </div>
+                <h3 class="font-black uppercase italic tracking-widest text-slate-800">Pengurusan Unit</h3>
+                <p class="text-slate-400 text-[10px] font-bold mt-2 uppercase">Laporan & Kehadiran</p>
+            </div>
+
+            <div onclick="renderMasterData()" class="unit-card bg-white p-10 rounded-[3rem] shadow-sm border border-slate-50 cursor-pointer group">
+                <div class="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 text-rose-600 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-database text-2xl"></i>
+                </div>
+                <h3 class="font-black uppercase italic tracking-widest text-slate-800">Data Master</h3>
+                <p class="text-slate-400 text-[10px] font-bold mt-2 uppercase">Import/Eksport Pelajar</p>
+            </div>
+        </div>
+    `;
+};
+        
         // --- ANALISIS DATA ---
 window.renderAnalysis = async () => {
     const view = document.getElementById('content-view');
@@ -989,6 +1028,7 @@ window.printAllTakwim = async () => {
     </script>
 </body>
 </html>
+
 
 
 
