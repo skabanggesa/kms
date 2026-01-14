@@ -128,7 +128,15 @@
         import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, deleteDoc, addDoc, orderBy, writeBatch, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-        const firebaseConfig = { /* KONFIGURASI ANDA DI SINI */ };
+        const firebaseConfig = {
+      apiKey: "AIzaSyDpahvPPRtSLJ7o6p63rQEOCNqMDHgxe7o",
+      authDomain: "kmsystem-65436.firebaseapp.com",
+      projectId: "kmsystem-65436",
+      storageBucket: "kmsystem-65436.firebasestorage.app",
+      messagingSenderId: "36219334818",
+      appId: "1:36219334818:web:fbdaa0fefd729f22c727fb",
+      measurementId: "G-F3CRCW166E"
+};
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -530,3 +538,4 @@
     </script>
 </body>
 </html>
+
