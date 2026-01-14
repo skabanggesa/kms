@@ -638,38 +638,38 @@ for (const unit of units) {
     const snap = await getDocs(q);
     const studs = snap.docs.map(d => d.data());
     
-    // Gunakan field 'jantina' bukan 'gender'
+    // PENAMBAHBAIKAN: Gunakan medan 'gender' dan pastikan ia kalis ralat
     const L = studs.filter(s => {
-        const g = (s.jantina || "").toUpperCase(); 
+        const g = (s.gender || "").toString().trim().toUpperCase();
         return g === "L" || g === "LELAKI";
     }).length;
 
     const P = studs.filter(s => {
-        const g = (s.jantina || "").toUpperCase();
+        const g = (s.gender || "").toString().trim().toUpperCase();
         return g === "P" || g === "PEREMPUAN";
     }).length;
 
     const jumLaporan = reportDataMap[unit] || 0;
+    
+    // Ambil jumlah skor merit (Pastikan medan di Firestore adalah 'score')
+    const mq = query(collection(db, "merits"), where("unit", "==", unit), where("year", "==", currentYear));
+    const mSnap = await getDocs(mq);
+    const totalScore = mSnap.docs.reduce((sum, d) => sum + (Number(d.data().score) || 0), 0);
 
-        // Ambil jumlah skor merit
-        const mq = query(collection(db, "merits"), where("unit", "==", unit), where("year", "==", currentYear));
-        const mSnap = await getDocs(mq);
-        const totalScore = mSnap.docs.reduce((sum, d) => sum + (d.data().score || 0), 0);
+    labels.push(unit);
+    studentCounts.push(studs.length);
+    reportCounts.push(jumLaporan);
 
-        labels.push(unit);
-        studentCounts.push(studs.length);
-        reportCounts.push(jumLaporan);
-
-        tableBody.innerHTML += `
-            <tr class="border-b hover:bg-slate-50 transition-colors">
-                <td class="py-4 px-2 text-[11px] font-bold text-slate-600 uppercase">${unit}</td>
-                <td class="py-4 px-2 text-center text-[11px]">${L}</td>
-                <td class="py-4 px-2 text-center text-[11px]">${P}</td>
-                <td class="py-4 px-2 text-center text-[11px] font-black text-indigo-600">${studs.length}</td>
-                <td class="py-4 px-2 text-center text-[11px] font-black text-rose-500">${jumLaporan}</td>
-                <td class="py-4 px-2 text-center text-[11px] font-bold text-emerald-600">${totalScore}</td>
-            </tr>`;
-    }
+    tableBody.innerHTML += `
+        <tr class="border-b hover:bg-slate-50 transition-colors">
+            <td class="py-4 px-2 text-[11px] font-bold text-slate-600 uppercase">${unit}</td>
+            <td class="py-4 px-2 text-center text-[11px]">${L}</td>
+            <td class="py-4 px-2 text-center text-[11px]">${P}</td>
+            <td class="py-4 px-2 text-center text-[11px] font-black text-indigo-600">${studs.length}</td>
+            <td class="py-4 px-2 text-center text-[11px] font-black text-rose-500">${jumLaporan}</td>
+            <td class="py-4 px-2 text-center text-[11px] font-bold text-emerald-600">${totalScore}</td>
+        </tr>`;
+}
 
     // Bina Carta dengan tetapan IndexAxis: 'y' untuk paparan 15 unit yang lebih jelas
     new Chart(document.getElementById('mainChart'), {
@@ -904,6 +904,7 @@ window.printAllTakwim = async () => {
     </script>
 </body>
 </html>
+
 
 
 
