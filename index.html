@@ -638,8 +638,15 @@ window.renderAnalysis = async () => {
         const snap = await getDocs(q);
         const studs = snap.docs.map(d => d.data());
         
-        const L = studs.filter(s => s.gender && s.gender.toUpperCase().startsWith("L")).length;
-        const P = studs.filter(s => s.gender && s.gender.toUpperCase().startsWith("P")).length;
+        const L = studs.filter(s => {
+    const g = (s.gender || "").toUpperCase();
+    return g === "L" || g === "LELAKI";
+}).length;
+
+const P = studs.filter(s => {
+    const g = (s.gender || "").toUpperCase();
+    return g === "P" || g === "PEREMPUAN";
+}).length;
         const jumLaporan = reportDataMap[unit] || 0; // Ambil dari map tadi
 
         // Ambil jumlah skor merit
@@ -895,6 +902,7 @@ window.printAllTakwim = async () => {
     </script>
 </body>
 </html>
+
 
 
 
