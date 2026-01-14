@@ -633,21 +633,23 @@ window.renderAnalysis = async () => {
         reportDataMap[d.unit] = (reportDataMap[d.unit] || 0) + 1;
     });
 
-    for (const unit of units) {
-        const q = query(collection(db, "students"), where("unit", "==", unit), where("year", "==", currentYear));
-        const snap = await getDocs(q);
-        const studs = snap.docs.map(d => d.data());
-        
-        const L = studs.filter(s => {
-    const g = (s.gender || "").toUpperCase();
-    return g === "L" || g === "LELAKI";
-}).length;
+for (const unit of units) {
+    const q = query(collection(db, "students"), where("unit", "==", unit), where("year", "==", currentYear));
+    const snap = await getDocs(q);
+    const studs = snap.docs.map(d => d.data());
+    
+    // Gunakan field 'jantina' bukan 'gender'
+    const L = studs.filter(s => {
+        const g = (s.jantina || "").toUpperCase(); 
+        return g === "L" || g === "LELAKI";
+    }).length;
 
-const P = studs.filter(s => {
-    const g = (s.gender || "").toUpperCase();
-    return g === "P" || g === "PEREMPUAN";
-}).length;
-        const jumLaporan = reportDataMap[unit] || 0; // Ambil dari map tadi
+    const P = studs.filter(s => {
+        const g = (s.jantina || "").toUpperCase();
+        return g === "P" || g === "PEREMPUAN";
+    }).length;
+
+    const jumLaporan = reportDataMap[unit] || 0;
 
         // Ambil jumlah skor merit
         const mq = query(collection(db, "merits"), where("unit", "==", unit), where("year", "==", currentYear));
@@ -902,6 +904,7 @@ window.printAllTakwim = async () => {
     </script>
 </body>
 </html>
+
 
 
 
