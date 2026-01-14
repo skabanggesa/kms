@@ -278,33 +278,70 @@
         document.getElementById('logout-btn').onclick = () => { if(confirm("Log keluar dari sistem?")) signOut(auth); };
 
         // --- DASHBOARD RENDERER ---
-        window.renderDashboard = async () => {
+        window.renderAnalysis = async () => {
             const view = document.getElementById('content-view');
-            let html = `<div class="mb-12 text-center"><h2 class="text-4xl font-black text-slate-900 italic uppercase tracking-tighter">UTAMA <span class="text-indigo-600">${currentYear}</span></h2></div>`;
-            
-            if (userProfile.role === 'admin') {
-                html += `<div class="mb-12 flex flex-wrap justify-center gap-3">
-                            <button onclick="openModal('csv-modal')" class="bg-emerald-600 text-white px-8 py-4 rounded-[1.5rem] font-black text-xs uppercase shadow-xl shadow-emerald-100 hover:scale-105 transition-all">Import CSV</button>
-                            <button onclick="manageTeachers()" class="bg-indigo-600 text-white px-8 py-4 rounded-[1.5rem] font-black text-xs uppercase shadow-xl shadow-indigo-100 hover:scale-105 transition-all">Urus Guru</button>
-                            <button onclick="renderAnalysis()" class="bg-slate-900 text-white px-8 py-4 rounded-[1.5rem] font-black text-xs uppercase shadow-xl shadow-slate-200 hover:scale-105 transition-all">Statistik & Graf</button>
-                         </div>`;
-                for (const [cat, units] of Object.entries(kokoData)) {
-                    html += `<h3 class="text-xs font-black text-slate-400 uppercase mb-6 flex items-center"><span class="w-8 h-1 bg-indigo-500 mr-3 rounded-full"></span>${cat}</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">`;
-                    units.forEach(u => { html += `<div onclick="selectUnit('${u}')" class="unit-card bg-white p-8 rounded-[2.5rem] shadow-sm cursor-pointer text-center"><div>${getUnitIcon(u, "h-14", "text-4xl")}</div><div class="font-black text-[11px] uppercase text-slate-700 mt-4 tracking-tight">${u}</div></div>`; });
-                    html += `</div>`;
+            view.innerHTML = `<button onclick="renderDashboard()" class="mb-6 text-[10px] font-black text-slate-400 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali Utama</button>
+                <div class="space-y-8">
+                    <h2 class="text-2xl font-black text-slate-800 uppercase italic">Dashboard Analisis & Enrolmen</h2>
+                    <div id="stat-summary" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+                    <div class="bg-white p-8 rounded-[2rem] shadow-sm overflow-x-auto">
+                        <h3 class="font-black uppercase text-xs mb-6 text-indigo-600">Rumusan Mengikut Unit</h3>
+                        <table class="w-full text-left text-[11px]">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="p-3">UNIT</th>
+                                    <th class="p-3">LELAKI</th>
+                                    <th class="p-3">PEREMPUAN</th>
+                                    <th class="p-3">JUMLAH MURID</th>
+                                    <th class="p-3">BIL. LAPORAN</th>
+                                    <th class="p-3">SKOR MERIT</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analysis-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>`;
+
+            const sSnap = await getDocs(query(collection(db, "students_master"), where("year", "==", currentYear)));
+            const rSnap = await getDocs(query(collection(db, "reports"), where("year", "==", currentYear)));
+            const mSnap = await getDocs(query(collection(db, "merits"), where("year", "==", currentYear)));
+
+            const stats = {};
+            Object.values(kokoData).flat().forEach(u => { stats[u] = { L: 0, P: 0, totalS: 0, reports: 0, meritScore: 0 }; });
+
+            sSnap.forEach(doc => {
+                const d = doc.data();
+                if (stats[d.unit]) {
+                    if (d.gender === 'L') stats[d.unit].L++;
+                    else if (d.gender === 'P') stats[d.unit].P++;
+                    stats[d.unit].totalS++;
                 }
-            } else {
-                const units = [userProfile.uniform, userProfile.club, userProfile.sport].filter(x => x);
-                html += `<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                    <div class="stat-card border-l-8 border-indigo-600 shadow-indigo-50/50"><h4 class="text-[10px] font-black text-slate-400 uppercase italic">Laporan Terkumpul</h4><p class="text-4xl font-black text-slate-900 mt-2" id="dash-report-count">...</p></div>
-                    <div class="stat-card border-l-8 border-emerald-600 shadow-emerald-50/50"><h4 class="text-[10px] font-black text-slate-400 uppercase italic">Tahun Berkhidmat</h4><p class="text-4xl font-black text-slate-900 mt-2">${currentYear}</p></div>
-                    <div class="stat-card border-l-8 border-amber-500 shadow-amber-50/50"><h4 class="text-[10px] font-black text-slate-400 uppercase italic">Unit Seliaan</h4><p class="text-4xl font-black text-slate-900 mt-2">${units.length}</p></div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">${units.map(u => `<div onclick="selectUnit('${u}')" class="unit-card bg-white p-12 rounded-[3rem] border-4 border-slate-50 shadow-xl cursor-pointer text-center"><div>${getUnitIcon(u, "h-20", "text-6xl")}</div><div class="mt-6 font-black text-base uppercase tracking-tight text-indigo-900">${u}</div></div>`).join('')}</div>`;
-                const rSnap = await getDocs(query(collection(db, "reports"), where("unit", "in", units), where("year", "==", currentYear)));
-                if(document.getElementById('dash-report-count')) document.getElementById('dash-report-count').innerText = rSnap.size;
-            }
-            view.innerHTML = html;
+            });
+
+            rSnap.forEach(doc => { if (stats[doc.data().unit]) stats[doc.data().unit].reports++; });
+            mSnap.forEach(doc => { if (stats[doc.data().unit]) stats[doc.data().unit].meritScore += (doc.data().score || 0); });
+
+            let grandTotalL = 0; let grandTotalP = 0;
+            sSnap.forEach(d => { if(d.data().gender === 'L') grandTotalL++; else if(d.data().gender === 'P') grandTotalP++; });
+
+            document.getElementById('stat-summary').innerHTML = `
+                <div class="stat-card border-b-4 border-indigo-500"><p class="text-[10px] font-bold text-slate-400 uppercase">JUMLAH ENROLMEN</p><p class="text-3xl font-black text-slate-800">${sSnap.size}</p></div>
+                <div class="stat-card border-b-4 border-blue-500"><p class="text-[10px] font-bold text-slate-400 uppercase">LELAKI</p><p class="text-3xl font-black text-blue-600">${grandTotalL}</p></div>
+                <div class="stat-card border-b-4 border-pink-500"><p class="text-[10px] font-bold text-slate-400 uppercase">PEREMPUAN</p><p class="text-3xl font-black text-pink-600">${grandTotalP}</p></div>
+            `;
+
+            const tbody = document.getElementById('analysis-table-body');
+            Object.keys(stats).sort().forEach(unit => {
+                const s = stats[unit];
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-50 hover:bg-slate-50";
+                tr.innerHTML = `<td class="p-3 font-bold uppercase">${unit}</td>
+                    <td class="p-3">${s.L}</td><td class="p-3">${s.P}</td>
+                    <td class="p-3 font-black">${s.totalS}</td>
+                    <td class="p-3 text-indigo-600 font-bold">${s.reports}</td>
+                    <td class="p-3 text-emerald-600 font-bold">${s.meritScore}</td>`;
+                tbody.appendChild(tr);
+            });
         };
 
         // --- UNIT VIEW & FOLDERS ---
@@ -913,6 +950,7 @@ window.printAllTakwim = async () => {
     </script>
 </body>
 </html>
+
 
 
 
