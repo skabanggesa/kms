@@ -3,23 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KMS Digital Pro - Sistem Pengurusan Kokurikulum Terintegrasi</title>
+    <title>KMS Digital Pro - Sistem Pengurusan Kokurikulum</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; scroll-behavior: smooth; }
-        .unit-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; }
-        .unit-card:hover { transform: translateY(-10px); border-color: #6366f1; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
-        .stat-card { background: white; padding: 1.5rem; border-radius: 1.5rem; border-bottom: 4px solid #6366f1; }
-        .animate-in { animation: fadeIn 0.5s ease-out; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; scroll-behavior: smooth; }
+        .unit-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #e2e8f0; }
+        .unit-card:hover { transform: translateY(-8px); border-color: #6366f1; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 2rem; border-bottom: 4px solid #6366f1; }
+        .animate-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @media print { .no-print { display: none !important; } body { background: white; padding: 0; } }
+        @media print { .no-print { display: none !important; } body { background: white; } }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="text-slate-900 overflow-x-hidden">
@@ -27,28 +32,28 @@
     <div id="auth-view" class="min-h-screen flex items-center justify-center p-6">
         <div id="login-container" class="w-full max-w-md bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
             <div class="text-center mb-10">
-                <div class="w-20 h-20 bg-indigo-600 rounded-3xl mx-auto flex items-center justify-center text-white text-3xl mb-6 shadow-lg shadow-indigo-200">
+                <div class="w-16 h-16 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center text-white text-2xl mb-4 shadow-lg shadow-indigo-100">
                     <i class="fas fa-shield-halved"></i>
                 </div>
-                <h1 class="text-3xl font-black tracking-tighter text-slate-800 italic uppercase">KMS DIGITAL PRO</h1>
-                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">Log Masuk Pendidik</p>
+                <h1 class="text-2xl font-black tracking-tighter text-slate-800 italic uppercase">KMS DIGITAL PRO</h1>
+                <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-2">Log Masuk Pendidik</p>
             </div>
-            <form id="login-form" class="space-y-6">
+            <form id="login-form" class="space-y-4">
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Alamat Emel</label>
+                    <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Alamat Emel</label>
                     <input type="email" id="login-email" class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-all" placeholder="guru@email.com" required>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Kata Laluan</label>
+                    <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Kata Laluan</label>
                     <input type="password" id="login-password" class="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 font-medium text-sm transition-all" placeholder="••••••••" required>
                 </div>
                 <button type="submit" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase italic tracking-widest text-xs hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all">
                     Masuk Sistem <i class="fas fa-arrow-right ml-2"></i>
                 </button>
             </form>
-            <div class="mt-8 pt-8 border-t border-slate-50 flex flex-col gap-3 text-center">
-                <button onclick="toggleAuth('register')" class="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">Daftar Akaun Baru</button>
-                <button onclick="toggleAuth('student')" class="text-[10px] font-black text-indigo-500 uppercase tracking-widest hover:text-indigo-700 transition-colors bg-indigo-50 py-3 rounded-xl italic">Semakan Murid <i class="fas fa-search ml-1"></i></button>
+            <div class="mt-8 pt-6 border-t border-slate-50 flex flex-col gap-3 text-center">
+                <button onclick="toggleAuth('register')" class="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600">Daftar Akaun Baru</button>
+                <button onclick="toggleAuth('student')" class="text-[9px] font-black text-indigo-500 uppercase tracking-widest hover:text-indigo-700 bg-indigo-50 py-3 rounded-xl italic">Semakan Murid <i class="fas fa-search ml-1"></i></button>
             </div>
         </div>
 
@@ -56,7 +61,7 @@
             <h2 class="text-2xl font-black text-slate-800 uppercase italic mb-8 tracking-tighter">Pendaftaran Guru Baru</h2>
             <form id="register-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="md:col-span-2">
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Nama Penuh (Huruf Besar)</label>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Nama Penuh</label>
                     <input type="text" id="reg-name" class="w-full px-6 py-4 bg-slate-50 rounded-2xl focus:ring-2 focus:ring-indigo-500" required>
                 </div>
                 <div>
@@ -80,26 +85,25 @@
                     <select id="reg-sport" class="w-full px-6 py-4 bg-slate-50 rounded-2xl font-bold text-xs" required></select>
                 </div>
                 <div class="md:col-span-2 pt-4 flex gap-4">
-                    <button type="submit" class="flex-1 py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase italic text-xs tracking-widest">Daftar Sekarang</button>
-                    <button type="button" onclick="toggleAuth('login')" class="px-8 py-5 bg-slate-100 text-slate-400 rounded-2xl font-black uppercase text-xs tracking-widest">Batal</button>
+                    <button type="submit" class="flex-1 py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase italic text-xs">Daftar</button>
+                    <button type="button" onclick="toggleAuth('login')" class="px-8 py-5 bg-slate-100 text-slate-400 rounded-2xl font-black uppercase text-xs">Batal</button>
                 </div>
             </form>
         </div>
 
-        <div id="student-view-container" class="hidden w-full max-w-4xl bg-white p-12 rounded-[3rem] shadow-2xl border border-slate-100">
-            <button onclick="toggleAuth('login')" class="mb-8 text-[10px] font-black text-slate-400 uppercase hover:text-indigo-600"><i class="fas fa-arrow-left mr-2"></i> Kembali</button>
+        <div id="student-view-container" class="hidden w-full max-w-4xl bg-white p-12 rounded-[3rem] shadow-2xl">
+            <button onclick="toggleAuth('login')" class="mb-8 text-[10px] font-black text-slate-400 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali</button>
             <div class="text-center mb-10">
                 <h2 class="text-3xl font-black text-slate-800 uppercase italic tracking-tighter">Semakan Rekod Kokurikulum</h2>
-                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">Sila masukkan nombor MyKid murid</p>
+                <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-2">Sila masukkan nombor MyKid murid</p>
             </div>
             <div class="flex gap-4 mb-10">
                 <input type="text" id="student-search-input" class="flex-1 px-8 py-5 bg-slate-50 rounded-2xl focus:ring-2 focus:ring-indigo-500 font-black text-xl tracking-widest text-center" placeholder="120101011234">
-                <button onclick="searchStudentPublic()" class="px-10 py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase italic tracking-widest text-xs">Cari <i class="fas fa-search ml-2"></i></button>
+                <button onclick="searchStudentPublic()" class="px-10 py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase italic text-xs">Cari</button>
             </div>
             <div id="student-public-result" class="space-y-6"></div>
         </div>
     </div>
-
     <div id="app-container" class="hidden min-h-screen pb-20">
         <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 no-print">
             <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
@@ -117,37 +121,32 @@
                 </button>
             </div>
         </nav>
-        <main class="max-w-7xl mx-auto px-6 pt-10">
-            <div id="content-view" class="animate-in"></div>
-        </main>
+        <main class="max-w-7xl mx-auto px-6 pt-10" id="content-view"></main>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, deleteDoc, addDoc, orderBy, writeBatch, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, deleteDoc, addDoc, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // CONFIG: Sila masukkan API Key anda sendiri di sini
         const firebaseConfig = {
-      apiKey: "AIzaSyDpahvPPRtSLJ7o6p63rQEOCNqMDHgxe7o",
-      authDomain: "kmsystem-65436.firebaseapp.com",
-      projectId: "kmsystem-65436",
-      storageBucket: "kmsystem-65436.firebasestorage.app",
-      messagingSenderId: "36219334818",
-      appId: "1:36219334818:web:fbdaa0fefd729f22c727fb",
-      measurementId: "G-F3CRCW166E"
+  apiKey: "AIzaSyDpahvPPRtSLJ7o6p63rQEOCNqMDHgxe7o",
+  authDomain: "kmsystem-65436.firebaseapp.com",
+  projectId: "kmsystem-65436",
+  storageBucket: "kmsystem-65436.firebasestorage.app",
+  messagingSenderId: "36219334818",
+  appId: "1:36219334818:web:fbdaa0fefd729f22c727fb",
+  measurementId: "G-F3CRCW166E"
 };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
-        // --- GLOBAL STATE ---
         let userProfile = null;
-        let currentView = 'dashboard';
         let currentUnit = null;
         let currentFolder = null;
-        let allStudentsMaster = [];
         const currentYear = "2026";
 
         const kokoData = {
@@ -156,9 +155,6 @@
             "Sukan & Permainan": ["Bola Sepak", "Bola Jaring", "Olahraga", "Hoki", "Memanah", "Catur"]
         };
 
-        const unitLogos = { /* logo mapping ... */ };
-
-        // --- AUTH & INITIALIZATION ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const d = await getDoc(doc(db, "users", user.uid));
@@ -167,375 +163,352 @@
                 document.getElementById('auth-view').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
                 renderDashboard();
-                fetchAllStudents();
             } else {
                 document.getElementById('auth-view').classList.remove('hidden');
                 document.getElementById('app-container').classList.add('hidden');
             }
         });
 
-        async function fetchAllStudents() {
-            const q = query(collection(db, "students_master"), where("year", "==", currentYear));
-            const snap = await getDocs(q);
-            allStudentsMaster = snap.docs.map(doc => ({ name: doc.data().name, mykid: doc.data().mykid }));
-        }
-
-        // --- NAVIGATION & MENU ---
-        window.renderDashboard = () => { window.showMenu(); };
-
-        window.showMenu = async () => {
-            currentView = 'dashboard';
+        // LOGIK UTAMA: GURU vs ADMIN
+        window.renderDashboard = () => {
             const view = document.getElementById('content-view');
-            view.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div onclick="renderAnalysis()" class="unit-card bg-white p-10 rounded-[3rem] shadow-sm border border-slate-50 cursor-pointer group">
-                        <div class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 text-indigo-600 group-hover:scale-110 transition-transform"><i class="fas fa-chart-line text-2xl"></i></div>
-                        <h3 class="font-black uppercase italic tracking-widest text-slate-800">Analisis & Enrolmen</h3>
-                        <p class="text-slate-400 text-[10px] font-bold mt-2 uppercase">Statistik Keseluruhan</p>
-                    </div>
-                    <div onclick="renderUnits()" class="unit-card bg-white p-10 rounded-[3rem] shadow-sm border border-slate-50 cursor-pointer group">
-                        <div class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 text-emerald-600 group-hover:scale-110 transition-transform"><i class="fas fa-users text-2xl"></i></div>
-                        <h3 class="font-black uppercase italic tracking-widest text-slate-800">Pengurusan Unit</h3>
-                        <p class="text-slate-400 text-[10px] font-bold mt-2 uppercase">Laporan & Kehadiran</p>
-                    </div>
-                    <div onclick="renderMasterData()" class="unit-card bg-white p-10 rounded-[3rem] shadow-sm border border-slate-50 cursor-pointer group">
-                        <div class="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 text-rose-600 group-hover:scale-110 transition-transform"><i class="fas fa-database text-2xl"></i></div>
-                        <h3 class="font-black uppercase italic tracking-widest text-slate-800">Data Master</h3>
-                        <p class="text-slate-400 text-[10px] font-bold mt-2 uppercase">Import/Eksport Pelajar</p>
-                    </div>
-                </div>`;
-        };
-        // --- BERSAMBUNG KE BAHAGIAN 2 ---
-        // --- ANALISIS & ENROLMEN (LOGIK L/P) ---
-        window.renderAnalysis = async () => {
-            const view = document.getElementById('content-view');
-            view.innerHTML = `
-                <button onclick="renderDashboard()" class="mb-6 text-[10px] font-black text-slate-400 uppercase tracking-widest"><i class="fas fa-arrow-left mr-2"></i> Kembali Utama</button>
-                <div class="space-y-8 animate-in">
-                    <h2 class="text-2xl font-black text-slate-800 uppercase italic tracking-tighter">Analisis & Enrolmen</h2>
-                    <div id="stat-summary" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-                    <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-50 overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="text-[10px] uppercase tracking-widest text-slate-400 border-b border-slate-50">
-                                    <th class="py-4 px-4">Nama Unit</th>
-                                    <th class="py-4 px-2 text-center">L</th>
-                                    <th class="py-4 px-2 text-center">P</th>
-                                    <th class="py-4 px-2 text-center font-bold text-indigo-600">Jumlah</th>
-                                    <th class="py-4 px-2 text-center text-rose-500">Laporan</th>
-                                    <th class="py-4 px-2 text-center text-emerald-500">Merit</th>
-                                </tr>
-                            </thead>
-                            <tbody id="analysis-table-body" class="text-slate-600 font-medium text-xs"></tbody>
-                        </table>
-                    </div>
-                </div>`;
-
-            const [sSnap, rSnap, mSnap] = await Promise.all([
-                getDocs(query(collection(db, "students_master"), where("year", "==", String(currentYear)))),
-                getDocs(query(collection(db, "reports"), where("year", "==", String(currentYear)))),
-                getDocs(query(collection(db, "merits"), where("year", "==", String(currentYear))))
-            ]);
-
-            const stats = {};
-            Object.values(kokoData).flat().forEach(u => stats[u] = { L: 0, P: 0, totalS: 0, reports: 0, merit: 0 });
-
-            sSnap.forEach(doc => {
-                const d = doc.data();
-                if (stats[d.unit]) {
-                    const g = (d.gender || "").trim().toUpperCase();
-                    if (g === 'L' || g === 'LELAKI') stats[d.unit].L++;
-                    else if (g === 'P' || g === 'PEREMPUAN') stats[d.unit].P++;
-                    stats[d.unit].totalS++;
-                }
-            });
-            rSnap.forEach(doc => { if (stats[doc.data().unit]) stats[doc.data().unit].reports++; });
-            mSnap.forEach(doc => { if (stats[doc.data().unit]) stats[doc.data().unit].merit += (Number(doc.data().score) || 0); });
-
-            let gL = 0, gP = 0;
-            Object.values(stats).forEach(s => { gL += s.L; gP += s.P; });
-
-            document.getElementById('stat-summary').innerHTML = `
-                <div class="bg-white p-8 rounded-3xl border-b-4 border-indigo-500 shadow-sm"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">JUMLAH ENROLMEN</p><p class="text-3xl font-black text-slate-800">${sSnap.size}</p></div>
-                <div class="bg-white p-8 rounded-3xl border-b-4 border-blue-500 shadow-sm"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">LELAKI</p><p class="text-3xl font-black text-blue-600">${gL}</p></div>
-                <div class="bg-white p-8 rounded-3xl border-b-4 border-pink-500 shadow-sm"><p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">PEREMPUAN</p><p class="text-3xl font-black text-pink-600">${gP}</p></div>
-            `;
-
-            const tbody = document.getElementById('analysis-table-body');
-            Object.keys(stats).sort().forEach(unit => {
-                const s = stats[unit];
-                tbody.innerHTML += `
-                    <tr class="border-b border-slate-50">
-                        <td class="py-4 px-4 font-black text-slate-700 uppercase italic">${unit}</td>
-                        <td class="py-4 px-2 text-center">${s.L}</td>
-                        <td class="py-4 px-2 text-center">${s.P}</td>
-                        <td class="py-4 px-2 text-center font-black text-slate-800">${s.totalS}</td>
-                        <td class="py-4 px-2 text-center text-rose-500 font-bold">${s.reports}</td>
-                        <td class="py-4 px-2 text-center text-emerald-600 font-bold">${s.merit}</td>
-                    </tr>`;
-            });
+            if (userProfile.role === 'admin') {
+                view.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in">
+                        <div onclick="renderAnalysis()" class="unit-card bg-white p-10 rounded-[3rem] cursor-pointer">
+                            <i class="fas fa-chart-line text-indigo-600 text-3xl mb-6"></i>
+                            <h3 class="font-black uppercase italic text-slate-800">Analisis & Enrolmen</h3>
+                        </div>
+                        <div onclick="renderUnits()" class="unit-card bg-white p-10 rounded-[3rem] cursor-pointer">
+                            <i class="fas fa-users-gear text-emerald-600 text-3xl mb-6"></i>
+                            <h3 class="font-black uppercase italic text-slate-800">Pengurusan Unit</h3>
+                        </div>
+                        <div onclick="renderMasterData()" class="unit-card bg-white p-10 rounded-[3rem] cursor-pointer">
+                            <i class="fas fa-database text-rose-600 text-3xl mb-6"></i>
+                            <h3 class="font-black uppercase italic text-slate-800">Data Master</h3>
+                        </div>
+                    </div>`;
+            } else {
+                const myUnits = [userProfile.uniform, userProfile.club, userProfile.sport].filter(Boolean);
+                view.innerHTML = `
+                    <h2 class="text-sm font-black text-indigo-500 uppercase italic mb-8 flex items-center gap-3"><span class="w-8 h-[2px] bg-indigo-100"></span> Unit Tanggungjawab Anda</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in">
+                        ${myUnits.map(unit => `
+                            <div onclick="selectUnit('${unit}')" class="unit-card bg-white p-10 rounded-[2.5rem] cursor-pointer text-center">
+                                <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-indigo-600"><i class="fas fa-shield-halved text-xl"></i></div>
+                                <h3 class="text-xs font-black uppercase italic text-slate-700">${unit}</h3>
+                            </div>
+                        `).join('')}
+                    </div>`;
+            }
         };
 
-        // --- PENGURUSAN UNIT & FOLDERS ---
         window.renderUnits = () => {
             const view = document.getElementById('content-view');
-            view.innerHTML = `<button onclick="renderDashboard()" class="mb-6 text-[10px] font-black text-slate-400 uppercase tracking-widest"><i class="fas fa-arrow-left mr-2"></i> Kembali</button>
-            <div class="space-y-12">${Object.keys(kokoData).map(cat => `
-                <div class="space-y-6">
-                    <h2 class="text-sm font-black text-indigo-500 uppercase italic tracking-widest flex items-center gap-3"><span class="w-8 h-[2px] bg-indigo-100"></span> ${cat}</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        ${kokoData[cat].map(unit => `
-                            <div onclick="selectUnit('${unit}')" class="unit-card bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-50 cursor-pointer flex flex-col items-center justify-center text-center">
-                                <div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 text-slate-400"><i class="fas fa-users text-xl"></i></div>
-                                <h3 class="text-[10px] font-black uppercase italic text-slate-600 leading-tight">${unit}</h3>
-                            </div>`).join('')}
-                    </div>
-                </div>`).join('')}</div>`;
+            view.innerHTML = `
+                <button onclick="renderDashboard()" class="mb-6 text-[10px] font-black text-slate-400 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali</button>
+                <div class="space-y-12">
+                    ${Object.keys(kokoData).map(cat => `
+                        <div class="space-y-6">
+                            <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-3"><span class="w-8 h-[2px] bg-indigo-100"></span> ${cat}</h2>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                ${kokoData[cat].map(unit => `
+                                    <div onclick="selectUnit('${unit}')" class="unit-card bg-white p-8 rounded-[2.5rem] cursor-pointer text-center">
+                                        <h3 class="text-[10px] font-black uppercase italic text-slate-600">${unit}</h3>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
         };
-
-        window.selectUnit = (unit) => { currentUnit = unit; renderUnitFolders(); };
-
-        window.renderUnitFolders = async () => {
+        window.selectUnit = (unit) => {
+            currentUnit = unit;
             const view = document.getElementById('content-view');
             view.innerHTML = `
-                <div class="flex justify-between items-center mb-10">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
                     <div class="flex items-center gap-4">
-                        <button onclick="renderUnits()" class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm border border-slate-50"><i class="fas fa-arrow-left"></i></button>
-                        <h2 class="text-2xl font-black text-slate-800 uppercase italic tracking-tighter">${currentUnit}</h2>
+                        <button onclick="renderDashboard()" class="w-10 h-10 bg-white rounded-xl border border-slate-100 flex items-center justify-center text-slate-400"><i class="fas fa-arrow-left"></i></button>
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-800 uppercase italic">${unit}</h2>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Panel Pengurusan</p>
+                        </div>
                     </div>
-                    <button onclick="createNewFolder()" class="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-black uppercase italic tracking-widest text-xs"><i class="fas fa-plus mr-2"></i> Perjumpaan Baru</button>
                 </div>
-                <div id="folders-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>`;
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 no-print">
+                    <button onclick="renderUnitStudents()" class="p-6 bg-white rounded-[2rem] border border-slate-50 shadow-sm hover:border-indigo-500 font-black uppercase italic text-[10px] text-slate-600 transition-all">
+                        <i class="fas fa-user-graduate block text-xl mb-2 text-indigo-400"></i> Senarai Murid
+                    </button>
+                    <button onclick="renderUnitFolders()" class="p-6 bg-white rounded-[2rem] border border-slate-50 shadow-sm hover:border-emerald-500 font-black uppercase italic text-[10px] text-slate-600 transition-all">
+                        <i class="fas fa-clipboard-check block text-xl mb-2 text-emerald-400"></i> Laporan Aktiviti
+                    </button>
+                    <button onclick="renderMeritSystem()" class="p-6 bg-white rounded-[2rem] border border-slate-50 shadow-sm hover:border-amber-500 font-black uppercase italic text-[10px] text-slate-600 transition-all">
+                        <i class="fas fa-medal block text-xl mb-2 text-amber-400"></i> Sistem Merit
+                    </button>
+                </div>
+                <div id="unit-workspace" class="animate-in"></div>`;
+            renderUnitStudents();
+        };
+
+        window.renderUnitStudents = async () => {
+            const ws = document.getElementById('unit-workspace');
+            ws.innerHTML = `<p class="text-center font-black text-xs text-slate-300 animate-pulse py-20">MEMUATKAN DATA MURID...</p>`;
+            const q = query(collection(db, "students_master"), where("unit", "==", currentUnit), where("year", "==", currentYear));
+            const snap = await getDocs(q);
+            
+            let table = `
+                <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-[9px] uppercase tracking-widest text-slate-400 border-b border-slate-50">
+                                <th class="py-4 px-4">Nama</th><th class="py-4 px-4">MyKid</th><th class="py-4 px-4">Jantina</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-xs font-medium text-slate-600">`;
+            
+            snap.forEach(doc => {
+                const s = doc.data();
+                table += `<tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                    <td class="py-4 px-4 font-black text-slate-700 uppercase italic">${s.name}</td>
+                    <td class="py-4 px-4 font-bold text-slate-400">${s.mykid}</td>
+                    <td class="py-4 px-4 font-black text-[10px] text-indigo-500">${s.gender}</td>
+                </tr>`;
+            });
+            ws.innerHTML = snap.empty ? `<div class="p-10 text-center font-bold text-slate-400 border-2 border-dashed rounded-[2rem]">Tiada murid didaftarkan.</div>` : table + `</tbody></table></div>`;
+        };
+
+        window.renderMeritSystem = async () => {
+            const ws = document.getElementById('unit-workspace');
+            ws.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm h-fit">
+                        <h3 class="font-black italic uppercase text-xs mb-6 text-indigo-600">Pemberian Merit</h3>
+                        <form id="merit-form" class="space-y-4">
+                            <select id="merit-student" class="w-full px-5 py-4 bg-slate-50 rounded-2xl font-bold text-xs" required></select>
+                            <input type="number" id="merit-score" class="w-full px-5 py-4 bg-slate-50 rounded-2xl font-bold text-xs" placeholder="Markah (Cth: 10)" required>
+                            <textarea id="merit-reason" class="w-full px-5 py-4 bg-slate-50 rounded-2xl font-bold text-xs h-32" placeholder="Sebab Merit..." required></textarea>
+                            <button type="submit" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase italic text-[10px]">Simpan Rekod</button>
+                        </form>
+                    </div>
+                    <div class="lg:col-span-2 space-y-4">
+                        <h3 class="font-black italic uppercase text-[10px] text-slate-400 ml-4">Rekod Merit Keseluruhan</h3>
+                        <div id="merit-history" class="space-y-3"></div>
+                    </div>
+                </div>`;
+            
+            const qS = query(collection(db, "students_master"), where("unit", "==", currentUnit));
+            const snapS = await getDocs(qS);
+            const select = document.getElementById('merit-student');
+            select.innerHTML = `<option value="">-- Pilih Murid --</option>`;
+            snapS.forEach(d => select.innerHTML += `<option value="${d.data().mykid}|${d.data().name}">${d.data().name}</option>`);
+
+            const qM = query(collection(db, "merits"), where("unit", "==", currentUnit), orderBy("createdAt", "desc"));
+            const snapM = await getDocs(qM);
+            const history = document.getElementById('merit-history');
+            snapM.forEach(doc => {
+                const m = doc.data();
+                history.innerHTML += `
+                    <div class="bg-white p-6 rounded-[2rem] border border-slate-50 shadow-sm flex justify-between items-center group">
+                        <div>
+                            <p class="font-black text-slate-800 uppercase italic text-[11px] mb-1">${m.studentName}</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">${m.reason}</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="px-4 py-2 bg-amber-50 text-amber-600 rounded-xl font-black text-xs">+${m.score}</span>
+                            <button onclick="deleteMerit('${doc.id}')" class="text-rose-200 group-hover:text-rose-500 transition-colors"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`;
+            });
+
+            document.getElementById('merit-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const [mykid, name] = document.getElementById('merit-student').value.split('|');
+                await addDoc(collection(db, "merits"), { unit: currentUnit, mykid, studentName: name, score: parseInt(document.getElementById('merit-score').value), reason: document.getElementById('merit-reason').value.toUpperCase(), year: currentYear, createdAt: new Date().toISOString() });
+                renderMeritSystem();
+            };
+        };
+        window.renderUnitFolders = async () => {
+            const ws = document.getElementById('unit-workspace');
+            ws.innerHTML = `
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="font-black italic uppercase text-xs text-slate-400">Rekod Perjumpaan Aktiviti</h3>
+                    <button onclick="createNewFolder()" class="px-6 py-3 bg-emerald-600 text-white rounded-2xl font-black uppercase italic text-[10px] shadow-lg shadow-emerald-50">Mula Perjumpaan Baru</button>
+                </div>
+                <div id="folders-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>`;
 
             const q = query(collection(db, "folders"), where("unit", "==", currentUnit), where("year", "==", currentYear), orderBy("createdAt", "desc"));
             const snap = await getDocs(q);
             const grid = document.getElementById('folders-grid');
-            if(snap.empty) grid.innerHTML = `<div class="md:col-span-3 py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-100 text-center text-slate-300 uppercase font-black text-xs tracking-widest">Tiada rekod perjumpaan</div>`;
             snap.forEach(doc => {
                 const f = doc.data();
                 grid.innerHTML += `
-                    <div onclick="openFolder('${doc.id}')" class="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-50 cursor-pointer hover:shadow-xl transition-all group">
+                    <div onclick="openFolder('${doc.id}')" class="bg-white p-8 rounded-[3rem] border border-slate-50 shadow-sm cursor-pointer hover:shadow-xl group transition-all">
                         <div class="flex justify-between mb-4">
-                            <div class="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center"><i class="fas fa-folder"></i></div>
-                            <button onclick="event.stopPropagation(); deleteFolder('${doc.id}')" class="text-rose-200 hover:text-rose-500 opacity-0 group-hover:opacity-100"><i class="fas fa-trash-alt"></i></button>
+                            <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center"><i class="fas fa-folder"></i></div>
+                            <button onclick="event.stopPropagation(); deleteFolder('${doc.id}')" class="text-rose-100 group-hover:text-rose-500"><i class="fas fa-trash-alt"></i></button>
                         </div>
-                        <h3 class="font-black text-slate-700 uppercase italic leading-tight mb-2">${f.title}</h3>
+                        <h4 class="font-black text-slate-800 uppercase italic text-xs mb-1">${f.title}</h4>
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">${new Date(f.date).toLocaleDateString('ms-MY')}</p>
                     </div>`;
             });
         };
 
-        window.createNewFolder = async () => {
-            const title = prompt("Masukkan tajuk perjumpaan:");
-            if(!title) return;
-            await addDoc(collection(db, "folders"), { unit: currentUnit, title: title.toUpperCase(), date: new Date().toISOString().split('T')[0], year: currentYear, createdAt: new Date().toISOString() });
-            renderUnitFolders();
-        };
-
-        window.deleteFolder = async (id) => {
-            if(!confirm("Padam perjumpaan ini? Semua laporan di dalamnya akan dibuang.")) return;
-            const reports = await getDocs(query(collection(db, "reports"), where("folderId", "==", id)));
-            const batch = writeBatch(db);
-            reports.forEach(d => batch.delete(d.ref));
-            await batch.commit();
-            await deleteDoc(doc(db, "folders", id));
-            renderUnitFolders();
-        };
-
         window.openFolder = async (id) => {
             const fDoc = await getDoc(doc(db, "folders", id));
-            currentFolder = { id: id, ...fDoc.data() };
-            renderReports();
-        };
-
-        window.renderReports = async () => {
-            const view = document.getElementById('content-view');
-            view.innerHTML = `
-                <div class="flex justify-between items-center mb-10">
-                    <button onclick="renderUnitFolders()" class="w-10 h-10 bg-white rounded-xl border border-slate-50 flex items-center justify-center"><i class="fas fa-arrow-left"></i></button>
-                    <div class="flex gap-3">
-                        <button onclick="renderReportForm()" class="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-black uppercase italic text-xs tracking-widest">Laporan Murid</button>
-                        <button onclick="printUnitReports()" class="w-10 h-10 bg-white rounded-xl border border-slate-50 flex items-center justify-center text-slate-400"><i class="fas fa-print"></i></button>
-                    </div>
-                </div>
-                <div id="reports-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>`;
-
-            const q = query(collection(db, "reports"), where("folderId", "==", currentFolder.id), orderBy("createdAt", "desc"));
-            const snap = await getDocs(q);
-            const grid = document.getElementById('reports-grid');
-            snap.forEach(doc => {
-                const r = doc.data();
-                grid.innerHTML += `
-                    <div class="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-50 group hover:shadow-xl transition-all relative">
-                        <div class="flex justify-between mb-4">
-                            <h3 class="font-black text-slate-800 uppercase italic truncate max-w-[200px]">${r.studentName}</h3>
-                            <button onclick="deleteReport('${doc.id}')" class="text-rose-200 hover:text-rose-500 opacity-0 group-hover:opacity-100"><i class="fas fa-trash"></i></button>
+            currentFolder = { id, ...fDoc.data() };
+            const ws = document.getElementById('unit-workspace');
+            ws.innerHTML = `
+                <div class="bg-white p-10 rounded-[3.5rem] border border-slate-50 shadow-sm mb-10">
+                    <div class="flex justify-between items-start mb-10">
+                        <div>
+                            <h3 class="text-2xl font-black text-slate-800 uppercase italic mb-1">${currentFolder.title}</h3>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${currentFolder.date}</p>
                         </div>
-                        <div class="p-4 bg-slate-50 rounded-2xl mb-4"><p class="text-xs font-medium text-slate-600">${r.summary}</p></div>
-                        <div class="flex justify-between items-center">
-                            <span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[9px] font-black italic">${r.status}</span>
-                            <p class="text-[8px] font-bold text-slate-300 uppercase">${new Date(r.createdAt).toLocaleTimeString()}</p>
+                        <div class="flex gap-2">
+                            <button onclick="renderReportForm()" class="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black uppercase italic text-[10px]">Isi Laporan</button>
+                            <button onclick="printUnitReports()" class="w-12 h-12 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center hover:bg-slate-800 hover:text-white transition-all"><i class="fas fa-print"></i></button>
+                        </div>
+                    </div>
+                    <div id="reports-list" class="space-y-4"></div>
+                </div>`;
+            
+            const qR = query(collection(db, "reports"), where("folderId", "==", id), orderBy("createdAt", "desc"));
+            const snapR = await getDocs(qR);
+            const list = document.getElementById('reports-list');
+            snapR.forEach(d => {
+                const r = d.data();
+                list.innerHTML += `
+                    <div class="p-6 bg-slate-50 rounded-[2rem] flex justify-between items-center group">
+                        <div class="flex-1">
+                            <p class="font-black italic text-[11px] text-slate-700 uppercase mb-1">${r.studentName}</p>
+                            <p class="text-[10px] font-medium text-slate-400">${r.summary}</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="px-4 py-2 bg-white rounded-xl text-[9px] font-black italic border border-slate-100">${r.status}</span>
+                            <button onclick="deleteReport('${d.id}')" class="text-rose-200 group-hover:text-rose-500"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>`;
             });
         };
 
-        window.renderReportForm = () => {
-            const view = document.getElementById('content-view');
-            view.innerHTML = `
-                <div class="max-w-2xl mx-auto">
-                    <button onclick="renderReports()" class="mb-8 text-[10px] font-black text-slate-400 uppercase tracking-widest"><i class="fas fa-arrow-left mr-2"></i> Batal</button>
-                    <div class="bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-50">
-                        <h2 class="text-2xl font-black text-slate-800 uppercase italic mb-8">Laporan Aktiviti Murid</h2>
-                        <form id="report-form" class="space-y-6">
-                            <select id="rep-student" class="w-full px-6 py-4 bg-slate-50 rounded-2xl font-bold text-xs" required>
-                                <option value="">-- PILIH MURID --</option>
-                                ${allStudentsMaster.map(s => `<option value="${s.mykid}|${s.name}">${s.name} (${s.mykid})</option>`).join('')}
-                            </select>
-                            <div class="grid grid-cols-2 gap-4">
-                                <select id="rep-gender" class="px-6 py-4 bg-slate-50 rounded-2xl font-bold text-xs"><option value="LELAKI">LELAKI</option><option value="PEREMPUAN">PEREMPUAN</option></select>
-                                <select id="rep-status" class="px-6 py-4 bg-slate-50 rounded-2xl font-bold text-xs"><option value="HADIR">HADIR</option><option value="TIDAK HADIR">TIDAK HADIR</option></select>
-                            </div>
-                            <textarea id="rep-summary" class="w-full px-6 py-4 bg-slate-50 rounded-2xl text-sm" rows="4" placeholder="Ringkasan aktiviti..." required></textarea>
-                            <button type="submit" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase italic tracking-widest text-xs">Simpan Laporan</button>
-                        </form>
-                    </div>
+        window.renderReportForm = async () => {
+            const ws = document.getElementById('unit-workspace');
+            ws.innerHTML = `
+                <div class="max-w-2xl mx-auto bg-white p-12 rounded-[4rem] border shadow-sm">
+                    <h3 class="text-2xl font-black italic uppercase text-center mb-10">Laporan Murid</h3>
+                    <form id="report-form" class="space-y-6">
+                        <select id="rep-student" class="w-full px-6 py-5 bg-slate-50 rounded-3xl font-bold text-xs" required></select>
+                        <div class="grid grid-cols-2 gap-4">
+                            <select id="rep-gender" class="px-6 py-5 bg-slate-50 rounded-3xl font-bold text-xs"><option value="LELAKI">LELAKI</option><option value="PEREMPUAN">PEREMPUAN</option></select>
+                            <select id="rep-status" class="px-6 py-5 bg-slate-50 rounded-3xl font-bold text-xs"><option value="HADIR">HADIR</option><option value="TIDAK HADIR">TIDAK HADIR</option></select>
+                        </div>
+                        <textarea id="rep-summary" class="w-full px-6 py-5 bg-slate-50 rounded-3xl font-bold text-xs h-40" placeholder="Ringkasan aktiviti..." required></textarea>
+                        <button type="submit" class="w-full py-5 bg-indigo-600 text-white rounded-[2rem] font-black uppercase italic text-xs">Simpan Laporan</button>
+                        <button type="button" onclick="openFolder('${currentFolder.id}')" class="w-full text-[10px] font-black uppercase text-slate-300">Batal</button>
+                    </form>
                 </div>`;
+            
+            const qS = query(collection(db, "students_master"), where("unit", "==", currentUnit));
+            const snapS = await getDocs(qS);
+            const sel = document.getElementById('rep-student');
+            snapS.forEach(d => sel.innerHTML += `<option value="${d.data().mykid}|${d.data().name}">${d.data().name}</option>`);
+
             document.getElementById('report-form').onsubmit = async (e) => {
                 e.preventDefault();
                 const [mykid, name] = document.getElementById('rep-student').value.split('|');
-                await addDoc(collection(db, "reports"), { folderId: currentFolder.id, unit: currentUnit, year: currentYear, mykid, studentName: name, gender: document.getElementById('rep-gender').value, status: document.getElementById('rep-status').value, summary: document.getElementById('rep-summary').value, createdAt: new Date().toISOString() });
-                renderReports();
+                await addDoc(collection(db, "reports"), { folderId: currentFolder.id, unit: currentUnit, mykid, studentName: name, gender: document.getElementById('rep-gender').value, status: document.getElementById('rep-status').value, summary: document.getElementById('rep-summary').value.toUpperCase(), year: currentYear, createdAt: new Date().toISOString() });
+                openFolder(currentFolder.id);
             };
         };
 
-        // --- DATA MASTER MANAGEMENT ---
-        window.renderMasterData = async () => {
-            currentView = 'master';
+        // ANALISIS & MASTER DATA (KHUSUS ADMIN)
+        window.renderAnalysis = async () => {
+            const view = document.getElementById('content-view');
+            view.innerHTML = `<p class="text-center py-20 animate-pulse font-black text-slate-300 uppercase">Menjana Analisis L/P...</p>`;
+            const sSnap = await getDocs(query(collection(db, "students_master"), where("year", "==", currentYear)));
+            const stats = {};
+            sSnap.forEach(d => {
+                const s = d.data();
+                if (!stats[s.unit]) stats[s.unit] = { L: 0, P: 0, T: 0 };
+                if (s.gender === 'LELAKI') stats[s.unit].L++; else stats[s.unit].P++;
+                stats[s.unit].T++;
+            });
+
+            let html = `<button onclick="renderDashboard()" class="mb-8 font-black text-[10px] text-slate-400 uppercase italic"><i class="fas fa-arrow-left"></i> Dashboard</button>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
+            
+            Object.keys(stats).sort().forEach(u => {
+                html += `
+                    <div class="bg-white p-8 rounded-[3rem] border border-slate-50 shadow-sm">
+                        <h4 class="font-black italic uppercase text-xs mb-4 text-indigo-600">${u}</h4>
+                        <div class="flex justify-between items-end">
+                            <div><p class="text-[9px] font-bold text-slate-400 uppercase">L: ${stats[u].L} | P: ${stats[u].P}</p><p class="text-2xl font-black">${stats[u].T}</p></div>
+                            <i class="fas fa-users text-slate-50 text-4xl"></i>
+                        </div>
+                    </div>`;
+            });
+            view.innerHTML = html + `</div>`;
+        };
+
+        window.renderMasterData = () => {
             const view = document.getElementById('content-view');
             view.innerHTML = `
-                <div class="flex justify-between items-center mb-10">
-                    <div class="flex items-center gap-4">
-                        <button onclick="renderDashboard()" class="w-10 h-10 bg-white rounded-xl border border-slate-50 flex items-center justify-center"><i class="fas fa-arrow-left"></i></button>
-                        <h2 class="text-2xl font-black text-slate-800 uppercase italic">Data Master</h2>
-                    </div>
+                <div class="flex justify-between items-center mb-8">
+                    <button onclick="renderDashboard()" class="font-black text-[10px] text-slate-400 uppercase"><i class="fas fa-arrow-left"></i></button>
                     <div class="flex gap-2">
-                        <label class="px-6 py-3 bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase italic cursor-pointer">Import CSV <input type="file" id="csv-import" class="hidden" accept=".csv"></label>
-                        <button onclick="clearMasterData()" class="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl border border-rose-100 flex items-center justify-center"><i class="fas fa-trash-alt"></i></button>
+                        <label class="px-6 py-3 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase italic cursor-pointer">Import CSV <input type="file" id="csv-import" class="hidden" accept=".csv"></label>
+                        <button onclick="clearAllData()" class="px-6 py-3 bg-rose-50 text-rose-500 rounded-2xl text-[10px] font-black uppercase italic">Kosongkan Data</button>
                     </div>
                 </div>
-                <div id="master-stats" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10"></div>
-                <div class="bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-50 overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="text-[9px] uppercase tracking-widest text-slate-400 border-b border-slate-50">
-                                <th class="py-4 px-4">Nama</th><th class="py-4 px-4">MyKid</th><th class="py-4 px-4">Jantina</th><th class="py-4 px-4">Unit</th><th class="py-4 px-4">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="master-table-body" class="text-xs font-medium text-slate-600"></tbody>
-                    </table>
-                </div>`;
-            updateMasterTable();
-            document.getElementById('csv-import').onchange = (e) => importCSV(e);
+                <div id="master-table" class="bg-white rounded-[3rem] border shadow-sm p-8"></div>`;
+            
+            document.getElementById('csv-import').onchange = (e) => {
+                const file = e.target.files[0];
+                Papa.parse(file, { header: true, complete: async (res) => {
+                    const batch = writeBatch(db);
+                    res.data.forEach(row => {
+                        if(row.name && row.mykid) {
+                            const ref = doc(collection(db, "students_master"));
+                            batch.set(ref, { name: row.name.toUpperCase(), mykid: row.mykid, gender: row.gender.toUpperCase(), unit: row.unit, year: currentYear });
+                        }
+                    });
+                    await batch.commit(); alert("Data Berjaya Diimport!"); renderMasterData();
+                }});
+            };
         };
 
-        async function updateMasterTable() {
-            const q = query(collection(db, "students_master"), where("year", "==", currentYear), orderBy("name", "asc"));
-            const snap = await getDocs(q);
-            const tbody = document.getElementById('master-table-body');
-            tbody.innerHTML = '';
-            let cL = 0, cP = 0;
-            snap.forEach(doc => {
-                const s = doc.data();
-                if(s.gender === 'LELAKI' || s.gender === 'L') cL++; else cP++;
-                tbody.innerHTML += `
-                    <tr class="border-b border-slate-50">
-                        <td class="py-4 px-4 font-black text-slate-700 uppercase italic">${s.name}</td>
-                        <td class="py-4 px-4 font-bold text-slate-400">${s.mykid}</td>
-                        <td class="py-4 px-4 text-indigo-400 font-bold">${s.gender}</td>
-                        <td class="py-4 px-4 font-black uppercase text-[9px]">${s.unit}</td>
-                        <td class="py-4 px-4"><button onclick="deleteMasterStudent('${doc.id}')" class="text-rose-300 hover:text-rose-500"><i class="fas fa-user-minus"></i></button></td>
-                    </tr>`;
-            });
-            document.getElementById('master-stats').innerHTML = `
-                <div class="stat-card border-indigo-500 shadow-sm"><p class="text-[9px] font-black text-slate-400 uppercase">JUMLAH</p><p class="text-2xl font-black">${snap.size}</p></div>
-                <div class="stat-card border-blue-500 shadow-sm"><p class="text-[9px] font-black text-slate-400 uppercase">LELAKI</p><p class="text-2xl font-black">${cL}</p></div>
-                <div class="stat-card border-pink-500 shadow-sm"><p class="text-[9px] font-black text-slate-400 uppercase">PEREMPUAN</p><p class="text-2xl font-black">${cP}</p></div>
-                <div class="stat-card border-emerald-500 shadow-sm"><p class="text-[9px] font-black text-slate-400 uppercase">TAHUN</p><p class="text-2xl font-black">${currentYear}</p></div>`;
+        window.createNewFolder = async () => {
+            const title = prompt("TAJUK PERJUMPAAN:");
+            if(!title) return;
+            await addDoc(collection(db, "folders"), { unit: currentUnit, title: title.toUpperCase(), date: new Date().toISOString().split('T')[0], year: currentYear, createdAt: new Date().toISOString() });
+            renderUnitFolders();
+        };
+
+        window.deleteFolder = async (id) => { if(confirm("Padam folder perjumpaan?")) await deleteDoc(doc(db, "folders", id)), renderUnitFolders(); };
+        window.deleteReport = async (id) => { if(confirm("Padam laporan?")) await deleteDoc(doc(db, "reports", id)), openFolder(currentFolder.id); };
+        window.deleteMerit = async (id) => { if(confirm("Padam merit?")) await deleteDoc(doc(db, "merits", id)), renderMeritSystem(); };
+        window.toggleAuth = (m) => { document.getElementById('login-container').classList.add('hidden'); document.getElementById('register-container').classList.add('hidden'); document.getElementById('student-view-container').classList.add('hidden'); document.getElementById(m+'-container').classList.remove('hidden'); if(m==='register') populateUnitSelects(); };
+        window.logout = () => signOut(auth);
+        document.getElementById('logout-btn').onclick = () => confirm("Log Keluar?") && signOut(auth);
+        document.getElementById('login-form').onsubmit = (e) => { e.preventDefault(); signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value); };
+        
+        function populateUnitSelects() {
+            const u = document.getElementById('reg-uniform'); const c = document.getElementById('reg-club'); const s = document.getElementById('reg-sport');
+            u.innerHTML = c.innerHTML = s.innerHTML = '<option value="">-- Sila Pilih --</option>';
+            kokoData["Unit Beruniform"].forEach(i => u.innerHTML += `<option value="${i}">${i}</option>`);
+            kokoData["Kelab & Persatuan"].forEach(i => c.innerHTML += `<option value="${i}">${i}</option>`);
+            kokoData["Sukan & Permainan"].forEach(i => s.innerHTML += `<option value="${i}">${i}</option>`);
         }
 
-        window.importCSV = (event) => {
-            const file = event.target.files[0];
-            if(!file) return;
-            Papa.parse(file, { header: true, skipEmptyLines: true, complete: async (res) => {
-                const batch = writeBatch(db);
-                res.data.forEach(row => {
-                    if(row.name && row.mykid && row.unit) {
-                        const newDoc = doc(collection(db, "students_master"));
-                        batch.set(newDoc, { name: row.name.toUpperCase(), mykid: row.mykid.toString().trim(), gender: row.gender ? row.gender.toUpperCase() : 'LELAKI', unit: row.unit, year: currentYear, createdAt: new Date().toISOString() });
-                    }
-                });
-                await batch.commit(); alert("Berjaya import!"); updateMasterTable(); fetchAllStudents();
-            }});
-        };
-
-        window.clearMasterData = async () => { if(confirm("Hapus semua data master 2026?")) { const q = query(collection(db, "students_master"), where("year", "==", currentYear)); const snap = await getDocs(q); const batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); await batch.commit(); updateMasterTable(); fetchAllStudents(); } };
-        window.deleteMasterStudent = async (id) => { if(confirm("Hapus murid ini?")) { await deleteDoc(doc(db, "students_master", id)); updateMasterTable(); fetchAllStudents(); } };
-
-        // --- PUBLIC SEARCH (STUDENT VIEW) ---
-        window.searchStudentPublic = async () => {
-            const mk = document.getElementById('student-search-input').value.trim();
-            if(!mk) return;
-            const res = document.getElementById('student-public-result');
-            res.innerHTML = `<p class="text-center font-black animate-pulse uppercase text-xs tracking-widest text-indigo-400">Mencari rekod...</p>`;
-            const q = query(collection(db, "reports"), where("mykid", "==", mk), where("year", "==", currentYear));
-            const snap = await getDocs(q);
-            if(snap.empty) { res.innerHTML = `<div class="bg-rose-50 p-10 rounded-3xl text-center text-rose-500 font-black italic uppercase">Rekod tidak dijumpai</div>`; return; }
-            const reports = snap.docs.map(d => d.data());
-            res.innerHTML = `<div class="bg-indigo-600 p-10 rounded-[3rem] text-white shadow-xl mb-6 animate-in">
-                <p class="text-[9px] font-black opacity-60 uppercase mb-2">PROFIL MURID</p>
-                <h2 class="text-3xl font-black uppercase italic tracking-tighter mb-6">${reports[0].studentName}</h2>
-                <div class="grid grid-cols-2 gap-4 text-xs font-bold">
-                    <div class="bg-white/10 p-4 rounded-2xl"><p class="opacity-60 mb-1">MyKid</p>${mk}</div>
-                    <div class="bg-white/10 p-4 rounded-2xl"><p class="opacity-60 mb-1">Kehadiran</p>${reports.length} Kali</div>
-                </div>
-            </div>
-            <div class="space-y-4">${reports.map(r => `<div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-50 flex justify-between items-center">
-                <div><p class="text-[8px] font-black text-slate-300 uppercase mb-1">${r.unit}</p><h4 class="font-black text-slate-700 uppercase italic text-xs">${r.summary}</h4></div>
-                <span class="px-4 py-2 bg-slate-100 text-slate-400 rounded-xl text-[8px] font-black italic">${r.status}</span>
-            </div>`).join('')}</div>`;
-        };
-
-        // --- TOGGLES & HELPERS ---
-        window.toggleAuth = (mode) => {
-            ['login-container', 'register-container', 'student-view-container'].forEach(id => document.getElementById(id).classList.add('hidden'));
-            document.getElementById(mode + '-container').classList.remove('hidden');
-            if(mode === 'register') populateUnitSelects('reg-uniform', 'reg-club', 'reg-sport');
-        };
-
-        function populateUnitSelects(u, c, s) {
-            const ud = document.getElementById(u); const cd = document.getElementById(c); const sd = document.getElementById(s);
-            ud.innerHTML = `<option value="">-- UNIT BERUNIFORM --</option>`; cd.innerHTML = `<option value="">-- KELAB --</option>`; sd.innerHTML = `<option value="">-- SUKAN --</option>`;
-            kokoData["Unit Beruniform"].forEach(i => ud.innerHTML += `<option value="${i}">${i}</option>`);
-            kokoData["Kelab & Persatuan"].forEach(i => cd.innerHTML += `<option value="${i}">${i}</option>`);
-            kokoData["Sukan & Permainan"].forEach(i => sd.innerHTML += `<option value="${i}">${i}</option>`);
-        }
-
-        document.getElementById('login-form').onsubmit = (e) => { e.preventDefault(); signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value).catch(() => alert("Gagal!")); };
-        document.getElementById('register-form').onsubmit = async (e) => { e.preventDefault(); try { const c = await createUserWithEmailAndPassword(auth, document.getElementById('reg-email').value, document.getElementById('reg-password').value); await setDoc(doc(db, "users", c.user.uid), { name: document.getElementById('reg-name').value.toUpperCase(), uniform: document.getElementById('reg-uniform').value, club: document.getElementById('reg-club').value, sport: document.getElementById('reg-sport').value, role: 'teacher', email: document.getElementById('reg-email').value, uid: c.user.uid }); location.reload(); } catch(err){alert(err.message);} };
-        document.getElementById('logout-btn').onclick = () => { if(confirm("Log keluar?")) signOut(auth); };
-
-        // --- PRINT LOGIC ---
         window.printUnitReports = async () => {
             const q = query(collection(db, "reports"), where("folderId", "==", currentFolder.id), orderBy("studentName", "asc"));
             const snap = await getDocs(q);
             let tr = '';
-            snap.forEach((d, i) => { const r = d.data(); tr += `<tr><td style="border:1px solid #000; padding:8px;">${i+1}</td><td style="border:1px solid #000; padding:8px; font-weight:bold;">${r.studentName}</td><td style="border:1px solid #000; padding:8px;">${r.mykid}</td><td style="border:1px solid #000; padding:8px;">${r.gender}</td><td style="border:1px solid #000; padding:8px;">${r.status}</td><td style="border:1px solid #000; padding:8px;">${r.summary}</td></tr>`; });
-            const p = `<div style="padding:40px; font-family:sans-serif;"><div style="text-align:center; border-bottom:2px solid #000; margin-bottom:20px;"><h2>LAPORAN KOKURIKULUM: ${currentUnit.toUpperCase()}</h2><p>PERJUMPAAN: ${currentFolder.title} | TARIKH: ${new Date(currentFolder.date).toLocaleDateString()}</p></div><table style="width:100%; border-collapse:collapse;"><thead><tr style="background:#eee;"><th style="border:1px solid #000; padding:8px;">BIL</th><th style="border:1px solid #000; padding:8px;">NAMA MURID</th><th style="border:1px solid #000; padding:8px;">MYKID</th><th style="border:1px solid #000; padding:8px;">JANTINA</th><th style="border:1px solid #000; padding:8px;">STATUS</th><th style="border:1px solid #000; padding:8px;">RINGKASAN AKTIVITI</th></tr></thead><tbody>${tr}</tbody></table></div>`;
-            const ori = document.body.innerHTML;
-            document.body.innerHTML = p; window.print(); document.body.innerHTML = ori; location.reload();
+            snap.forEach((d, i) => { const r = d.data(); tr += `<tr><td style="border:1px solid #000; padding:10px;">${i+1}</td><td style="border:1px solid #000; padding:10px; font-weight:900;">${r.studentName}</td><td style="border:1px solid #000; padding:10px;">${r.mykid}</td><td style="border:1px solid #000; padding:10px;">${r.status}</td><td style="border:1px solid #000; padding:10px;">${r.summary}</td></tr>`; });
+            const p = `<div style="padding:40px; font-family:sans-serif;"><h2 style="text-align:center; text-transform:uppercase;">LAPORAN ${currentUnit}</h2><p style="text-align:center; text-transform:uppercase;">PERJUMPAAN: ${currentFolder.title} | TARIKH: ${currentFolder.date}</p><table style="width:100%; border-collapse:collapse; margin-top:20px;"><thead><tr style="background:#f2f2f2;"><th style="border:1px solid #000; padding:10px;">BIL</th><th style="border:1px solid #000; padding:10px;">NAMA MURID</th><th style="border:1px solid #000; padding:10px;">MYKID</th><th style="border:1px solid #000; padding:10px;">STATUS</th><th style="border:1px solid #000; padding:10px;">RINGKASAN AKTIVITI</th></tr></thead><tbody>${tr}</tbody></table></div>`;
+            const ori = document.body.innerHTML; document.body.innerHTML = p; window.print(); document.body.innerHTML = ori; location.reload();
         };
     </script>
 </body>
 </html>
-
