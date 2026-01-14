@@ -457,7 +457,7 @@ window.processCSV = (input) => {
             <input type="file" id="f-image" accept="image/*" class="w-full text-xs font-bold text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
         </div>`;
 }
-            } else if (currentFolder === "Pencapaian Merit") {
+             else if (currentFolder === "Pencapaian Merit") {
                 title.innerText = "Tambah Pencapaian Merit";
                 fields.innerHTML = `<div class="relative"><input type="text" id="m-name" placeholder="TAIP NAMA MURID..." required onkeyup="filterStudents(this)" class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><div id="search-container" class="search-results"></div></div><input type="text" id="m-event" placeholder="NAMA PERTANDINGAN" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><select id="m-level" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="">-- PERINGKAT --</option><option value="SEKOLAH">SEKOLAH</option><option value="ZON">ZON</option><option value="DAERAH">DAERAH</option><option value="NEGERI">NEGERI</option><option value="KEBANGSAAN">KEBANGSAAN</option></select><select id="m-achieve" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="">-- PENCAPAIAN --</option><option value="JOHAN">JOHAN</option><option value="KEDUA">KEDUA</option><option value="KETIGA">KETIGA</option><option value="PENYERTAAN">PENYERTAAN</option></select>`;
             }
@@ -567,4 +567,5 @@ window.processCSV = (input) => {
     </script>
 </body>
 </html>
+
 
