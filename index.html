@@ -634,11 +634,19 @@ window.renderAnalysis = async () => {
     });
 
 for (const unit of units) {
+    console.log(`--- Memulakan analisis untuk unit: ${unit} ---`); // LOG 1
+
     const q = query(collection(db, "students"), where("unit", "==", unit), where("year", "==", currentYear));
     const snap = await getDocs(q);
-    const studs = snap.docs.map(d => d.data());
     
-    // PENAMBAHBAIKAN: Gunakan medan 'gender' dan pastikan ia kalis ralat
+    console.log(`Jumlah dokumen pelajar ditemui bagi ${unit}: ${snap.size}`); // LOG 2
+
+    const studs = snap.docs.map(d => {
+        const data = d.data();
+        console.log(`Data Pelajar:`, data); // LOG 3: Lihat nama field & nilai sebenar
+        return data;
+    });
+    
     const L = studs.filter(s => {
         const g = (s.gender || "").toString().trim().toUpperCase();
         return g === "L" || g === "LELAKI";
@@ -649,9 +657,10 @@ for (const unit of units) {
         return g === "P" || g === "PEREMPUAN";
     }).length;
 
+    console.log(`Hasil Tapisan - L: ${L}, P: ${P}`); // LOG 4
+
     const jumLaporan = reportDataMap[unit] || 0;
     
-    // Ambil jumlah skor merit (Pastikan medan di Firestore adalah 'score')
     const mq = query(collection(db, "merits"), where("unit", "==", unit), where("year", "==", currentYear));
     const mSnap = await getDocs(mq);
     const totalScore = mSnap.docs.reduce((sum, d) => sum + (Number(d.data().score) || 0), 0);
@@ -904,6 +913,7 @@ window.printAllTakwim = async () => {
     </script>
 </body>
 </html>
+
 
 
 
