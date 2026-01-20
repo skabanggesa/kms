@@ -144,7 +144,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, getDocs, deleteDoc, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, getDocs, deleteDoc, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDpahvPPRtSLJ7o6p63rQEOCNqMDHgxe7o",
@@ -429,14 +429,8 @@
                 }
             });
 
-// --- KOD CARTA PRESTASI LAPORAN (MELINTANG) ---
             const unitLabels = Object.keys(stats).sort();
             const reportData = unitLabels.map(u => stats[u].reports);
-
-            // Pastikan kita musnahkan chart lama jika ada sebelum buat baru
-            if (chartInstances['reportChart']) {
-                chartInstances['reportChart'].destroy();
-            }
 
             chartInstances['reportChart'] = new Chart(document.getElementById('reportChart'), {
                 type: 'bar',
@@ -446,52 +440,28 @@
                         label: 'Bil. Laporan', 
                         data: reportData, 
                         backgroundColor: '#6366f1',
-                        borderRadius: 4, // Bucu bar sedikit bulat supaya lebih moden
-                        barPercentage: 0.7 // Laraskan ketebalan bar
+                        borderRadius: 4, 
+                        barPercentage: 0.7
                     }]
                 },
                 options: {
-                    indexAxis: 'y', // MENUKAR KE CARTA MELINTANG
+                    indexAxis: 'y', 
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
                         x: {
-                            // Paksi X = Nombor (Bilangan)
                             beginAtZero: true,
-                            grid: {
-                                color: '#f1f5f9' // Warna grid yang pudar
-                            },
-                            ticks: {
-                                stepSize: 1, // Pastikan nombor bulat (1, 2, 3...)
-                                font: { size: 10 }
-                            }
+                            grid: { color: '#f1f5f9' },
+                            ticks: { stepSize: 1, font: { size: 10 } }
                         },
                         y: {
-                            // Paksi Y = Label (Nama Unit)
-                            grid: {
-                                display: false // Hilangkan grid menegak supaya lebih bersih
-                            },
-                            ticks: {
-                                display: true,
-                                autoSkip: false, // Pastikan SEMUA nama unit keluar
-                                font: { 
-                                    size: 10,
-                                    weight: 'bold'
-                                }
-                            }
+                            grid: { display: false },
+                            ticks: { display: true, autoSkip: false, font: { size: 10, weight: 'bold' } }
                         }
                     },
                     plugins: {
-                        legend: {
-                            display: false // Sembunyikan legend
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return ` ${context.raw} Laporan`;
-                                }
-                            }
-                        }
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: function(context) { return ` ${context.raw} Laporan`; } } }
                     }
                 }
             });
@@ -622,7 +592,7 @@
             currentUnit = unit;
             const folders = [
                 { name: "Senarai Ahli Murid", icon: "fas fa-users", color: "text-blue-500" },
-                { name: "Perancangan Tahunan", icon: "fas fa-calendar-alt", color: "text-pink-500" }, // NEW FOLDER
+                { name: "Perancangan Tahunan", icon: "fas fa-calendar-alt", color: "text-pink-500" }, 
                 { name: "Rekod Kehadiran", icon: "fas fa-calendar-check", color: "text-amber-500" },
                 { name: "Laporan Aktiviti", icon: "fas fa-file-signature", color: "text-indigo-500" },
                 { name: "Pencapaian Merit", icon: "fas fa-trophy", color: "text-emerald-500" }
@@ -639,6 +609,8 @@
             if (folder !== "Senarai Ahli Murid") {
                 actionButtons += `<button onclick="openCRUD()" class="bg-indigo-600 text-white px-6 py-2 rounded-xl font-black text-xs uppercase shadow-md mr-2">Tambah Rekod</button>`;
                 if (folder === "Pencapaian Merit") actionButtons += `<button onclick="printMeritSummary()" class="bg-slate-600 text-white px-6 py-2 rounded-xl font-black text-xs uppercase shadow-md"><i class="fas fa-print mr-2"></i> Cetak</button>`;
+                // ADDED: Cetak Perancangan Tahunan
+                if (folder === "Perancangan Tahunan") actionButtons += `<button onclick="printAnnualPlan()" class="bg-slate-600 text-white px-6 py-2 rounded-xl font-black text-xs uppercase shadow-md ml-2"><i class="fas fa-print mr-2"></i> Cetak</button>`;
             }
             if (folder === "Senarai Ahli Murid" || folder === "Pencapaian Merit") {
                  actionButtons += `<button onclick="exportCurrentData()" class="bg-emerald-600 text-white px-6 py-2 rounded-xl font-black text-xs uppercase shadow-md ml-2"><i class="fas fa-file-excel mr-2"></i> Excel</button>`;
@@ -654,27 +626,48 @@
             if (currentFolder === "Rekod Kehadiran") coll = "attendance";
             else if (currentFolder === "Laporan Aktiviti") coll = "reports";
             else if (currentFolder === "Pencapaian Merit") coll = "merits";
-            else if (currentFolder === "Perancangan Tahunan") coll = "annual_plans"; // NEW COLLECTION
+            else if (currentFolder === "Perancangan Tahunan") coll = "annual_plans"; 
             else coll = "students_master";
 
-            const q = query(collection(db, coll), where("unit", "==", currentUnit), where("year", "==", currentYear));
+            // Query
+            let q = query(collection(db, coll), where("unit", "==", currentUnit), where("year", "==", currentYear));
+            
             const snap = await getDocs(q);
             
-            window.currentExportData = snap.docs.map(d => d.data()); // Store for Excel export
-
-            list.innerHTML = snap.empty ? `<p class="text-center py-10 text-slate-300 font-bold uppercase text-[10px]">Tiada Rekod Dijumpai</p>` : "";
-            
+            // Client side sorting for Annual Plans (Date Asc) to avoid index error
+            let dataArr = [];
             snap.forEach(d => {
-                const data = d.data();
+                dataArr.push({ id: d.id, ...d.data() });
+            });
+
+            if (coll === "annual_plans") {
+                // Sort by date ascending
+                dataArr.sort((a, b) => new Date(a.date) - new Date(b.date));
+            } else if (coll === "students_master") {
+                // Sort by name
+                dataArr.sort((a, b) => a.name.localeCompare(b.name));
+            }
+
+            window.currentExportData = dataArr; 
+
+            list.innerHTML = dataArr.length === 0 ? `<p class="text-center py-10 text-slate-300 font-bold uppercase text-[10px]">Tiada Rekod Dijumpai</p>` : "";
+            
+            dataArr.forEach(data => {
                 let subText = "";
                 let mainText = "";
-                let extraBtn = ""; // Butang tambahan
+                let extraBtn = ""; 
 
                 if (coll === "annual_plans") {
                     mainText = `${data.title}`;
                     const statusColor = data.status === 'SELESAI' ? 'text-emerald-600 bg-emerald-100' : 'text-amber-600 bg-amber-100';
-                    subText = `<span class="px-2 py-1 rounded-md font-black text-[10px] ${statusColor}">${data.status}</span> <span class="ml-2 text-[10px] text-slate-400">TARIKH: ${data.date}</span>`;
-                    extraBtn = `<button onclick="togglePlanStatus('${d.id}', '${data.status}')" class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-lg text-[9px] font-black uppercase mr-2 hover:bg-indigo-200" title="Tukar Status"><i class="fas fa-sync-alt mr-1"></i> Tukar Status</button>`;
+                    // Show Description here
+                    const descText = data.description ? `<br><span class="text-[9px] text-slate-500 normal-case italic mt-1 block">"${data.description}"</span>` : "";
+                    
+                    subText = `<span class="px-2 py-1 rounded-md font-black text-[10px] ${statusColor}">${data.status}</span> <span class="ml-2 text-[10px] text-slate-400">TARIKH: ${data.date}</span> ${descText}`;
+                    
+                    // Added Edit Button for Annual Plans
+                    extraBtn = `<button onclick="editAnnualPlan('${data.id}')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-[9px] font-black uppercase mr-2 hover:bg-blue-200" title="Edit"><i class="fas fa-edit mr-1"></i> Ubah</button>
+                                <button onclick="togglePlanStatus('${data.id}', '${data.status}')" class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-lg text-[9px] font-black uppercase mr-2 hover:bg-indigo-200" title="Tukar Status"><i class="fas fa-sync-alt mr-1"></i> Status</button>`;
                 
                 } else if (coll === "merits") {
                     mainText = `${data.studentName} - ${data.event}`;
@@ -692,8 +685,8 @@
                     </div>
                     <div class="flex items-center">
                         ${extraBtn}
-                        ${(coll !== "students_master" && coll !== "annual_plans") ? `<button onclick="printRecord('${coll}', '${d.id}')" class="bg-slate-200 px-3 py-1 rounded-lg text-[9px] font-black uppercase mr-2">Cetak</button>` : ""}
-                        <button onclick="deleteDocById('${coll}', '${d.id}')" class="text-red-500 p-2 hover:bg-red-50 rounded-lg"><i class="fas fa-trash-alt"></i></button>
+                        ${(coll !== "students_master" && coll !== "annual_plans") ? `<button onclick="printRecord('${coll}', '${data.id}')" class="bg-slate-200 px-3 py-1 rounded-lg text-[9px] font-black uppercase mr-2">Cetak</button>` : ""}
+                        <button onclick="deleteDocById('${coll}', '${data.id}')" class="text-red-500 p-2 hover:bg-red-50 rounded-lg"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </div>`;
             });
@@ -704,6 +697,98 @@
             exportToExcel(window.currentExportData, `${currentUnit}_${currentFolder}`);
         };
 
+        // --- NEW: Edit Annual Plan Function ---
+        window.editAnnualPlan = async (id) => {
+            const d = await getDoc(doc(db, "annual_plans", id));
+            if (!d.exists()) return alert("Rekod tidak dijumpai.");
+            const data = d.data();
+
+            const fields = document.getElementById('modal-fields'); 
+            const title = document.getElementById('modal-title');
+            title.innerText = "Kemas Kini Takwim";
+            
+            // Populate Form with existing data
+            fields.innerHTML = `
+                <input type="hidden" id="p-id" value="${id}">
+                <input type="text" id="p-title" placeholder="NAMA AKTIVITI" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none" value="${data.title}">
+                <input type="date" id="p-date" required class="w-full p-4 bg-slate-100 rounded-xl font-bold outline-none" value="${data.date}">
+                <textarea id="p-desc" placeholder="KETERANGAN (OPSIONAL)" class="w-full p-4 bg-slate-100 rounded-xl font-bold text-xs outline-none h-24">${data.description || ''}</textarea>
+                <select id="p-status" class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none">
+                    <option value="BELUM SELESAI" ${data.status === 'BELUM SELESAI' ? 'selected' : ''}>BELUM SELESAI</option>
+                    <option value="SELESAI" ${data.status === 'SELESAI' ? 'selected' : ''}>SELESAI</option>
+                </select>
+            `;
+
+            openModal('crud-modal');
+
+            // Override Submit for Update
+            document.getElementById('crud-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('save-btn'); 
+                btn.disabled = true;
+                try {
+                    await updateDoc(doc(db, "annual_plans", id), {
+                        title: document.getElementById('p-title').value.toUpperCase(),
+                        date: document.getElementById('p-date').value,
+                        description: document.getElementById('p-desc').value,
+                        status: document.getElementById('p-status').value
+                    });
+                    closeModal('crud-modal');
+                    fetchData(); // Refresh list
+                } catch (err) {
+                    console.error(err);
+                    alert("Ralat mengemaskini.");
+                }
+                btn.disabled = false;
+            };
+        };
+
+        // --- NEW: Print Annual Plan Function ---
+        window.printAnnualPlan = async () => {
+             const q = query(collection(db, "annual_plans"), where("unit", "==", currentUnit), where("year", "==", currentYear));
+             const snap = await getDocs(q);
+             
+             if(snap.empty) return alert("Tiada perancangan untuk dicetak.");
+
+             // Sort by date
+             let plans = snap.docs.map(d => d.data());
+             plans.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+             let rows = "";
+             plans.forEach((p, index) => {
+                 rows += `<tr>
+                    <td style="text-align:center;">${index + 1}</td>
+                    <td>${p.date}</td>
+                    <td>${p.title}</td>
+                    <td>${p.description || '-'}</td>
+                    <td style="text-align:center;">${p.status}</td>
+                 </tr>`;
+             });
+
+             const html = `
+                <div style="text-align:center; margin-bottom:20px;">
+                    <h2 style="margin:0;">PERANCANGAN TAHUNAN ${currentYear}</h2>
+                    <h3 style="margin:5px 0;">UNIT: ${currentUnit}</h3>
+                </div>
+                <table border="1" style="width:100%; border-collapse:collapse; font-size:11px;">
+                    <thead>
+                        <tr style="background-color:#eee;">
+                            <th width="5%" style="text-align:center;">BIL</th>
+                            <th width="15%">TARIKH</th>
+                            <th width="30%">AKTIVITI</th>
+                            <th width="35%">KETERANGAN</th>
+                            <th width="15%" style="text-align:center;">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+             `;
+
+             const area = document.getElementById('print-area');
+             area.innerHTML = html;
+             window.print();
+        };
+
         window.openCRUD = async () => {
             const fields = document.getElementById('modal-fields'); 
             const title = document.getElementById('modal-title');
@@ -711,10 +796,11 @@
             openModal('crud-modal');
             const sSnap = await getDocs(query(collection(db, "students_master"), where("unit", "==", currentUnit), where("year", "==", currentYear)));
 
-            if (currentFolder === "Perancangan Tahunan") { // NEW FORM
+            if (currentFolder === "Perancangan Tahunan") { // NEW FORM (Added Description)
                 title.innerText = "Tambah Takwim";
                 fields.innerHTML = `<input type="text" id="p-title" placeholder="NAMA AKTIVITI" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none">
                                     <input type="date" id="p-date" required class="w-full p-4 bg-slate-100 rounded-xl font-bold outline-none">
+                                    <textarea id="p-desc" placeholder="KETERANGAN (OPSIONAL)" class="w-full p-4 bg-slate-100 rounded-xl font-bold text-xs outline-none h-24"></textarea>
                                     <select id="p-status" class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="BELUM SELESAI">BELUM SELESAI</option><option value="SELESAI">SELESAI</option></select>`;
             } else if (currentFolder === "Rekod Kehadiran") {
                 title.innerText = "Tambah Sesi Kehadiran";
@@ -753,7 +839,14 @@
                 const btn = document.getElementById('save-btn'); btn.disabled = true;
                 try {
                     if (currentFolder === "Perancangan Tahunan") {
-                        await addDoc(collection(db, "annual_plans"), { title: document.getElementById('p-title').value.toUpperCase(), date: document.getElementById('p-date').value, status: document.getElementById('p-status').value, unit: currentUnit, year: currentYear });
+                        await addDoc(collection(db, "annual_plans"), { 
+                            title: document.getElementById('p-title').value.toUpperCase(), 
+                            date: document.getElementById('p-date').value, 
+                            description: document.getElementById('p-desc').value, // Add description
+                            status: document.getElementById('p-status').value, 
+                            unit: currentUnit, 
+                            year: currentYear 
+                        });
                     } else if (currentFolder === "Rekod Kehadiran") {
                         const present = Array.from(document.querySelectorAll('input[name="present"]:checked')).map(c => c.value);
                         await addDoc(collection(db, "attendance"), { title: document.getElementById('f-title').value.toUpperCase(), date: document.getElementById('f-date').value, names: present, unit: currentUnit, year: currentYear });
