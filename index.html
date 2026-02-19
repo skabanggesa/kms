@@ -772,46 +772,58 @@
             });
         }
 
-// --- FUNGSI AUTO-FILL (DIPERBAIKI) ---
+// --- FUNGSI AUTO-FILL (DIPERBAIKI: Masalah Format Tarikh ISO) ---
 function autoFillReportFromAttendance() {
-    const dateVal = document.getElementById('rpt-date').value; // Format: YYYY-MM-DD
+    const dateVal = document.getElementById('rpt-date').value; // Cth: "2026-02-25"
     const unitVal = document.getElementById('rpt-unit').value;
 
     // 1. Pastikan input tidak kosong
     if (!dateVal || !unitVal) return;
 
-    console.log("SEDANG MENCARI...", "Tarikh Input:", dateVal, "Unit Input:", unitVal);
+    console.log("MENCARI PADANAN...", dateVal, unitVal);
 
     // 2. Cari padanan dalam data kehadiran
-    // Kita guna .trim() untuk buang jarak kosong yang mungkin wujud
     const record = globalData.attendance.find(a => {
-        // Bandingkan Tarikh (Pastikan kedua-dua string sama)
-        const dateMatch = (a.date === dateVal);
-        // Bandingkan Unit (Abaikan huruf besar/kecil)
+        if (!a.date) return false;
+
+        // --- PEMBAIKAN UTAMA DI SINI ---
+        // Tukar format database (ISO Long) kepada YYYY-MM-DD
+        let dbDateStr = a.date;
+        
+        // Jika data ada format masa (ada huruf 'T'), kita proses jadi tarikh tempatan
+        if (a.date.includes('T')) {
+            const d = new Date(a.date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            dbDateStr = `${year}-${month}-${day}`;
+        }
+        // -------------------------------
+
+        // Bandingkan
+        const dateMatch = (dbDateStr === dateVal);
         const unitMatch = (a.unit.trim().toLowerCase() === unitVal.trim().toLowerCase());
         
         return dateMatch && unitMatch;
     });
 
-    // 3. Jika Jumpa Rekod
+    // 3. Jika Jumpa
     if (record) {
-        console.log("JUMPA!", record);
+        console.log("REKOD DIJUMPAI!", record);
         
         // Isi Tajuk
         document.getElementById('rpt-title').value = record.title || "";
         
-        // Isi Nama (Pastikan textarea boleh ditulis)
+        // Isi Nama
         const nameField = document.getElementById('rpt-names');
         nameField.value = record.names || "";
-        nameField.classList.add('bg-green-100'); // Efek hijau
+        
+        // Visual Feedback (Kelip Hijau)
+        nameField.classList.add('bg-green-100');
         setTimeout(() => nameField.classList.remove('bg-green-100'), 500);
 
     } else {
-        console.warn("TIADA REKOD DIJUMPAI. Sila semak tab 'attendance' di Google Sheet.");
-        // Debugging: Tunjukkan 3 rekod pertama untuk semakan format
-        if(globalData.attendance.length > 0) {
-            console.log("Contoh data dalam sistem:", globalData.attendance.slice(0, 3));
-        }
+        console.log("Masih tiada rekod. Pastikan tarikh kehadiran di Google Sheet betul.");
     }
 }
 
@@ -1064,6 +1076,7 @@ function autoFillReportFromAttendance() {
     </script>
 </body>
 </html>
+
 
 
 
