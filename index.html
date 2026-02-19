@@ -371,6 +371,7 @@
         <div class="bg-white p-6 rounded-xl w-full max-w-lg shadow-2xl h-[90vh] overflow-y-auto">
             <h3 class="font-bold text-lg mb-4">Laporan Aktiviti</h3>
 <form onsubmit="saveReport(event)" class="space-y-4">
+    <input type="hidden" id="rpt-id">
     
     <div class="grid grid-cols-2 gap-4">
         <div>
@@ -742,34 +743,58 @@
         }
 
 // --- REPORTS ---
-        
-        // 1. FUNGSI BARU: Buka Modal & Isi Dropdown Unit
+        // --- 1. Fungsi Buka Modal (CREATE NEW) ---
         function openReportModal() { 
-            // Buka Modal
             document.getElementById('modal-report').classList.replace('hidden','flex'); 
             
-            // Reset Borang
+            // PENTING: Kosongkan ID supaya sistem tahu ini laporan BARU
+            document.getElementById('rpt-id').value = ""; 
+            
+            // Reset borang lain
             document.getElementById('rpt-date').value = "";
             document.getElementById('rpt-title').value = "";
             document.getElementById('rpt-names').value = "";
             document.getElementById('rpt-desc').value = "";
             document.getElementById('rpt-img-final').value = "";
+            document.getElementById('rpt-img-url').value = "";
+            document.getElementById('rpt-img-file').value = "";
             
-            // Masukkan Senarai Unit ke dalam Dropdown
+            // Reset butang upload
+            const btnUpload = document.getElementById('rpt-img-file').previousElementSibling;
+            if(btnUpload) btnUpload.innerText = "Upload Fail";
+
+            // Isi Dropdown Unit (Kod lama anda kekal di sini...)
             const sel = document.getElementById('rpt-unit');
             sel.innerHTML = '<option value="">Pilih Unit...</option>'; 
-            
-            // Logik: Admin dapat semua unit, Guru dapat unit dia sahaja
             const units = currentUser.role === 'admin' ? 
                           [...new Set(globalData.students.map(s=>s.unit))].sort() : 
                           currentUser.myUnits;
-            
             units.forEach(u => { 
                 const opt = document.createElement('option'); 
-                opt.value = u; 
-                opt.innerText = u; 
-                sel.appendChild(opt); 
+                opt.value = u; opt.innerText = u; sel.appendChild(opt); 
             });
+        }
+
+        // --- 2. Fungsi Buka Modal (EDIT MODE) ---
+        function editReport(id) {
+            // Cari data laporan berdasarkan ID
+            const r = globalData.reports.find(item => item.doc_id === id);
+            if(!r) return;
+
+            // Buka Modal (Guna setup yang sama)
+            openReportModal(); 
+
+            // Isi Semula Data Lama
+            document.getElementById('rpt-id').value = r.doc_id; // Set ID
+            document.getElementById('rpt-date').value = r.date;
+            document.getElementById('rpt-unit').value = r.unit;
+            document.getElementById('rpt-title').value = r.title;
+            document.getElementById('rpt-names').value = r.names;
+            document.getElementById('rpt-desc').value = r.description;
+            
+            // Nota: Gambar lama tidak perlu dipaparkan dalam input file, 
+            // tapi kita simpan nilai lama dalam hidden field incase tak nak tukar gambar
+            document.getElementById('rpt-img-final').value = r.image;
         }
 
 // --- FUNGSI AUTO-FILL (DIPERBAIKI: Masalah Format Tarikh ISO) ---
@@ -831,17 +856,33 @@ function autoFillReportFromAttendance() {
         async function saveReport(e) {
             e.preventDefault();
             showLoader(true);
-            await callApi('create', 'reports', { 
+
+            // Ambil ID (jika ada)
+            const id = document.getElementById('rpt-id').value;
+            
+            // Data Borang
+            const formData = { 
                 date: document.getElementById('rpt-date').value, 
                 title: document.getElementById('rpt-title').value, 
                 unit: document.getElementById('rpt-unit').value, 
                 description: document.getElementById('rpt-desc').value,
                 names: document.getElementById('rpt-names').value, 
                 image: document.getElementById('rpt-img-final').value || document.getElementById('rpt-img-url').value 
-            });
-            closeModal('modal-report'); loadAllData();
-        }
+            };
 
+            if (id) {
+                // --- MOD EDIT (UPDATE) ---
+                formData.doc_id = id; // Masukkan ID untuk rujukan database
+                await callApi('update', 'reports', formData);
+                alert("Laporan berjaya dikemaskini!");
+            } else {
+                // --- MOD BARU (CREATE) ---
+                await callApi('create', 'reports', formData);
+            }
+
+            closeModal('modal-report'); 
+            loadAllData(); // Refresh senarai
+        }
         // 4. KEKALKAN: Fungsi Papar Senarai Laporan
         function renderReports() {
              let data = globalData.reports;
@@ -861,7 +902,14 @@ function autoFillReportFromAttendance() {
                                 </div>
                             </div>
                         </div>
-                        <button onclick="deleteData('reports','${r.doc_id}')" class="text-slate-300 hover:text-red-500 p-2"><i class="fas fa-trash"></i></button>
+                       <div class="flex flex-col gap-2 border-l pl-3 ml-2">
+            <button onclick="editReport('${r.doc_id}')" class="text-slate-400 hover:text-blue-600" title="Edit Laporan">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button onclick="deleteData('reports','${r.doc_id}')" class="text-slate-400 hover:text-red-500" title="Padam">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
                     </div>
                  `).join('');
              }
@@ -1164,6 +1212,7 @@ function convertBase64(input) {
     </script>
 </body>
 </html>
+
 
 
 
