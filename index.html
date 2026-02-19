@@ -371,14 +371,31 @@
         <div class="bg-white p-6 rounded-xl w-full max-w-lg shadow-2xl h-[90vh] overflow-y-auto">
             <h3 class="font-bold text-lg mb-4">Laporan Aktiviti</h3>
             <form onsubmit="saveReport(event)" class="space-y-3">
-                <input type="date" id="rpt-date" class="input-field" required>
-                <input type="text" id="rpt-title" class="input-field" placeholder="Tajuk Laporan" required>
-                <input type="text" id="rpt-unit" class="input-field" placeholder="Unit" required>
+                
+                <div>
+                    <label class="text-xs font-bold mb-1 block">Tarikh</label>
+                    <input type="date" id="rpt-date" class="input-field" required onchange="autoFillReportFromAttendance()">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold mb-1 block">Unit</label>
+                    <select id="rpt-unit" class="input-field" required onchange="autoFillReportFromAttendance()">
+                        <option value="">Pilih Unit...</option>
+                        </select>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold mb-1 block">Tajuk Laporan</label>
+                    <input type="text" id="rpt-title" class="input-field" placeholder="Tajuk aktiviti..." required>
+                </div>
+
                 <div>
                     <label class="text-xs font-bold mb-1 block">Senarai Nama Murid</label>
-                    <textarea id="rpt-names" class="input-field h-24 text-xs" placeholder="Paste nama murid di sini..."></textarea>
+                    <textarea id="rpt-names" class="input-field h-24 text-xs" placeholder="Nama murid akan masuk automatik jika kehadiran wujud..."></textarea>
                 </div>
+
                 <textarea id="rpt-desc" class="input-field h-24" placeholder="Ulasan / Laporan Ringkas"></textarea>
+                
                 <div>
                     <label class="text-xs font-bold block mb-1">Gambar</label>
                     <div class="flex gap-2 mb-2">
@@ -396,7 +413,7 @@
             </form>
         </div>
     </div>
-
+    
     <div id="modal-view-report" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
         <div class="bg-white rounded-xl w-full max-w-4xl h-[85vh] flex flex-col md:flex-row overflow-hidden shadow-2xl relative">
             <button onclick="closeModal('modal-view-report')" class="absolute top-4 right-4 bg-white/80 rounded-full p-2 z-10 hover:bg-red-500 hover:text-white transition"><i class="fas fa-times"></i></button>
@@ -719,8 +736,61 @@
             units.forEach(u => { const opt = document.createElement('option'); opt.value = u; opt.innerText = u; selUnit.appendChild(opt); });
         }
 
-        // --- REPORTS ---
-        function openReportModal() { document.getElementById('modal-report').classList.replace('hidden','flex'); }
+// --- REPORTS ---
+        
+        // 1. FUNGSI BARU: Buka Modal & Isi Dropdown Unit
+        function openReportModal() { 
+            // Buka Modal
+            document.getElementById('modal-report').classList.replace('hidden','flex'); 
+            
+            // Reset Borang
+            document.getElementById('rpt-date').value = "";
+            document.getElementById('rpt-title').value = "";
+            document.getElementById('rpt-names').value = "";
+            document.getElementById('rpt-desc').value = "";
+            document.getElementById('rpt-img-final').value = "";
+            
+            // Masukkan Senarai Unit ke dalam Dropdown
+            const sel = document.getElementById('rpt-unit');
+            sel.innerHTML = '<option value="">Pilih Unit...</option>'; 
+            
+            // Logik: Admin dapat semua unit, Guru dapat unit dia sahaja
+            const units = currentUser.role === 'admin' ? 
+                          [...new Set(globalData.students.map(s=>s.unit))].sort() : 
+                          currentUser.myUnits;
+            
+            units.forEach(u => { 
+                const opt = document.createElement('option'); 
+                opt.value = u; 
+                opt.innerText = u; 
+                sel.appendChild(opt); 
+            });
+        }
+
+        // 2. FUNGSI BARU: Auto-Fill Tajuk & Nama dari Kehadiran
+        function autoFillReportFromAttendance() {
+            const dateVal = document.getElementById('rpt-date').value;
+            const unitVal = document.getElementById('rpt-unit').value;
+
+            // Hanya jalan jika Tarikh DAN Unit sudah dipilih
+            if (!dateVal || !unitVal) return;
+
+            // Cari rekod dalam data kehadiran
+            const record = globalData.attendance.find(a => a.date === dateVal && a.unit === unitVal);
+
+            if (record) {
+                // Isi borang automatik
+                document.getElementById('rpt-title').value = record.title || "";
+                document.getElementById('rpt-names').value = record.names || "";
+                
+                // Efek visual (hijau sekejap)
+                const nameField = document.getElementById('rpt-names');
+                nameField.classList.add('bg-green-100');
+                setTimeout(() => nameField.classList.remove('bg-green-100'), 800);
+            }
+        }
+
+        // 3. KEKALKAN: Fungsi Simpan Laporan
         async function saveReport(e) {
             e.preventDefault();
             showLoader(true);
@@ -734,6 +804,8 @@
             });
             closeModal('modal-report'); loadAllData();
         }
+
+        // 4. KEKALKAN: Fungsi Papar Senarai Laporan
         function renderReports() {
              let data = globalData.reports;
              if(currentUser.role !== 'admin') data = data.filter(r => currentUser.myUnits.includes(r.unit));
@@ -757,6 +829,8 @@
                  `).join('');
              }
         }
+
+        // 5. KEKALKAN: Fungsi Lihat Detail Laporan
         function viewReportDetails(id) {
             const report = globalData.reports.find(r => r.doc_id === id);
             if(!report) return;
@@ -965,4 +1039,5 @@
     </script>
 </body>
 </html>
+
 
