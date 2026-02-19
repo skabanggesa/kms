@@ -6,967 +6,965 @@
     <title>KMS Digital - Sistem Pengurusan Kokurikulum</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .unit-card:hover { transform: translateY(-5px); border-color: #6366f1; }
-        .loader-spin { border: 4px solid #f3f3f3; border-top: 4px solid #6366f1; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .hidden { display: none; }
         
-        /* Carian Style */
-        .search-results { position: absolute; width: 100%; max-height: 200px; overflow-y: auto; background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; z-index: 50; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .search-item { padding: 10px 15px; cursor: pointer; font-size: 11px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; }
-        .search-item:hover { background-color: #f8fafc; color: #4f46e5; }
-
-        .stat-card { background: white; padding: 20px; border-radius: 1.5rem; border: 1px solid #e2e8f0; text-align: center; transition: all 0.3s; }
-        .stat-card:hover { border-color: #6366f1; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
-
+        /* Loader Animation */
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Utility */
+        .hidden { display: none !important; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Custom UI */
+        .btn-primary { @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm font-semibold; }
+        .input-field { @apply w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm; }
+        .card { @apply bg-white p-6 rounded-xl shadow-sm border border-slate-100; }
+        
+        /* Print Styles */
         @media print {
-            body > *:not(#print-area) { display: none !important; }
-            #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white; padding: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid black; padding: 8px; text-align: left; font-size: 10px; }
-            th { background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; }
-            .total-row { font-weight: bold; background-color: #eee !important; }
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
             .no-print { display: none !important; }
-            .slip-header { border-bottom: 2px solid black; margin-bottom: 20px; padding-bottom: 10px; text-align: center; }
         }
     </style>
 </head>
-<body>
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
 
-    <div id="auth-view" class="min-h-screen flex items-center justify-center bg-indigo-900 p-6">
-        <div id="login-container" class="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl w-full max-w-md text-center">
-            <img src="kms.png" alt="Logo" class="h-20 mx-auto mb-6" onerror="this.src='https://via.placeholder.com/80?text=KMS'">
-            <h2 class="text-2xl font-black text-slate-800 uppercase italic mb-2">KMS DIGITAL</h2>
-            <form id="login-form" class="space-y-4">
-                <input type="email" id="login-email" placeholder="EMEL" required class="w-full p-4 bg-slate-100 rounded-2xl border-none font-bold outline-none focus:ring-2 ring-indigo-500 text-sm uppercase">
-                <input type="password" id="login-password" placeholder="KATA LALUAN" required class="w-full p-4 bg-slate-100 rounded-2xl border-none font-bold outline-none focus:ring-2 ring-indigo-500 text-sm">
-                <button type="submit" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-lg hover:bg-indigo-700 uppercase transition-all">MASUK</button>
-            </form>
-            <div class="mt-6 flex justify-between items-center text-xs font-bold uppercase">
-                <button onclick="toggleAuth(true)" class="text-indigo-600">Daftar Guru</button>
-                <button onclick="togglePublicCheck(true)" class="text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">Semakan Murid</button>
-            </div>
-        </div>
-
-        <div id="register-container" class="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl w-full max-w-lg text-center hidden">
-            <h2 class="text-2xl font-black text-slate-800 uppercase italic mb-2">DAFTAR GURU</h2>
-            <form id="register-form" class="space-y-3 text-left mt-6">
-                <input type="text" id="reg-name" placeholder="NAMA PENUH" required class="w-full p-3 bg-slate-100 rounded-xl font-bold uppercase outline-none text-xs">
-                <select id="reg-uniform" class="w-full p-3 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="">-- UNIT BERUNIFORM --</option></select>
-                <select id="reg-club" class="w-full p-3 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="">-- KELAB & PERSATUAN --</option></select>
-                <select id="reg-sport" class="w-full p-3 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="">-- SUKAN & PERMAINAN --</option></select>
-                <input type="email" id="reg-email" placeholder="EMEL" required class="w-full p-3 bg-slate-100 rounded-xl font-bold outline-none text-xs uppercase">
-                <input type="password" id="reg-password" placeholder="KATA LALUAN" required class="w-full p-3 bg-slate-100 rounded-xl font-bold outline-none text-xs">
-                <button type="submit" class="w-full bg-emerald-600 text-white font-black py-4 rounded-xl uppercase shadow-lg">DAFTAR AKAUN</button>
-            </form>
-            <button onclick="toggleAuth(false)" class="mt-4 text-xs font-bold text-slate-400 uppercase">Kembali</button>
+    <div id="global-loader" class="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] hidden backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center animate-bounce-small">
+            <div class="loader mb-4"></div>
+            <p id="loader-text" class="font-bold text-slate-700">Memproses data...</p>
         </div>
     </div>
 
-    <div id="public-check-view" class="min-h-screen bg-slate-100 p-6 hidden">
-        <div class="max-w-2xl mx-auto">
-            <button onclick="togglePublicCheck(false)" class="mb-6 text-[10px] font-black text-slate-400 uppercase hover:text-indigo-600"><i class="fas fa-arrow-left mr-2"></i> Kembali Login</button>
-            
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-xl text-center">
-                <h2 class="text-2xl font-black text-slate-800 uppercase italic mb-2">SEMAKAN KOKURIKULUM</h2>
-                <p class="text-[10px] text-slate-400 font-bold uppercase mb-6">Masukkan Nama Penuh untuk menyemak rekod</p>
-                
-                <div class="flex space-x-2 mb-8">
-                    <input type="text" id="public-search-input" placeholder="NAMA MURID..." class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none border border-transparent focus:border-indigo-500">
-                    <button onclick="publicSearchStudent()" class="bg-indigo-600 text-white px-6 rounded-xl font-black uppercase"><i class="fas fa-search"></i></button>
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-900 via-slate-800 to-slate-900 p-4">
+        <div class="bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-md border border-white/20">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-blue-600 rounded-2xl mx-auto mb-4 flex items-center justify-center text-white text-3xl shadow-lg transform rotate-3">
+                    <i class="fas fa-school"></i>
                 </div>
-
-                <div id="public-result" class="hidden text-left space-y-6">
-                    </div>
+                <img src="kms.png" onerror="this.src='https://via.placeholder.com/100?text=LOGO'" alt="Logo Sekolah" class="w-24 h-24 mx-auto mb-4 object-contain">
+                <h1 class="text-3xl font-black text-slate-800 tracking-tight">KMS Digital</h1>
+                <p class="text-slate-500 font-medium text-sm mt-1">Sistem Pengurusan Kokurikulum</p>
             </div>
-        </div>
-    </div>
-
-    <div id="app-container" class="min-h-screen hidden flex flex-col">
-        <header class="bg-indigo-900 p-4 text-white flex justify-between items-center border-b-4 border-indigo-500 sticky top-0 z-40">
-            <div class="flex items-center space-x-4">
-                <img src="kms.png" alt="Logo" class="h-10 w-auto bg-white p-1 rounded-lg" onerror="this.src='https://via.placeholder.com/40'">
+            <div class="space-y-5">
                 <div>
-                    <h1 class="text-lg font-black uppercase italic">KMS <span class="font-light">Digital</span></h1>
-                    <p id="user-info" class="text-[9px] font-bold uppercase text-indigo-200"></p>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Emel Pengguna</label>
+                    <div class="relative">
+                        <i class="fas fa-envelope absolute left-3 top-3.5 text-slate-400"></i>
+                        <input type="email" id="login-email" class="input-field pl-10 bg-slate-50" placeholder="cikgu@sekolah.edu.my">
+                    </div>
                 </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Kata Laluan</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-3 top-3.5 text-slate-400"></i>
+                        <input type="password" id="login-password" class="input-field pl-10 bg-slate-50" placeholder="••••••">
+                    </div>
+                </div>
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-3.5 rounded-xl font-bold hover:bg-blue-700 transition transform active:scale-95 shadow-lg shadow-blue-500/30 mt-2">
+                    LOG MASUK
+                </button>
             </div>
-            <div class="flex space-x-2">
-                <button id="logout-btn" class="text-[10px] font-bold bg-red-600 px-4 py-2 rounded-lg uppercase">Keluar</button>
-            </div>
-        </header>
+            <p class="text-center text-xs text-slate-400 mt-8">&copy; 2024 KMS Digital System</p>
+        </div>
+    </div>
 
-        <main class="flex-grow p-4 md:p-10 max-w-7xl mx-auto w-full">
-            <div id="content-view"></div>
+    <div id="main-app" class="hidden flex h-full relative">
+        
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden glass-effect"></div>
+
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-slate-900 text-white transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+            <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-bold">K</div>
+                    <div>
+                        <h2 class="font-bold text-lg leading-none">KMS Panel</h2>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-wider mt-1">Versi 2.0</p>
+                    </div>
+                </div>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <nav class="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+                <p class="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">Menu Utama</p>
+                <button onclick="showPage('dashboard')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition flex items-center gap-3 text-slate-300 hover:text-white">
+                    <div class="w-6 text-center"><i class="fas fa-home text-blue-400"></i></div> Utama
+                </button>
+                <button onclick="showPage('students')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition flex items-center gap-3 text-slate-300 hover:text-white">
+                    <div class="w-6 text-center"><i class="fas fa-user-graduate text-green-400"></i></div> Data Murid
+                </button>
+                <button onclick="showPage('attendance')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition flex items-center gap-3 text-slate-300 hover:text-white">
+                    <div class="w-6 text-center"><i class="fas fa-clipboard-check text-yellow-400"></i></div> Kehadiran
+                </button>
+                <button onclick="showPage('reports')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition flex items-center gap-3 text-slate-300 hover:text-white">
+                    <div class="w-6 text-center"><i class="fas fa-camera text-purple-400"></i></div> Laporan
+                </button>
+                <button onclick="showPage('annual_plans')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition flex items-center gap-3 text-slate-300 hover:text-white">
+                    <div class="w-6 text-center"><i class="fas fa-calendar-check text-pink-400"></i></div> Perancangan
+                </button>
+                <button onclick="showPage('merit')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition flex items-center gap-3 text-slate-300 hover:text-white">
+                    <div class="w-6 text-center"><i class="fas fa-medal text-orange-400"></i></div> Rekod Merit
+                </button>
+                <button onclick="showPage('analysis')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition flex items-center gap-3 text-slate-300 hover:text-white">
+                    <div class="w-6 text-center"><i class="fas fa-print text-red-400"></i></div> Cetakan
+                </button>
+                
+                <div id="admin-menu-section" class="hidden">
+                    <p class="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6 border-t border-slate-800 pt-6">Pentadbir</p>
+                    <button onclick="showPage('users')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-slate-800 transition flex items-center gap-3 text-slate-300 hover:text-white">
+                        <div class="w-6 text-center"><i class="fas fa-users-cog text-cyan-400"></i></div> Pengurusan Guru
+                    </button>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-900/50">
+                <div class="flex items-center gap-3 px-2 mb-3">
+                    <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs"><i class="fas fa-user"></i></div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-bold truncate" id="user-role-name">User</p>
+                        <p class="text-[10px] text-slate-400 truncate" id="user-role-label">Guru</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="w-full bg-red-600/10 text-red-400 hover:bg-red-600 hover:text-white px-4 py-2 rounded-lg transition text-sm font-bold flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Log Keluar
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-slate-50 w-full">
+            
+            <header class="bg-white border-b px-6 py-4 flex justify-between items-center shadow-sm z-20 sticky top-0">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition">
+                        <i class="fas fa-bars fa-lg"></i>
+                    </button>
+                    <h2 class="text-xl font-bold text-slate-800 truncate" id="header-title">Papan Pemuka</h2>
+                </div>
+                <button onclick="loadAllData()" class="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition" title="Refresh Data">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </header>
+
+            <div id="content-scroll" class="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
+                
+                <div id="page-dashboard" class="page-section animate-fade-in space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="card border-l-4 border-blue-500 flex items-center gap-4">
+                            <div class="bg-blue-50 p-3 rounded-full text-blue-600"><i class="fas fa-users fa-lg"></i></div>
+                            <div><p class="text-xs font-bold text-slate-400 uppercase">Murid</p><h3 class="text-2xl font-black text-slate-800" id="dash-student-count">0</h3></div>
+                        </div>
+                        <div class="card border-l-4 border-green-500 flex items-center gap-4">
+                            <div class="bg-green-50 p-3 rounded-full text-green-600"><i class="fas fa-check-circle fa-lg"></i></div>
+                            <div><p class="text-xs font-bold text-slate-400 uppercase">Kehadiran</p><h3 class="text-2xl font-black text-slate-800" id="dash-attendance-count">0</h3></div>
+                        </div>
+                        <div class="card border-l-4 border-purple-500 flex items-center gap-4">
+                            <div class="bg-purple-50 p-3 rounded-full text-purple-600"><i class="fas fa-camera fa-lg"></i></div>
+                            <div><p class="text-xs font-bold text-slate-400 uppercase">Laporan</p><h3 class="text-2xl font-black text-slate-800" id="dash-activity-count">0</h3></div>
+                        </div>
+                        <div class="card border-l-4 border-pink-500 flex items-center gap-4">
+                            <div class="bg-pink-50 p-3 rounded-full text-pink-600"><i class="fas fa-calendar-alt fa-lg"></i></div>
+                            <div><p class="text-xs font-bold text-slate-400 uppercase">Plan</p><h3 class="text-2xl font-black text-slate-800" id="dash-plan-count">0</h3></div>
+                        </div>
+                    </div>
+
+                    <div class="card overflow-hidden">
+                        <h3 class="font-bold text-lg mb-4 text-slate-800">Statistik Mengikut Unit</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left whitespace-nowrap">
+                                <thead class="bg-slate-50 text-slate-600 uppercase font-bold text-xs">
+                                    <tr>
+                                        <th class="p-3 border-b">Unit</th>
+                                        <th class="p-3 border-b text-center">Murid</th>
+                                        <th class="p-3 border-b text-center">Kehadiran</th>
+                                        <th class="p-3 border-b text-center">Laporan</th>
+                                        <th class="p-3 border-b text-center">Plan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-unit-breakdown" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-students" class="page-section hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div class="flex gap-2">
+                            <input type="file" id="csv-input" accept=".csv" class="hidden" onchange="handleCSVImport(this)">
+                            <button onclick="document.getElementById('csv-input').click()" class="bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700 shadow"><i class="fas fa-file-csv mr-2"></i>Import CSV</button>
+                            <button onclick="openStudentModal()" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700 shadow"><i class="fas fa-plus mr-2"></i>Murid</button>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <input type="text" id="search-student" onkeyup="renderStudentTable()" placeholder="Cari..." class="input-field max-w-xs">
+                            <select id="filter-student-unit" onchange="renderStudentTable()" class="input-field w-32"><option value="">Semua</option></select>
+                        </div>
+                    </div>
+                    
+                    <div class="card p-0 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead class="bg-slate-50 border-b">
+                                    <tr><th class="p-4 font-bold">Nama</th><th class="p-4 font-bold">Tingkatan</th><th class="p-4 font-bold">Jantina</th><th class="p-4 font-bold">Unit</th><th class="p-4 text-center">Aksi</th></tr>
+                                </thead>
+                                <tbody id="student-table-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                        <div class="p-4 border-t text-xs text-slate-500" id="student-count-display"></div>
+                    </div>
+                </div>
+
+                <div id="page-attendance" class="page-section hidden space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-1">
+                            <div class="card sticky top-4">
+                                <h3 class="font-bold text-lg mb-4 text-blue-600 border-b pb-2">Daftar Kehadiran</h3>
+                                <form onsubmit="submitAttendance(event)" class="space-y-4">
+                                    <input type="date" id="att-date" class="input-field" required>
+                                    <select id="att-unit" class="input-field" onchange="loadStudentsForAttendance()" required><option value="">Pilih Unit...</option></select>
+                                    <input type="text" id="att-title" class="input-field" placeholder="Tajuk Aktiviti" required>
+                                    <div class="bg-slate-50 p-3 rounded-lg border h-60 flex flex-col">
+                                        <div class="flex justify-between text-xs mb-2 font-bold text-slate-500">
+                                            <span>Senarai Nama</span>
+                                            <div><span onclick="selectAllAttendance(true)" class="cursor-pointer text-blue-600 mr-2">Semua</span><span onclick="selectAllAttendance(false)" class="cursor-pointer text-red-500">Tiada</span></div>
+                                        </div>
+                                        <div id="att-student-list" class="flex-1 overflow-y-auto space-y-1 custom-scrollbar">
+                                            <p class="text-xs text-center text-slate-400 mt-10">Pilih unit dahulu.</p>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn-primary w-full">SIMPAN REKOD</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2">
+                            <div class="card p-0 overflow-hidden">
+                                <div class="p-4 bg-slate-50 border-b font-bold text-sm">Sejarah Rekod (Terkini)</div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-left whitespace-nowrap">
+                                        <thead class="bg-slate-50 border-b"><tr><th class="p-3">Tarikh</th><th class="p-3">Unit</th><th class="p-3">Aktiviti</th><th class="p-3 text-center">Hadir</th><th class="p-3 text-center">Aksi</th></tr></thead>
+                                        <tbody id="attendance-history-body" class="divide-y divide-slate-100"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-annual_plans" class="page-section hidden space-y-6">
+                    <div class="card border-l-4 border-pink-500">
+                        <h3 class="font-bold text-lg mb-4 text-pink-700">Tambah Perancangan</h3>
+                        <form onsubmit="submitPlan(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="date" id="plan-date" class="input-field" required>
+                            <input type="text" id="plan-title" class="input-field" placeholder="Program" required>
+                            <select id="plan-unit" class="input-field" required><option value="">Pilih Unit...</option></select>
+                            <select id="plan-status" class="input-field"><option value="Perancangan">Perancangan</option><option value="Sedang Berjalan">Sedang Berjalan</option><option value="Selesai">Selesai</option><option value="Ditunda">Ditunda</option></select>
+                            <textarea id="plan-desc" class="input-field md:col-span-2" placeholder="Objektif..." rows="2"></textarea>
+                            <button type="submit" class="btn-primary md:col-span-2">SIMPAN</button>
+                        </form>
+                    </div>
+                    <div class="card p-0 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left whitespace-nowrap">
+                                <thead class="bg-slate-50 border-b"><tr><th class="p-3">Tarikh</th><th class="p-3">Program</th><th class="p-3">Unit</th><th class="p-3">Status</th><th class="p-3">Catatan</th><th class="p-3 text-center">Aksi</th></tr></thead>
+                                <tbody id="plans-table-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-merit" class="page-section hidden space-y-6">
+                    <div class="card border-l-4 border-orange-500">
+                        <h3 class="font-bold text-lg mb-4 text-orange-700">Rekod Pencapaian</h3>
+                        <form onsubmit="submitMerit(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2"><label class="text-xs font-bold text-slate-500">Nama Murid</label><select id="merit-student" class="input-field" required><option value="">Pilih...</option></select></div>
+                            <input type="text" id="merit-title" class="input-field" placeholder="Acara / Pertandingan" required>
+                            <select id="merit-unit" class="input-field" required><option value="">Pilih Unit...</option></select>
+                            <select id="merit-desc" class="input-field"><option value="Penyertaan">Penyertaan</option><option value="Johan">Johan</option><option value="Naib Johan">Naib Johan</option><option value="Ketiga">Ketiga</option></select>
+                            <select id="merit-venue" class="input-field"><option value="Sekolah">Sekolah</option><option value="Daerah">Daerah</option><option value="Negeri">Negeri</option><option value="Kebangsaan">Kebangsaan</option></select>
+                            <button type="submit" class="btn-primary md:col-span-2">SIMPAN</button>
+                        </form>
+                    </div>
+                    <div class="card p-0 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left whitespace-nowrap">
+                                <thead class="bg-slate-50 border-b"><tr><th class="p-3">Nama</th><th class="p-3">Acara</th><th class="p-3">Pencapaian</th><th class="p-3">Peringkat</th><th class="p-3 text-center">Aksi</th></tr></thead>
+                                <tbody id="merit-table-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-reports" class="page-section hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold">Senarai Laporan</h3>
+                        <button onclick="openReportModal()" class="btn-primary text-sm"><i class="fas fa-plus mr-2"></i>Baru</button>
+                    </div>
+                    <div id="reports-grid" class="space-y-4"></div>
+                </div>
+
+                <div id="page-analysis" class="page-section hidden space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="card hover:border-blue-300 cursor-pointer transition flex items-center gap-4" onclick="printAnalysis('attendance')">
+                            <div class="bg-blue-100 p-4 rounded-full text-blue-600"><i class="fas fa-clipboard-list fa-2x"></i></div>
+                            <div><h3 class="font-bold">Analisis Kehadiran</h3><p class="text-xs text-slate-500">Cetak laporan kehadiran penuh.</p></div>
+                        </div>
+                        <div class="card hover:border-pink-300 cursor-pointer transition flex items-center gap-4" onclick="printAnalysis('plans')">
+                            <div class="bg-pink-100 p-4 rounded-full text-pink-600"><i class="fas fa-calendar-alt fa-2x"></i></div>
+                            <div><h3 class="font-bold">Perancangan Tahunan</h3><p class="text-xs text-slate-500">Status program & takwim.</p></div>
+                        </div>
+                        <div class="card hover:border-orange-300 cursor-pointer transition flex items-center gap-4" onclick="printAnalysis('merit')">
+                            <div class="bg-orange-100 p-4 rounded-full text-orange-600"><i class="fas fa-medal fa-2x"></i></div>
+                            <div><h3 class="font-bold">Rekod Pencapaian</h3><p class="text-xs text-slate-500">Senarai pemenang.</p></div>
+                        </div>
+                        <div class="card hover:border-purple-300 cursor-pointer transition flex items-center gap-4" onclick="printAnalysis('full_reports')">
+                            <div class="bg-purple-100 p-4 rounded-full text-purple-600"><i class="fas fa-book-open fa-2x"></i></div>
+                            <div><h3 class="font-bold">Laporan Bergambar</h3><p class="text-xs text-slate-500">Kompilasi semua laporan.</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="page-users" class="page-section hidden space-y-6">
+                    <div id="btn-add-user-container" class="flex justify-end">
+                        <button onclick="openUserModal('add')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 shadow flex items-center gap-2"><i class="fas fa-plus"></i> Tambah Guru</button>
+                    </div>
+                    <div class="card p-0 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead class="bg-slate-50 border-b"><tr><th class="p-4">Nama</th><th class="p-4 text-center">Peranan</th><th class="p-4">Unit</th><th class="p-4 text-right">Aksi</th></tr></thead>
+                                <tbody id="users-table-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </main>
     </div>
 
-    <div id="csv-modal" class="fixed inset-0 bg-slate-900/80 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-[2rem] p-8 w-full max-w-md text-center shadow-2xl">
-            <div id="csv-content-normal">
-                <h2 class="font-black uppercase mb-4 text-slate-800">Import Ahli Murid</h2>
-                <p class="text-[10px] mb-4 text-slate-400 uppercase font-bold">Pastikan CSV ada lajur: Nama, Jantina (L/P), Unit</p>
-                <input type="file" id="csv-input" accept=".csv" class="hidden" onchange="processCSV(this)">
-                <button onclick="document.getElementById('csv-input').click()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black uppercase text-sm mb-4">Pilih Fail CSV</button>
-                <button onclick="closeModal('csv-modal')" class="text-xs font-bold text-slate-400 uppercase">Batal</button>
-            </div>
-            <div id="csv-content-loading" class="hidden flex flex-col items-center py-6">
-                <div class="loader-spin mb-6"></div>
-                <h3 id="csv-status" class="font-black text-slate-800 uppercase text-xs">Sedang Memproses...</h3>
-            </div>
-        </div>
-    </div>
-
-    <div id="crud-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden">
-            <div class="bg-indigo-800 p-6 text-white flex justify-between items-center">
-                <h2 id="modal-title" class="font-black uppercase italic text-sm">Rekod</h2>
-                <button onclick="closeModal('crud-modal')"><i class="fas fa-times"></i></button>
-            </div>
-            <form id="crud-form" autocomplete="off" class="p-8 space-y-4 max-h-[80vh] overflow-y-auto">
-                <div id="modal-fields" class="space-y-4"></div>
-                <button type="submit" id="save-btn" class="w-full bg-indigo-600 text-white font-black py-4 rounded-xl uppercase shadow-lg mt-4">Simpan Rekod</button>
+    <div id="modal-student" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl">
+            <h3 class="font-bold text-lg mb-4">Maklumat Murid</h3>
+            <form onsubmit="saveStudent(event)" class="space-y-3">
+                <input type="text" id="std-name" class="input-field" placeholder="Nama Penuh" required>
+                <div class="grid grid-cols-2 gap-3">
+                    <select id="std-gender" class="input-field"><option value="L">Lelaki</option><option value="P">Perempuan</option></select>
+                    <input type="number" id="std-year" class="input-field" placeholder="Tingkatan" required>
+                </div>
+                <input type="text" id="std-unit" class="input-field" placeholder="Unit Uniform" required>
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" onclick="closeModal('modal-student')" class="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg">Batal</button>
+                    <button type="submit" class="btn-primary">Simpan</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <div id="print-area" class="hidden"></div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, getDocs, deleteDoc, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDpahvPPRtSLJ7o6p63rQEOCNqMDHgxe7o",
-            authDomain: "kmsystem-65436.firebaseapp.com",
-            projectId: "kmsystem-65436",
-            storageBucket: "kmsystem-65436.firebasestorage.app",
-            messagingSenderId: "36219334818",
-            appId: "1:36219334818:web:fbdaa0fefd729f22c727fb"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // --- UTILITIES ---
-        const toBase64 = file => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-        });
-
-        // Pengiraan Gred PAJSK
-        window.calculateGrade = (score) => {
-            if (score >= 80) return { gred: 'A', class: 'text-emerald-600' };
-            if (score >= 60) return { gred: 'B', class: 'text-blue-600' };
-            if (score >= 40) return { gred: 'C', class: 'text-amber-600' };
-            if (score >= 20) return { gred: 'D', class: 'text-orange-600' };
-            return { gred: 'E', class: 'text-red-600' };
-        };
-
-        // Export Excel Function
-        window.exportToExcel = (data, fileName) => {
-            const worksheet = XLSX.utils.json_to_sheet(data);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
-            XLSX.writeFile(workbook, fileName + ".xlsx");
-        };
-
-        window.toggleAllAttendance = (source) => {
-            const checkboxes = document.querySelectorAll('input[name="present"]');
-            checkboxes.forEach(cb => { cb.checked = source.checked; });
-        };
-
-        window.togglePlanStatus = async (docId, currentStatus) => {
-            try {
-                const newStatus = currentStatus === 'SELESAI' ? 'BELUM SELESAI' : 'SELESAI';
-                await updateDoc(doc(db, "annual_plans", docId), { status: newStatus });
-                fetchData(); 
-            } catch (error) { alert("Gagal mengemaskini status."); }
-        };
-
-        let userProfile = null;
-        let currentUnit = null;
-        let currentFolder = null;
-        let allStudentsMaster = [];
-        let unitStudents = []; // Store list of students for current unit
-        let meritStudentFilter = ""; // For filtering merit view
-        const currentYear = "2026";
-        let chartInstances = {}; 
-
-        const kokoData = {
-            "Unit Beruniform": ["Pengakap", "Bulan Sabit Merah", "Pergerakan Puteri Islam", "Tunas Kadet Remaja Sekolah"],
-            "Kelab & Persatuan": ["Bahasa Melayu", "Bahasa Inggeris", "STEM", "Alam Sekitar", "TV PSS"],
-            "Sukan & Permainan": ["Bola Sepak", "Bola Jaring", "Olahraga", "Hoki", "Memanah", "Catur"]
-        };
-
-        const unitLogos = {
-            "Pengakap": "pengakap.ico", "Bulan Sabit Merah": "pbsm.ico", "Pergerakan Puteri Islam": "ppim.ico", "Tunas Kadet Remaja Sekolah": "tkrs.ico",
-            "Bahasa Melayu": "fas fa-book-open-reader", "Bahasa Inggeris": "fas fa-spell-check", "STEM": "fas fa-microscope", "Alam Sekitar": "fas fa-leaf", "TV PSS": "fas fa-clapperboard",
-            "Bola Sepak": "fas fa-futbol", "Bola Jaring": "fas fa-volleyball", "Olahraga": "fas fa-person-running", "Hoki": "fas fa-hockey-puck", "Memanah": "fas fa-bullseye", "Catur": "fas fa-chess-knight"
-        };
-
-        window.getUnitIcon = (unit, imgClass = "h-10", faClass = "text-2xl") => {
-            const icon = unitLogos[unit];
-            if (!icon) return `<i class="fas fa-users ${faClass} text-slate-300"></i>`;
-            return icon.endsWith('.ico') ? `<img src="${icon}" class="${imgClass} mx-auto" onerror="this.style.display='none'">` : `<i class="${icon} ${faClass} text-indigo-500"></i>`;
-        };
-
-        // --- AUTH & INIT ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const d = await getDoc(doc(db, "users", user.uid));
-                userProfile = d.exists() ? d.data() : { role: 'admin', name: 'ADMIN' };
-                document.getElementById('user-info').innerText = `${userProfile.name} | ${userProfile.role.toUpperCase()}`;
-                document.getElementById('auth-view').classList.add('hidden');
-                document.getElementById('app-container').classList.remove('hidden');
-                renderDashboard();
-                fetchAllStudents();
-            } else {
-                document.getElementById('auth-view').classList.remove('hidden');
-                document.getElementById('app-container').classList.add('hidden');
-            }
-        });
-
-        async function fetchAllStudents() {
-            const q = query(collection(db, "students_master"), where("year", "==", currentYear));
-            const snap = await getDocs(q);
-            allStudentsMaster = snap.docs.map(doc => doc.data().name);
-        }
-
-        window.toggleAuth = (isReg) => {
-            document.getElementById('login-container').classList.toggle('hidden', isReg);
-            document.getElementById('register-container').classList.toggle('hidden', !isReg);
-            if(isReg) populateUnitSelects('reg-uniform', 'reg-club', 'reg-sport');
-        };
-
-        window.togglePublicCheck = (show) => {
-            document.getElementById('auth-view').classList.toggle('hidden', show);
-            document.getElementById('public-check-view').classList.toggle('hidden', !show);
-            document.getElementById('public-result').classList.add('hidden');
-            document.getElementById('public-search-input').value = "";
-        };
-
-        function populateUnitSelects(uId, cId, sId) {
-            const u = document.getElementById(uId); const c = document.getElementById(cId); const s = document.getElementById(sId);
-            u.innerHTML = `<option value="">-- UNIT BERUNIFORM --</option>`;
-            c.innerHTML = `<option value="">-- KELAB & PERSATUAN --</option>`;
-            s.innerHTML = `<option value="">-- SUKAN & PERMAINAN --</option>`;
-            kokoData["Unit Beruniform"].forEach(i => u.innerHTML += `<option value="${i}">${i}</option>`);
-            kokoData["Kelab & Persatuan"].forEach(i => c.innerHTML += `<option value="${i}">${i}</option>`);
-            kokoData["Sukan & Permainan"].forEach(i => s.innerHTML += `<option value="${i}">${i}</option>`);
-        }
-
-        document.getElementById('login-form').onsubmit = (e) => {
-            e.preventDefault();
-            signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value).catch(() => alert("Gagal Masuk."));
-        };
-
-        document.getElementById('register-form').onsubmit = async (e) => {
-            e.preventDefault();
-            try {
-                const cred = await createUserWithEmailAndPassword(auth, document.getElementById('reg-email').value, document.getElementById('reg-password').value);
-                await setDoc(doc(db, "users", cred.user.uid), {
-                    name: document.getElementById('reg-name').value.toUpperCase(),
-                    uniform: document.getElementById('reg-uniform').value, club: document.getElementById('reg-club').value, sport: document.getElementById('reg-sport').value,
-                    role: 'teacher', email: document.getElementById('reg-email').value, uid: cred.user.uid
-                });
-                alert("Berjaya!"); location.reload();
-            } catch (err) { alert(err.message); }
-        };
-
-        document.getElementById('logout-btn').onclick = () => {
-            signOut(auth);
-            location.reload();
-        };
-
-        // --- DASHBOARD LOGIC ---
-        window.renderDashboard = async () => {
-            const view = document.getElementById('content-view');
-            let html = `<div class="text-center mb-10"><h2 class="text-3xl font-black text-slate-800 italic uppercase">KMS DIGITAL ${currentYear}</h2><p class="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest italic">Sistem Pengurusan Kokurikulum</p></div>`;
-            
-            if (userProfile.role === 'admin') {
-                html += `<div class="mb-8 flex flex-wrap justify-center gap-2">
-                            <button onclick="openModal('csv-modal')" class="bg-emerald-600 text-white px-5 py-3 rounded-xl font-black text-[10px] uppercase shadow-lg">Import Murid (CSV)</button>
-                            <button onclick="manageTeachers()" class="bg-indigo-600 text-white px-5 py-3 rounded-xl font-black text-[10px] uppercase shadow-lg">Urus Guru</button>
-                            <button onclick="renderAnalysis()" class="bg-amber-500 text-white px-5 py-3 rounded-xl font-black text-[10px] uppercase shadow-lg">Analisis & Enrolmen</button>
-                         </div>`;
-                for (const [cat, units] of Object.entries(kokoData)) {
-                    html += `<h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 border-l-4 border-indigo-500 pl-2">${cat}</h3><div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">`;
-                    units.forEach(u => { html += `<div onclick="selectUnit('${u}')" class="unit-card bg-white p-6 rounded-3xl border shadow-sm cursor-pointer text-center hover:text-indigo-600 transition-all"><div>${getUnitIcon(u)}</div><div class="font-black text-[10px] uppercase text-slate-700 mt-2">${u}</div></div>`; });
-                    html += `</div>`;
-                }
-            } else {
-                const units = [userProfile.uniform, userProfile.club, userProfile.sport].filter(x => x);
-                let alertsHtml = "";
-                for (const u of units) {
-                    const rSnap = await getDocs(query(collection(db, "reports"), where("unit", "==", u), where("year", "==", currentYear)));
-                    const aSnap = await getDocs(query(collection(db, "attendance"), where("unit", "==", u), where("year", "==", currentYear)));
-                    if (rSnap.size < aSnap.size) {
-                        const diff = aSnap.size - rSnap.size;
-                        alertsHtml += `<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl mb-2 flex justify-between items-center"><div><p class="text-xs font-black text-red-700 uppercase">${u}</p><p class="text-[10px] font-bold text-red-400 uppercase">${diff} Laporan Aktiviti Belum Dihantar!</p></div><i class="fas fa-exclamation-circle text-red-300 text-xl"></i></div>`;
-                    }
-                }
-                if(alertsHtml) html += `<div class="mb-8 max-w-3xl mx-auto"><h3 class="text-[10px] font-black text-slate-400 uppercase mb-2">Peringatan Guru</h3>${alertsHtml}</div>`;
-                html += `<div class="grid grid-cols-1 md:grid-cols-3 gap-6">${units.map(u => `<div onclick="selectUnit('${u}')" class="unit-card bg-white p-10 rounded-[2.5rem] border-4 border-slate-50 shadow-xl cursor-pointer text-center hover:border-indigo-200 transition-all"><div>${getUnitIcon(u, "h-16", "text-5xl")}</div><div class="mt-4 font-black text-sm uppercase">${u}</div></div>`).join('')}</div>`;
-            }
-            view.innerHTML = html;
-        };
-
-        // --- DASHBOARD ANALISIS ---
-        window.renderAnalysis = async () => {
-             // (Kekalkan kod analisis asal)
-             const view = document.getElementById('content-view');
-            view.innerHTML = `<button onclick="renderDashboard()" class="mb-6 text-[10px] font-black text-slate-400 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali Utama</button>
-                <div class="space-y-8">
-                    <h2 class="text-2xl font-black text-slate-800 uppercase italic">Dashboard Analisis & Enrolmen</h2>
-                    <div id="stat-summary" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-white p-6 rounded-[2rem] shadow-sm"><h3 class="font-black text-xs uppercase mb-4 text-center">Agihan Jantina Murid</h3><canvas id="genderChart"></canvas></div>
-                        <div class="bg-white p-6 rounded-[2rem] shadow-sm"><h3 class="font-black text-xs uppercase mb-4 text-center">Prestasi Laporan Aktiviti</h3><div class="relative h-96 w-full"><canvas id="reportChart"></canvas></div></div>
-                    </div>
-                    <div class="bg-white p-8 rounded-[2rem] shadow-sm overflow-x-auto"><h3 class="font-black uppercase text-xs mb-6 text-indigo-600">Rumusan Mengikut Unit</h3><table class="w-full text-left text-[11px]"><thead class="bg-slate-50"><tr><th class="p-3">UNIT</th><th class="p-3">LELAKI</th><th class="p-3">PEREMPUAN</th><th class="p-3">JUMLAH MURID</th><th class="p-3">BIL. LAPORAN</th><th class="p-3">SKOR MERIT</th></tr></thead><tbody id="analysis-table-body"></tbody></table></div>
-                </div>`;
-
-            const sSnap = await getDocs(query(collection(db, "students_master"), where("year", "==", currentYear)));
-            const rSnap = await getDocs(query(collection(db, "reports"), where("year", "==", currentYear)));
-            const mSnap = await getDocs(query(collection(db, "merits"), where("year", "==", currentYear)));
-
-            const stats = {};
-            Object.values(kokoData).flat().forEach(u => { stats[u] = { L: 0, P: 0, totalS: 0, reports: 0, meritScore: 0 }; });
-
-            sSnap.forEach(doc => { const d = doc.data(); if (stats[d.unit]) { if (d.gender === 'L') stats[d.unit].L++; else if (d.gender === 'P') stats[d.unit].P++; stats[d.unit].totalS++; } });
-            rSnap.forEach(doc => { if (stats[doc.data().unit]) stats[doc.data().unit].reports++; });
-            mSnap.forEach(doc => { if (stats[doc.data().unit]) stats[doc.data().unit].meritScore += (doc.data().score || 0); });
-
-            let grandTotalL = 0; let grandTotalP = 0;
-            sSnap.forEach(d => { if(d.data().gender === 'L') grandTotalL++; else if(d.data().gender === 'P') grandTotalP++; });
-
-            document.getElementById('stat-summary').innerHTML = `
-                <div class="stat-card border-b-4 border-indigo-500"><p class="text-[10px] font-bold text-slate-400 uppercase">JUMLAH ENROLMEN</p><p class="text-3xl font-black text-slate-800">${sSnap.size}</p></div>
-                <div class="stat-card border-b-4 border-blue-500"><p class="text-[10px] font-bold text-slate-400 uppercase">LELAKI</p><p class="text-3xl font-black text-blue-600">${grandTotalL}</p></div>
-                <div class="stat-card border-b-4 border-pink-500"><p class="text-[10px] font-bold text-slate-400 uppercase">PEREMPUAN</p><p class="text-3xl font-black text-pink-600">${grandTotalP}</p></div>
-            `;
-
-            const tbody = document.getElementById('analysis-table-body');
-            Object.keys(stats).sort().forEach(unit => {
-                const s = stats[unit];
-                const tr = document.createElement('tr'); tr.className = "border-b border-slate-50 hover:bg-slate-50";
-                tr.innerHTML = `<td class="p-3 font-bold uppercase">${unit}</td><td class="p-3">${s.L}</td><td class="p-3">${s.P}</td><td class="p-3 font-black">${s.totalS}</td><td class="p-3 text-indigo-600 font-bold">${s.reports}</td><td class="p-3 text-emerald-600 font-bold">${s.meritScore}</td>`;
-                tbody.appendChild(tr);
-            });
-
-            if (chartInstances['genderChart']) chartInstances['genderChart'].destroy();
-            if (chartInstances['reportChart']) chartInstances['reportChart'].destroy();
-            chartInstances['genderChart'] = new Chart(document.getElementById('genderChart'), { type: 'pie', data: { labels: ['Lelaki', 'Perempuan'], datasets: [{ data: [grandTotalL, grandTotalP], backgroundColor: ['#3b82f6', '#ec4899'] }] } });
-            chartInstances['reportChart'] = new Chart(document.getElementById('reportChart'), { type: 'bar', data: { labels: Object.keys(stats).sort(), datasets: [{ label: 'Bil. Laporan', data: Object.keys(stats).sort().map(u => stats[u].reports), backgroundColor: '#6366f1', borderRadius: 4, barPercentage: 0.7 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { beginAtZero: true }, y: { ticks: { display: true, autoSkip: false, font: { size: 10, weight: 'bold' } } } }, plugins: { legend: { display: false } } } });
-        };
-
-        // --- PUBLIC CHECK ---
-        window.publicSearchStudent = async () => {
-            const name = document.getElementById('public-search-input').value.toUpperCase().trim();
-            if(!name) return alert("Sila masukkan nama.");
-            const q = query(collection(db, "students_master"), where("name", "==", name), where("year", "==", currentYear));
-            const snap = await getDocs(q);
-            const resDiv = document.getElementById('public-result');
-            resDiv.innerHTML = "";
-            if(snap.empty) { resDiv.innerHTML = `<p class="text-center font-bold text-red-500 text-xs uppercase">Rekod tidak dijumpai.</p>`; resDiv.classList.remove('hidden'); return; }
-            for(const d of snap.docs) {
-                const student = d.data();
-                const mSnap = await getDocs(query(collection(db, "merits"), where("studentName", "==", student.name), where("year", "==", currentYear)));
-                let totalScore = 0; let meritList = "";
-                mSnap.forEach(m => { const md = m.data(); totalScore += md.score; meritList += `<li class="text-[10px] text-slate-600 border-b py-1 flex justify-between"><span>${md.event} (${md.level})</span> <span class="font-bold">${md.score}</span></li>`; });
-                const gradeInfo = calculateGrade(totalScore);
-                resDiv.innerHTML += `<div class="bg-indigo-50 p-6 rounded-2xl mb-4 border border-indigo-100"><div class="flex justify-between items-start mb-4"><div><h3 class="font-black text-indigo-900 uppercase text-sm">${student.name}</h3><p class="text-[10px] font-bold text-slate-500 uppercase">UNIT: ${student.unit}</p></div><div class="text-center bg-white p-2 rounded-lg shadow-sm"><span class="block text-[8px] font-bold text-slate-400 uppercase">Gred PAJSK</span><span class="text-2xl font-black ${gradeInfo.class}">${gradeInfo.gred}</span></div></div><div class="bg-white p-4 rounded-xl"><p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Pencapaian Merit (${totalScore} Mata)</p><ul class="mb-0">${meritList || '<li class="text-[10px] italic text-slate-300">Tiada rekod merit.</li>'}</ul></div></div>`;
-            }
-            resDiv.classList.remove('hidden');
-        };
-
-        // --- FUNGSI GURU & CSV ---
-        window.manageTeachers = async () => {
-            const view = document.getElementById('content-view');
-            view.innerHTML = `<button onclick="renderDashboard()" class="mb-6 text-[10px] font-black text-slate-400 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali</button><div class="bg-white p-8 rounded-[2rem] shadow-sm"><h3 class="font-black uppercase italic mb-6 border-b pb-4 text-slate-800">Urus Guru</h3><div id="teacher-list" class="space-y-3"></div></div>`;
-            const q = query(collection(db, "users"), where("role", "==", "teacher"));
-            const snap = await getDocs(q);
-            const list = document.getElementById('teacher-list');
-            snap.forEach(d => {
-                const t = d.data();
-                list.innerHTML += `<div class="p-4 bg-slate-50 rounded-xl flex justify-between items-center border border-slate-100"><div><p class="font-black uppercase text-xs">${t.name}</p><p class="text-[9px] font-bold text-slate-400 uppercase">${t.uniform || '-'} | ${t.club || '-'} | ${t.sport || '-'}</p></div><div class="flex space-x-2"><button onclick="editTeacher('${d.id}')" class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-lg text-[9px] font-black uppercase">Ubah</button><button onclick="deleteDocById('users', '${d.id}')" class="text-red-500 p-2"><i class="fas fa-trash-alt"></i></button></div></div>`;
-            });
-        };
-
-        window.editTeacher = async (uid) => {
-            const d = await getDoc(doc(db, "users", uid)); const t = d.data();
-            const fields = document.getElementById('modal-fields');
-            document.getElementById('modal-title').innerText = "Kemas Kini Unit Guru";
-            fields.innerHTML = `<input type="hidden" id="edit-uid" value="${uid}"><p class="text-[10px] font-black uppercase text-slate-400 mb-4">Guru: ${t.name}</p><select id="edit-uniform" class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"></select><select id="edit-club" class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"></select><select id="edit-sport" class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"></select>`;
-            populateUnitSelects('edit-uniform', 'edit-club', 'edit-sport');
-            setTimeout(() => { document.getElementById('edit-uniform').value = t.uniform || ""; document.getElementById('edit-club').value = t.club || ""; document.getElementById('edit-sport').value = t.sport || ""; }, 100);
-            openModal('crud-modal');
-            document.getElementById('crud-form').onsubmit = async (e) => {
-                e.preventDefault();
-                await updateDoc(doc(db, "users", document.getElementById('edit-uid').value), { uniform: document.getElementById('edit-uniform').value, club: document.getElementById('edit-club').value, sport: document.getElementById('edit-sport').value });
-                alert("Berjaya!"); closeModal('crud-modal'); manageTeachers();
-            };
-        };
-
-        window.processCSV = (input) => {
-            Papa.parse(input.files[0], {
-                header: true, skipEmptyLines: true,
-                complete: async (res) => {
-                    document.getElementById('csv-content-normal').classList.add('hidden'); document.getElementById('csv-content-loading').classList.remove('hidden');
-                    let count = 0;
-                    for(const s of res.data) {
-                        const name = (s.Nama || s.nama || '').toUpperCase().trim();
-                        let rawGender = (s.Jantina || s.jantina || '').toUpperCase().trim();
-                        let gender = (rawGender === 'P' || rawGender === 'PEREMPUAN') ? 'P' : 'L';
-                        let rawUnit = (s.Unit || s.unit || '').trim().toUpperCase();
-                        let matched = ""; for (const cat in kokoData) { const found = kokoData[cat].find(u => u.toUpperCase() === rawUnit); if (found) { matched = found; break; } }
-                        if(name && matched) { try { await addDoc(collection(db, "students_master"), { name: name, gender: gender, unit: matched, year: currentYear }); count++; } catch (e) { console.error(e); } }
-                    }
-                    alert(`Berjaya import ${count} murid!`); location.reload();
-                }
-            });
-        };
-
-        // --- UNIT & FOLDER LOGIC ---
-        window.selectUnit = async (unit) => {
-            currentUnit = unit;
-            meritStudentFilter = ""; // Reset filter
-            
-            // Fetch students for unit for dropdowns later
-            const q = query(collection(db, "students_master"), where("unit", "==", currentUnit), where("year", "==", currentYear));
-            const snap = await getDocs(q);
-            unitStudents = snap.docs.map(d => d.data().name).sort();
-
-            const folders = [
-                { name: "Senarai Ahli Murid", icon: "fas fa-users", color: "text-blue-500" },
-                { name: "Perancangan Tahunan", icon: "fas fa-calendar-alt", color: "text-pink-500" }, 
-                { name: "Rekod Kehadiran", icon: "fas fa-calendar-check", color: "text-amber-500" },
-                { name: "Laporan Aktiviti", icon: "fas fa-file-signature", color: "text-indigo-500" },
-                { name: "Pencapaian Merit", icon: "fas fa-trophy", color: "text-emerald-500" }
-            ];
-            document.getElementById('content-view').innerHTML = `<button onclick="renderDashboard()" class="mb-6 text-[10px] font-black text-slate-400 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali Utama</button><div class="flex items-center mb-8">${getUnitIcon(unit, "h-12")}<h2 class="ml-4 text-2xl font-black text-slate-800 uppercase">${currentUnit}</h2></div><div class="grid grid-cols-1 md:grid-cols-5 gap-4">${folders.map(f => `<div onclick="selectFolder('${f.name}')" class="bg-white p-6 rounded-3xl border shadow-sm flex flex-col items-center justify-center space-y-3 cursor-pointer hover:bg-slate-50 transition-all text-center"><div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center ${f.color} text-xl"><i class="${f.icon}"></i></div><span class="font-black text-slate-700 uppercase text-[10px] leading-tight">${f.name}</span></div>`).join('')}</div>`;
-        };
-
-        window.selectFolder = (folder) => {
-            currentFolder = folder;
-            const view = document.getElementById('content-view');
-            let actionButtons = "";
-            let extraControls = "";
-            
-            if (folder !== "Senarai Ahli Murid") {
-                actionButtons += `<button onclick="openCRUD()" class="bg-indigo-600 text-white px-6 py-2 rounded-xl font-black text-xs uppercase shadow-md mr-2">Tambah Rekod</button>`;
-                
-                // Butang Cetak Mengikut Folder
-                if (folder === "Pencapaian Merit") {
-                    actionButtons += `<button onclick="printMeritSummary()" class="bg-slate-600 text-white px-6 py-2 rounded-xl font-black text-xs uppercase shadow-md"><i class="fas fa-print mr-2"></i> Ringkasan</button>`;
-                    // Dropdown untuk Merit
-                    extraControls = `
-                        <div class="mb-6 bg-emerald-50 p-4 rounded-xl flex flex-col md:flex-row items-center gap-4 border border-emerald-100">
-                            <label class="text-[10px] font-black uppercase text-emerald-800 whitespace-nowrap">Tapisan Murid:</label>
-                            <select id="merit-student-filter" onchange="filterMeritByStudent(this.value)" class="w-full md:w-1/2 p-2 rounded-lg text-xs font-bold uppercase outline-none border focus:border-emerald-500">
-                                <option value="">-- PAPAR SEMUA MURID --</option>
-                                ${unitStudents.map(s => `<option value="${s}">${s}</option>`).join('')}
-                            </select>
-                            <button id="btn-print-merit-indiv" onclick="printStudentMerit()" class="hidden bg-emerald-600 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase shadow-lg hover:bg-emerald-700 transition-all">
-                                <i class="fas fa-print mr-2"></i> Cetak Slip
-                            </button>
-                        </div>
-                    `;
-                }
-                else if (folder === "Perancangan Tahunan") {
-                    actionButtons += `<button onclick="printAnnualPlan()" class="bg-slate-600 text-white px-6 py-2 rounded-xl font-black text-xs uppercase shadow-md ml-2"><i class="fas fa-print mr-2"></i> Cetak</button>`;
-                }
-                else if (folder === "Rekod Kehadiran" || folder === "Laporan Aktiviti") {
-                     // Butang Cetak Keseluruhan untuk Kehadiran & Laporan
-                     actionButtons += `<button onclick="printGenericList('${folder}')" class="bg-slate-600 text-white px-6 py-2 rounded-xl font-black text-xs uppercase shadow-md ml-2"><i class="fas fa-print mr-2"></i> Cetak Senarai</button>`;
-                }
-            }
-            if (folder === "Senarai Ahli Murid" || folder === "Pencapaian Merit") {
-                 actionButtons += `<button onclick="exportCurrentData()" class="bg-emerald-600 text-white px-6 py-2 rounded-xl font-black text-xs uppercase shadow-md ml-2"><i class="fas fa-file-excel mr-2"></i> Excel</button>`;
-            }
-
-            view.innerHTML = `
-                <div class="flex justify-between items-center mb-6">
-                    <button onclick="selectUnit('${currentUnit}')" class="text-[10px] font-black text-slate-400 uppercase"><i class="fas fa-arrow-left mr-2"></i> Kembali</button>
-                    <div>${actionButtons}</div>
+    <div id="modal-report" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-xl w-full max-w-lg shadow-2xl h-[90vh] overflow-y-auto">
+            <h3 class="font-bold text-lg mb-4">Laporan Aktiviti</h3>
+            <form onsubmit="saveReport(event)" class="space-y-3">
+                <input type="date" id="rpt-date" class="input-field" required>
+                <input type="text" id="rpt-title" class="input-field" placeholder="Tajuk Laporan" required>
+                <input type="text" id="rpt-unit" class="input-field" placeholder="Unit" required>
+                <div>
+                    <label class="text-xs font-bold mb-1 block">Senarai Nama Murid</label>
+                    <textarea id="rpt-names" class="input-field h-24 text-xs" placeholder="Paste nama murid di sini..."></textarea>
                 </div>
-                ${extraControls}
-                <div class="bg-white p-8 rounded-[2rem] shadow-sm min-h-[400px]">
-                    <div id="merit-header-card" class="hidden mb-6"></div>
-                    <h3 class="font-black uppercase italic mb-6 border-b pb-4">${currentFolder}</h3>
-                    <div id="data-list" class="space-y-2"></div>
-                </div>`;
-            fetchData();
-        };
-
-        window.filterMeritByStudent = (val) => {
-            meritStudentFilter = val;
-            const btn = document.getElementById('btn-print-merit-indiv');
-            if (val) btn.classList.remove('hidden'); else btn.classList.add('hidden');
-            fetchData();
-        };
-
-        async function fetchData() {
-            const list = document.getElementById('data-list');
-            const meritHeader = document.getElementById('merit-header-card');
-            if(meritHeader) meritHeader.classList.add('hidden');
-
-            let coll = "";
-            if (currentFolder === "Rekod Kehadiran") coll = "attendance";
-            else if (currentFolder === "Laporan Aktiviti") coll = "reports";
-            else if (currentFolder === "Pencapaian Merit") coll = "merits";
-            else if (currentFolder === "Perancangan Tahunan") coll = "annual_plans"; 
-            else coll = "students_master";
-
-            let q = query(collection(db, coll), where("unit", "==", currentUnit), where("year", "==", currentYear));
-            const snap = await getDocs(q);
-            
-            let dataArr = [];
-            snap.forEach(d => { dataArr.push({ id: d.id, ...d.data() }); });
-
-            // Filtering logic
-            if (coll === "annual_plans") dataArr.sort((a, b) => new Date(a.date) - new Date(b.date));
-            else if (coll === "students_master") dataArr.sort((a, b) => a.name.localeCompare(b.name));
-            else if (coll === "merits" && meritStudentFilter) {
-                dataArr = dataArr.filter(d => d.studentName === meritStudentFilter);
-                
-                // Show Merit Header (Total & Grade)
-                let totalScore = dataArr.reduce((acc, curr) => acc + curr.score, 0);
-                let grade = calculateGrade(totalScore);
-                meritHeader.innerHTML = `
-                    <div class="bg-emerald-50 p-6 rounded-2xl flex justify-between items-center border border-emerald-100">
-                        <div>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase">ANALISIS INDIVIDU</p>
-                            <h2 class="text-xl font-black text-emerald-900 uppercase">${meritStudentFilter}</h2>
-                        </div>
-                        <div class="text-right">
-                             <span class="text-3xl font-black ${grade.class} block">${grade.gred}</span>
-                             <span class="text-[10px] font-bold text-slate-500 uppercase">${totalScore} Mata</span>
-                        </div>
+                <textarea id="rpt-desc" class="input-field h-24" placeholder="Ulasan / Laporan Ringkas"></textarea>
+                <div>
+                    <label class="text-xs font-bold block mb-1">Gambar</label>
+                    <div class="flex gap-2 mb-2">
+                        <button type="button" onclick="toggleImgMode('url')" class="text-xs bg-slate-200 px-2 py-1 rounded">URL</button>
+                        <button type="button" onclick="toggleImgMode('file')" class="text-xs bg-slate-200 px-2 py-1 rounded">Upload</button>
                     </div>
-                `;
-                meritHeader.classList.remove('hidden');
-            }
-
-            window.currentExportData = dataArr; 
-            list.innerHTML = dataArr.length === 0 ? `<p class="text-center py-10 text-slate-300 font-bold uppercase text-[10px]">Tiada Rekod Dijumpai</p>` : "";
-            
-            dataArr.forEach(data => {
-                let subText = "";
-                let mainText = "";
-                let extraBtn = ""; 
-
-                if (coll === "annual_plans") {
-                    mainText = `${data.title}`;
-                    const statusColor = data.status === 'SELESAI' ? 'text-emerald-600 bg-emerald-100' : 'text-amber-600 bg-amber-100';
-                    const descText = data.description ? `<br><span class="text-[9px] text-slate-500 normal-case italic mt-1 block">"${data.description}"</span>` : "";
-                    subText = `<span class="px-2 py-1 rounded-md font-black text-[10px] ${statusColor}">${data.status}</span> <span class="ml-2 text-[10px] text-slate-400">TARIKH: ${data.date}</span> ${descText}`;
-                    extraBtn = `<button onclick="editAnnualPlan('${data.id}')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-[9px] font-black uppercase mr-2 hover:bg-blue-200"><i class="fas fa-edit mr-1"></i> Ubah</button><button onclick="togglePlanStatus('${data.id}', '${data.status}')" class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-lg text-[9px] font-black uppercase mr-2 hover:bg-indigo-200"><i class="fas fa-sync-alt mr-1"></i> Status</button>`;
-                
-                } else if (coll === "merits") {
-                    mainText = `${data.studentName} - ${data.event}`;
-                    const grade = calculateGrade(data.score);
-                    subText = `<span class="${grade.class}">SKOR: ${data.score} (GRED ${grade.gred})</span> | ${data.level}`;
-                    // Added Edit Button for Merit
-                    extraBtn = `<button onclick="editMerit('${data.id}')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-[9px] font-black uppercase mr-2 hover:bg-blue-200"><i class="fas fa-edit mr-1"></i> Ubah</button>`;
-                } else if (coll === "attendance") {
-                     mainText = data.title;
-                     subText = `TARIKH: ${data.date} | KEHADIRAN: ${data.names ? data.names.length : 0} ORANG`;
-                     // Added Edit Button for Attendance
-                     extraBtn = `<button onclick="editAttendance('${data.id}')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-[9px] font-black uppercase mr-2 hover:bg-blue-200"><i class="fas fa-edit mr-1"></i> Ubah</button>`;
-                } else if (coll === "reports") {
-                     mainText = data.title;
-                     subText = `TARIKH: ${data.date}`;
-                     // Added Edit Button for Reports
-                     extraBtn = `<button onclick="editReport('${data.id}')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-[9px] font-black uppercase mr-2 hover:bg-blue-200"><i class="fas fa-edit mr-1"></i> Ubah</button>`;
-                } else {
-                    mainText = data.name;
-                    subText = data.gender ? `JANTINA: ${data.gender}` : 'AHLI UNIT';
-                }
-
-                list.innerHTML += `<div class="p-4 bg-slate-50 rounded-xl flex justify-between items-center border border-slate-100 hover:border-indigo-300 transition-all">
-                    <div>
-                        <p class="font-black uppercase text-xs text-slate-800">${mainText}</p>
-                        <div class="mt-1 text-[9px] font-bold text-slate-400 uppercase">${subText}</div>
-                    </div>
-                    <div class="flex items-center">
-                        ${extraBtn}
-                        ${(coll !== "students_master" && coll !== "annual_plans") ? `<button onclick="printRecord('${coll}', '${data.id}')" class="bg-slate-200 px-3 py-1 rounded-lg text-[9px] font-black uppercase mr-2">Cetak</button>` : ""}
-                        <button onclick="deleteDocById('${coll}', '${data.id}')" class="text-red-500 p-2 hover:bg-red-50 rounded-lg"><i class="fas fa-trash-alt"></i></button>
-                    </div>
-                </div>`;
-            });
-        }
-
-        window.exportCurrentData = () => {
-            if(!window.currentExportData || window.currentExportData.length === 0) return alert("Tiada data untuk dieksport.");
-            exportToExcel(window.currentExportData, `${currentUnit}_${currentFolder}`);
-        };
-
-        // --- NEW EDIT FUNCTIONS ---
-
-        // 1. Edit Attendance
-        window.editAttendance = async (id) => {
-            const d = await getDoc(doc(db, "attendance", id));
-            if(!d.exists()) return alert("Rekod tidak dijumpai.");
-            const data = d.data();
-
-            document.getElementById('modal-title').innerText = "Kemas Kini Kehadiran";
-            const fields = document.getElementById('modal-fields');
-
-            // Generate checkbox list similar to create, but pre-checked
-            let checklistHTML = "";
-            unitStudents.forEach(name => {
-                const isChecked = data.names.includes(name) ? "checked" : "";
-                checklistHTML += `
-                    <label class="flex items-center space-x-3 p-3 bg-white rounded-lg border shadow-sm text-[10px] font-black uppercase cursor-pointer hover:border-indigo-400 transition-all">
-                        <input type="checkbox" name="present" value="${name}" ${isChecked} class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
-                        <span class="text-slate-700">${name}</span>
-                    </label>`;
-            });
-
-            fields.innerHTML = `
-                <input type="text" id="edit-att-title" value="${data.title}" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none">
-                <input type="date" id="edit-att-date" value="${data.date}" required class="w-full p-4 bg-slate-100 rounded-xl font-bold outline-none">
-                <div class="mt-4 mb-2 flex justify-between items-center px-1">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase">Senarai Ahli</span>
-                    <label class="flex items-center space-x-2 text-[10px] font-black uppercase cursor-pointer text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg hover:bg-indigo-100 transition-all">
-                        <input type="checkbox" onchange="toggleAllAttendance(this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
-                        <span>TANDA SEMUA</span>
-                    </label>
+                    <input type="text" id="rpt-img-url" class="input-field" placeholder="https://...">
+                    <input type="file" id="rpt-img-file" class="input-field hidden" accept="image/*" onchange="convertBase64(this)">
+                    <input type="hidden" id="rpt-img-final">
                 </div>
-                <div class="space-y-1 max-h-56 overflow-y-auto border border-slate-200 p-2 rounded-xl bg-slate-50">${checklistHTML}</div>
-            `;
-            
-            openModal('crud-modal');
-            document.getElementById('crud-form').onsubmit = async (e) => {
-                e.preventDefault();
-                const present = Array.from(document.querySelectorAll('input[name="present"]:checked')).map(c => c.value);
-                await updateDoc(doc(db, "attendance", id), {
-                    title: document.getElementById('edit-att-title').value.toUpperCase(),
-                    date: document.getElementById('edit-att-date').value,
-                    names: present
-                });
-                closeModal('crud-modal'); fetchData();
-            };
-        };
-
-        // 2. Edit Report
-        window.editReport = async (id) => {
-            const d = await getDoc(doc(db, "reports", id));
-            if(!d.exists()) return alert("Rekod tidak dijumpai.");
-            const data = d.data();
-            
-            document.getElementById('modal-title').innerText = "Kemas Kini Laporan";
-            const fields = document.getElementById('modal-fields');
-            
-            fields.innerHTML = `
-                <p class="text-[10px] font-bold text-slate-400 uppercase">Tajuk: ${data.title}</p>
-                <textarea id="edit-rep-desc" required class="w-full p-4 bg-slate-100 rounded-xl h-32 font-bold text-xs outline-none">${data.description}</textarea>
-                <div class="mt-2 text-left">
-                    <label class="block text-[10px] font-black text-slate-400 mb-2 uppercase italic">Tukar Gambar (Biarkan kosong jika tiada perubahan):</label>
-                    ${data.image ? `<img src="${data.image}" class="h-20 mb-2 rounded border">` : ''}
-                    <input type="file" id="edit-rep-image" accept="image/*" class="w-full text-xs font-bold text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700">
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" onclick="closeModal('modal-report')" class="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg">Batal</button>
+                    <button type="submit" class="btn-primary">Hantar</button>
                 </div>
-            `;
-            
-            openModal('crud-modal');
-            document.getElementById('crud-form').onsubmit = async (e) => {
-                e.preventDefault();
-                const imageFile = document.getElementById('edit-rep-image').files[0];
-                let updateData = { description: document.getElementById('edit-rep-desc').value };
-                if (imageFile) {
-                    updateData.image = await toBase64(imageFile);
-                }
-                await updateDoc(doc(db, "reports", id), updateData);
-                closeModal('crud-modal'); fetchData();
-            };
-        };
+            </form>
+        </div>
+    </div>
 
-        // 3. Edit Merit
-        window.editMerit = async (id) => {
-            const d = await getDoc(doc(db, "merits", id));
-            if(!d.exists()) return alert("Rekod tidak dijumpai.");
-            const data = d.data();
+    <div id="modal-view-report" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl w-full max-w-4xl h-[85vh] flex flex-col md:flex-row overflow-hidden shadow-2xl relative">
+            <button onclick="closeModal('modal-view-report')" class="absolute top-4 right-4 bg-white/80 rounded-full p-2 z-10 hover:bg-red-500 hover:text-white transition"><i class="fas fa-times"></i></button>
+            <div class="md:w-2/5 bg-slate-100 flex flex-col border-r">
+                <div class="h-64 md:h-1/2 bg-slate-200 relative">
+                    <img id="view-rpt-img" src="" class="w-full h-full object-cover">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                        <span id="view-rpt-unit" class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded">UNIT</span>
+                    </div>
+                </div>
+                <div class="p-4 flex-1 overflow-y-auto">
+                    <p class="text-xs font-bold text-slate-500 uppercase">Tarikh</p>
+                    <p id="view-rpt-date" class="font-bold text-slate-800 mb-4">-</p>
+                    <p class="text-xs font-bold text-slate-500 uppercase">Kehadiran</p>
+                    <div class="bg-white border rounded p-2 h-32 overflow-y-auto text-xs font-mono mt-1 shadow-inner">
+                        <p id="view-rpt-names">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="md:w-3/5 p-6 overflow-y-auto bg-white">
+                <h2 id="view-rpt-title" class="text-2xl font-black text-slate-800 mb-4 border-b pb-2">Title</h2>
+                <div class="prose prose-sm max-w-none text-slate-700">
+                    <p id="view-rpt-desc" class="whitespace-pre-wrap text-justify leading-relaxed">...</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            document.getElementById('modal-title').innerText = "Kemas Kini Merit";
-            const fields = document.getElementById('modal-fields');
+    <div id="modal-user" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl">
+            <h3 id="user-modal-title" class="font-bold text-lg mb-4 text-slate-800">Urus Guru</h3>
+            <form id="form-user" class="space-y-3">
+                <input type="hidden" id="user-doc-id">
+                <input type="text" id="user-name" class="input-field" placeholder="Nama Guru" required>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="email" id="user-email" class="input-field" placeholder="Emel" required>
+                    <input type="text" id="user-password" class="input-field" placeholder="Password" required>
+                </div>
+                <select id="user-role" class="input-field bg-slate-50"><option value="teacher">Teacher</option><option value="admin">Admin</option></select>
+                <div class="pt-2 border-t mt-2">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 mb-2">Unit Kendalian (Isi '-' jika tiada)</p>
+                    <input type="text" id="user-uniform" class="input-field mb-2" placeholder="Uniform (cth: Pengakap)">
+                    <input type="text" id="user-club" class="input-field mb-2" placeholder="Kelab (cth: B.Inggeris)">
+                    <input type="text" id="user-sport" class="input-field" placeholder="Sukan (cth: Bola Sepak)">
+                </div>
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" onclick="closeModal('modal-user')" class="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg">Batal</button>
+                    <button type="submit" class="btn-primary w-full">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-            fields.innerHTML = `
-                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Pelajar: ${data.studentName}</p>
-                <input type="text" id="edit-merit-event" value="${data.event}" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none">
-                <select id="edit-merit-level" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none">
-                     <option value="SEKOLAH">SEKOLAH</option><option value="ZON">ZON</option><option value="DAERAH">DAERAH</option><option value="NEGERI">NEGERI</option><option value="KEBANGSAAN">KEBANGSAAN</option>
-                </select>
-                <select id="edit-merit-achieve" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none">
-                     <option value="JOHAN">JOHAN</option><option value="KEDUA">KEDUA</option><option value="KETIGA">KETIGA</option><option value="PENYERTAAN">PENYERTAAN</option>
-                </select>
-            `;
-            
-            document.getElementById('edit-merit-level').value = data.level;
-            document.getElementById('edit-merit-achieve').value = data.achievement;
-
-            openModal('crud-modal');
-            document.getElementById('crud-form').onsubmit = async (e) => {
-                e.preventDefault();
-                const lvlMap = { "SEKOLAH": 2, "ZON": 4, "DAERAH": 6, "NEGERI": 10, "KEBANGSAAN": 15 };
-                const achMap = { "JOHAN": 10, "KEDUA": 5, "KETIGA": 3, "PENYERTAAN": 1 };
-                const lvl = document.getElementById('edit-merit-level').value;
-                const ach = document.getElementById('edit-merit-achieve').value;
-                const score = (lvlMap[lvl] || 0) + (achMap[ach] || 0);
-
-                await updateDoc(doc(db, "merits", id), {
-                    event: document.getElementById('edit-merit-event').value.toUpperCase(),
-                    level: lvl, achievement: ach, score: score
-                });
-                closeModal('crud-modal'); fetchData();
-            };
-        };
-
-        window.editAnnualPlan = async (id) => {
-            const d = await getDoc(doc(db, "annual_plans", id));
-            if (!d.exists()) return alert("Rekod tidak dijumpai.");
-            const data = d.data();
-            const fields = document.getElementById('modal-fields'); 
-            document.getElementById('modal-title').innerText = "Kemas Kini Takwim";
-            fields.innerHTML = `
-                <input type="text" id="p-title" placeholder="NAMA AKTIVITI" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none" value="${data.title}">
-                <input type="date" id="p-date" required class="w-full p-4 bg-slate-100 rounded-xl font-bold outline-none" value="${data.date}">
-                <textarea id="p-desc" placeholder="KETERANGAN (OPSIONAL)" class="w-full p-4 bg-slate-100 rounded-xl font-bold text-xs outline-none h-24">${data.description || ''}</textarea>
-                <select id="p-status" class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none">
-                    <option value="BELUM SELESAI" ${data.status === 'BELUM SELESAI' ? 'selected' : ''}>BELUM SELESAI</option>
-                    <option value="SELESAI" ${data.status === 'SELESAI' ? 'selected' : ''}>SELESAI</option>
-                </select>`;
-            openModal('crud-modal');
-            document.getElementById('crud-form').onsubmit = async (e) => {
-                e.preventDefault();
-                await updateDoc(doc(db, "annual_plans", id), {
-                    title: document.getElementById('p-title').value.toUpperCase(), date: document.getElementById('p-date').value,
-                    description: document.getElementById('p-desc').value, status: document.getElementById('p-status').value
-                });
-                closeModal('crud-modal'); fetchData();
-            };
-        };
-
-        // --- NEW PRINT FUNCTIONS ---
+    <script>
+        // CONFIGURATION
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzLf0WBthx-icFZuzOHMJQvKyGCvCTRqD4-QY1kT1aBPo87k3hWkH215zldGQTHsn6D/exec";
         
-        // 1. Print Generic List (Attendance / Reports)
-        window.printGenericList = (type) => {
-             const data = window.currentExportData;
-             if(!data || data.length === 0) return alert("Tiada data untuk dicetak.");
+        let currentUser = null;
+        let globalData = { students: [], attendance: [], reports: [], records: [], users: [], annual_plans: [] };
 
-             let rows = "";
-             data.forEach((item, index) => {
-                 let details = "";
-                 if(type === "Rekod Kehadiran") details = `Hadir: ${item.names ? item.names.length : 0} Orang`;
-                 else if(type === "Laporan Aktiviti") details = item.description || "-";
-                 
-                 rows += `<tr>
-                    <td style="text-align:center;">${index + 1}</td>
-                    <td>${item.date}</td>
-                    <td>${item.title}</td>
-                    <td>${details}</td>
-                 </tr>`;
-             });
+        // --- UTILS ---
+        function showLoader(show) { 
+            const el = document.getElementById('global-loader'); 
+            if(show) el.classList.remove('hidden'); else el.classList.add('hidden'); 
+        }
 
-             const html = `
-                <div class="slip-header">
-                    <h2 style="margin:0;">SENARAI ${type.toUpperCase()}</h2>
-                    <h3 style="margin:5px 0;">UNIT: ${currentUnit} (${currentYear})</h3>
-                </div>
-                <table border="1">
-                    <thead>
-                        <tr style="background-color:#eee;">
-                            <th width="5%" style="text-align:center;">BIL</th>
-                            <th width="15%">TARIKH</th>
-                            <th width="30%">TAJUK</th>
-                            <th width="50%">BUTIRAN</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>
-             `;
-             document.getElementById('print-area').innerHTML = html;
-             window.print();
-        };
-
-        // 2. Print Student Individual Merit Slip
-        window.printStudentMerit = () => {
-             if(!meritStudentFilter) return alert("Sila pilih murid dahulu.");
-             const data = window.currentExportData; // Already filtered in fetchData
-             let totalScore = 0;
-             let rows = "";
-             
-             data.forEach((item, index) => {
-                 totalScore += item.score;
-                 rows += `<tr>
-                    <td style="text-align:center;">${index + 1}</td>
-                    <td>${item.event}</td>
-                    <td style="text-align:center;">${item.level}</td>
-                    <td style="text-align:center;">${item.achievement}</td>
-                    <td style="text-align:center;">${item.score}</td>
-                 </tr>`;
-             });
-
-             const grade = calculateGrade(totalScore);
-
-             const html = `
-                <div style="border: 2px solid black; padding: 20px; max-width: 800px; margin: 0 auto;">
-                    <div style="text-align:center; border-bottom: 2px solid black; padding-bottom: 15px; margin-bottom: 20px;">
-                        <h2 style="margin:0; text-transform:uppercase;">SLIP PENCAPAIAN KOKURIKULUM</h2>
-                        <h3 style="margin:5px 0; font-weight:normal;">SESI ${currentYear}</h3>
-                    </div>
-                    
-                    <div style="margin-bottom: 20px; font-size: 12px; font-weight: bold;">
-                        <p>NAMA MURID: ${meritStudentFilter}</p>
-                        <p>UNIT: ${currentUnit}</p>
-                    </div>
-
-                    <table border="1" style="width:100%; border-collapse:collapse; margin-bottom: 20px;">
-                        <thead>
-                            <tr style="background-color:#eee;">
-                                <th width="5%" style="text-align:center;">BIL</th>
-                                <th>AKTIVITI / PERTANDINGAN</th>
-                                <th width="15%" style="text-align:center;">PERINGKAT</th>
-                                <th width="15%" style="text-align:center;">PENCAPAIAN</th>
-                                <th width="10%" style="text-align:center;">MARKAH</th>
-                            </tr>
-                        </thead>
-                        <tbody>${rows}</tbody>
-                        <tfoot>
-                             <tr style="background-color:#eee; font-weight:bold;">
-                                <td colspan="4" style="text-align:right;">JUMLAH MARKAH</td>
-                                <td style="text-align:center;">${totalScore}</td>
-                             </tr>
-                        </tfoot>
-                    </table>
-
-                    <div style="display:flex; justify-content:flex-end; margin-top: 10px;">
-                         <div style="border: 1px solid black; padding: 10px 20px; text-align:center;">
-                             <span style="font-size: 10px; display:block;">GRED PAJSK</span>
-                             <span style="font-size: 24px; font-weight:bold;">${grade.gred}</span>
-                         </div>
-                    </div>
-
-                    <div style="margin-top: 50px; text-align: center; font-size: 10px;">
-                        <p>......................................................</p>
-                        <p>GURU PENASIHAT<br>${currentUnit}</p>
-                    </div>
-                </div>
-             `;
-             document.getElementById('print-area').innerHTML = html;
-             window.print();
-        };
-
-        window.printAnnualPlan = async () => {
-             const q = query(collection(db, "annual_plans"), where("unit", "==", currentUnit), where("year", "==", currentYear));
-             const snap = await getDocs(q);
-             if(snap.empty) return alert("Tiada perancangan untuk dicetak.");
-             let plans = snap.docs.map(d => d.data());
-             plans.sort((a, b) => new Date(a.date) - new Date(b.date));
-             let rows = "";
-             plans.forEach((p, index) => {
-                 rows += `<tr><td style="text-align:center;">${index + 1}</td><td>${p.date}</td><td>${p.title}</td><td>${p.description || '-'}</td><td style="text-align:center;">${p.status}</td></tr>`;
-             });
-             const html = `<div style="text-align:center; margin-bottom:20px;"><h2 style="margin:0;">PERANCANGAN TAHUNAN ${currentYear}</h2><h3 style="margin:5px 0;">UNIT: ${currentUnit}</h3></div><table border="1" style="width:100%; border-collapse:collapse; font-size:11px;"><thead><tr style="background-color:#eee;"><th width="5%" style="text-align:center;">BIL</th><th width="15%">TARIKH</th><th width="30%">AKTIVITI</th><th width="35%">KETERANGAN</th><th width="15%" style="text-align:center;">STATUS</th></tr></thead><tbody>${rows}</tbody></table>`;
-             const area = document.getElementById('print-area'); area.innerHTML = html; window.print();
-        };
-
-        window.openCRUD = async () => {
-            const fields = document.getElementById('modal-fields'); 
-            const title = document.getElementById('modal-title');
-            fields.innerHTML = ""; 
-            openModal('crud-modal');
-            const sSnap = await getDocs(query(collection(db, "students_master"), where("unit", "==", currentUnit), where("year", "==", currentYear)));
-
-            if (currentFolder === "Perancangan Tahunan") {
-                title.innerText = "Tambah Takwim";
-                fields.innerHTML = `<input type="text" id="p-title" placeholder="NAMA AKTIVITI" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><input type="date" id="p-date" required class="w-full p-4 bg-slate-100 rounded-xl font-bold outline-none"><textarea id="p-desc" placeholder="KETERANGAN (OPSIONAL)" class="w-full p-4 bg-slate-100 rounded-xl font-bold text-xs outline-none h-24"></textarea><select id="p-status" class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="BELUM SELESAI">BELUM SELESAI</option><option value="SELESAI">SELESAI</option></select>`;
-            } else if (currentFolder === "Rekod Kehadiran") {
-                title.innerText = "Tambah Sesi Kehadiran";
-                fields.innerHTML = `<input type="text" id="f-title" placeholder="NAMA PERJUMPAAN" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><input type="date" id="f-date" required class="w-full p-4 bg-slate-100 rounded-xl font-bold outline-none"><div class="mt-4 mb-2 flex justify-between items-center px-1"><span class="text-[10px] font-bold text-slate-400 uppercase">Senarai Ahli (${sSnap.size})</span><label class="flex items-center space-x-2 text-[10px] font-black uppercase cursor-pointer text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg hover:bg-indigo-100 transition-all"><input type="checkbox" onchange="toggleAllAttendance(this)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"><span>TANDA SEMUA</span></label></div><div class="space-y-1 max-h-56 overflow-y-auto border border-slate-200 p-2 rounded-xl bg-slate-50">${sSnap.docs.map(s => `<label class="flex items-center space-x-3 p-3 bg-white rounded-lg border shadow-sm text-[10px] font-black uppercase cursor-pointer hover:border-indigo-400 transition-all"><input type="checkbox" name="present" value="${s.data().name}" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"><span class="text-slate-700">${s.data().name}</span></label>`).join('')}</div>`;
-            } else if (currentFolder === "Laporan Aktiviti") {
-                title.innerText = "Tambah Laporan Aktiviti";
-                const aSnap = await getDocs(query(collection(db, "attendance"), where("unit", "==", currentUnit), where("year", "==", currentYear)));
-                fields.innerHTML = `<select id="f-link" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="">-- PILIH REKOD KEHADIRAN --</option>${aSnap.docs.map(a => `<option value="${a.id}">${a.data().title}</option>`).join('')}</select><textarea id="f-desc" placeholder="RINGKASAN AKTIVITI..." required class="w-full p-4 bg-slate-100 rounded-xl h-32 font-bold text-xs outline-none"></textarea><div class="mt-2 text-left"><label class="block text-[10px] font-black text-slate-400 mb-2 uppercase italic">Muat Naik Gambar Aktiviti:</label><input type="file" id="f-image" accept="image/*" class="w-full text-xs font-bold text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"></div>`;
-            } else if (currentFolder === "Pencapaian Merit") {
-                title.innerText = "Tambah Pencapaian Merit";
-                fields.innerHTML = `<div class="relative"><input type="text" id="m-name" placeholder="TAIP NAMA MURID..." required onkeyup="filterStudents(this)" class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><div id="search-container" class="search-results"></div></div><input type="text" id="m-event" placeholder="NAMA PERTANDINGAN" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><select id="m-level" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="">-- PERINGKAT --</option><option value="SEKOLAH">SEKOLAH</option><option value="ZON">ZON</option><option value="DAERAH">DAERAH</option><option value="NEGERI">NEGERI</option><option value="KEBANGSAAN">KEBANGSAAN</option></select><select id="m-achieve" required class="w-full p-4 bg-slate-100 rounded-xl font-bold uppercase text-xs outline-none"><option value="">-- PENCAPAIAN --</option><option value="JOHAN">JOHAN</option><option value="KEDUA">KEDUA</option><option value="KETIGA">KETIGA</option><option value="PENYERTAAN">PENYERTAAN</option></select>`;
+        async function callApi(action, collection, data = {}) {
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST', body: JSON.stringify({ action, collection, data: JSON.stringify(data) })
+                });
+                return await response.json();
+            } catch (error) {
+                alert("Ralat sambungan internet.");
+                return { status: "error" };
             }
+        }
 
-            document.getElementById('crud-form').onsubmit = async (e) => {
-                e.preventDefault(); 
-                const btn = document.getElementById('save-btn'); btn.disabled = true;
-                try {
-                    if (currentFolder === "Perancangan Tahunan") {
-                        await addDoc(collection(db, "annual_plans"), { title: document.getElementById('p-title').value.toUpperCase(), date: document.getElementById('p-date').value, description: document.getElementById('p-desc').value, status: document.getElementById('p-status').value, unit: currentUnit, year: currentYear });
-                    } else if (currentFolder === "Rekod Kehadiran") {
-                        const present = Array.from(document.querySelectorAll('input[name="present"]:checked')).map(c => c.value);
-                        await addDoc(collection(db, "attendance"), { title: document.getElementById('f-title').value.toUpperCase(), date: document.getElementById('f-date').value, names: present, unit: currentUnit, year: currentYear });
-                    } else if (currentFolder === "Laporan Aktiviti") {
-                        const attDoc = await getDoc(doc(db, "attendance", document.getElementById('f-link').value));
-                        if (!attDoc.exists()) throw new Error("Rekod kehadiran tidak ditemui.");
-                        const attData = attDoc.data();
-                        const imageFile = document.getElementById('f-image').files[0];
-                        let imageBase64 = imageFile ? await toBase64(imageFile) : "";
-                        await addDoc(collection(db, "reports"), { title: attData.title, date: attData.date, names: attData.names, description: document.getElementById('f-desc').value, image: imageBase64, unit: currentUnit, year: currentYear });
-                    } else if (currentFolder === "Pencapaian Merit") {
-                        const lvlMap = { "SEKOLAH": 2, "ZON": 4, "DAERAH": 6, "NEGERI": 10, "KEBANGSAAN": 15 };
-                        const achMap = { "JOHAN": 10, "KEDUA": 5, "KETIGA": 3, "PENYERTAAN": 1 };
-                        const score = (lvlMap[document.getElementById('m-level').value] || 0) + (achMap[document.getElementById('m-achieve').value] || 0);
-                        await addDoc(collection(db, "merits"), { studentName: document.getElementById('m-name').value.toUpperCase(), event: document.getElementById('m-event').value.toUpperCase(), level: document.getElementById('m-level').value, achievement: document.getElementById('m-achieve').value, score: score, unit: currentUnit, year: currentYear });
+        function cleanFirestoreData(dataArray) {
+            return dataArray.map(item => {
+                const cleanItem = {};
+                for (const key in item) {
+                    let val = item[key];
+                    if (typeof val === 'string' && (val.includes('stringValue') || val.includes('integerValue'))) {
+                        try {
+                            const parsed = JSON.parse(val);
+                            if (parsed.stringValue !== undefined) val = parsed.stringValue;
+                            else if (parsed.integerValue !== undefined) val = parsed.integerValue;
+                        } catch (e) {}
                     }
-                    closeModal('crud-modal'); selectFolder(currentFolder);
-                } catch (err) { alert(err.message); }
-                btn.disabled = false;
-            };
-        };
+                    cleanItem[key] = val;
+                }
+                return cleanItem;
+            });
+        }
 
-        window.filterStudents = (e) => {
-            const val = e.value.toUpperCase(); const container = document.getElementById('search-container'); container.innerHTML = ""; 
-            if (!val) return;
-            const matches = allStudentsMaster.filter(s => s.includes(val)).slice(0, 10);
-            matches.forEach(m => { const div = document.createElement('div'); div.className = "search-item"; div.innerText = m; div.onclick = () => { e.value = m; container.innerHTML = ""; }; container.appendChild(div); });
-        };
+        function sortDataByDate(dataList) {
+            return dataList.sort((a, b) => {
+                const dateA = new Date(a.date); const dateB = new Date(b.date);
+                if (dateB - dateA !== 0) return dateB - dateA; 
+                return (a.unit || "").localeCompare(b.unit || "");
+            });
+        }
 
-        window.printRecord = async (coll, id) => {
-            const d = await getDoc(doc(db, coll, id)); const data = d.data(); 
-            const area = document.getElementById('print-area');
-            area.innerHTML = `<div style="text-align:center; border-bottom:2px solid black; padding-bottom:10px; margin-bottom:20px;"><h2 style="margin:0;">KMS DIGITAL</h2><h3 style="margin:5px 0;">${currentFolder.toUpperCase()} - ${currentUnit}</h3></div><div style="font-size:12px; line-height:1.6;"><p><strong>TAJUK:</strong> ${data.title || data.event}</p><p><strong>TARIKH:</strong> ${data.date || '-'}</p>${data.level ? `<p><strong>PENCAPAIAN:</strong> ${data.achievement} (${data.level})</p>` : ''}<div style="margin-top:15px;"><p><strong>RINGKASAN AKTIVITI:</strong></p><div style="white-space: pre-wrap; border: 1px solid #eee; padding: 10px; border-radius: 5px; background: #fafafa;">${data.description}</div></div>${data.image ? `<div style="margin-top:20px; text-align:center;"><img src="${data.image}" style="max-width: 100%; max-height: 400px; border: 1px solid #ddd; padding: 5px; border-radius: 8px;"></div>` : ''}${data.names ? `<div style="margin-top:15px;"><p><strong>KEHADIRAN MURID (${data.names.length} Orang):</strong></p><div style="column-count: 2; font-size: 10px;"><ol style="margin-top:0;">${data.names.map(n => `<li>${n}</li>`).join('')}</ol></div></div>` : ''}</div>`;
-            setTimeout(() => window.print(), 500);
-        };
+        // --- AUTH ---
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-password').value.trim();
+            if (!email || !pass) return alert("Sila isi emel dan kata laluan.");
 
-        window.printMeritSummary = async () => {
-            const q = query(collection(db, "merits"), where("unit", "==", currentUnit), where("year", "==", currentYear));
-            const snap = await getDocs(q); if(snap.empty) return alert("Tiada data.");
-            const grouped = {}; snap.forEach(d => { const data = d.data(); if(!grouped[data.studentName]) grouped[data.studentName] = []; grouped[data.studentName].push(data); });
-            let tableHTML = `<div style="text-align:center; margin-bottom:20px;"><h2>ANALISIS MERIT: ${currentUnit}</h2></div><table border="1" style="width:100%; border-collapse:collapse;"><thead><tr><th>MURID</th><th>PERTANDINGAN</th><th>GRED PAJSK</th><th>SKOR</th></tr></thead><tbody>`;
-            for (const student in grouped) {
-                let total = 0; grouped[student].forEach((item, i) => { total += item.score; tableHTML += `<tr><td>${i === 0 ? student : ''}</td><td>${item.event}</td><td>-</td><td>${item.score}</td></tr>`; });
-                const grade = calculateGrade(total);
-                tableHTML += `<tr style="background:#f2f2f2; font-weight:bold;"><td colspan="2" align="right">JUMLAH & GRED</td><td>${grade.gred}</td><td>${total} MATA</td></tr>`;
+            showLoader(true);
+            const res = await callApi('read', 'users');
+            showLoader(false);
+
+            if (res.status === 'success') {
+                globalData.users = cleanFirestoreData(res.data);
+                const user = globalData.users.find(u => u.email.toLowerCase() === email.toLowerCase() && String(u.password) === String(pass));
+                
+                if (user) {
+                    currentUser = user;
+                    currentUser.myUnits = [];
+                    if (user.uniform && user.uniform !== '-') currentUser.myUnits.push(user.uniform);
+                    if (user.club && user.club !== '-') currentUser.myUnits.push(user.club);
+                    if (user.sport && user.sport !== '-') currentUser.myUnits.push(user.sport);
+                    
+                    localStorage.setItem('kms_user', JSON.stringify(currentUser));
+                    initApp();
+                } else {
+                    alert("Emel atau kata laluan salah.");
+                }
+            } else {
+                alert("Gagal menghubungi server.");
             }
-            tableHTML += `</tbody></table>`; document.getElementById('print-area').innerHTML = tableHTML; window.print();
+        }
+
+        function logout() { localStorage.removeItem('kms_user'); location.reload(); }
+
+        function initApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            
+            document.getElementById('user-role-name').innerText = currentUser.name;
+            document.getElementById('user-role-label').innerText = currentUser.role === 'admin' ? 'PENTADBIR' : 'GURU PENASIHAT';
+            
+            if(currentUser.role === 'admin') document.getElementById('admin-menu-section').classList.remove('hidden');
+            
+            loadAllData();
+        }
+
+        async function loadAllData() {
+            showLoader(true);
+            try {
+                // Gunakan Promise.all supaya semua jalan serentak
+                const results = await Promise.all([
+                    callApi('read', 'students_master'),
+                    callApi('read', 'attendance'),
+                    callApi('read', 'reports'),
+                    callApi('read', 'records'),
+                    callApi('read', 'annual_plans'),
+                    callApi('read', 'users') // PENTING: Untuk admin
+                ]);
+
+                globalData.students = cleanFirestoreData(results[0].data || []);
+                globalData.attendance = sortDataByDate(cleanFirestoreData(results[1].data || []));
+                globalData.reports = sortDataByDate(cleanFirestoreData(results[2].data || []));
+                globalData.records = sortDataByDate(cleanFirestoreData(results[3].data || []));
+                globalData.annual_plans = sortDataByDate(cleanFirestoreData(results[4].data || []));
+                globalData.users = cleanFirestoreData(results[5].data || []);
+
+                updateDashboard();
+                showPage('dashboard');
+            } catch (e) { console.error(e); alert("Ralat data."); }
+            showLoader(false);
+        }
+
+        // --- DASHBOARD ---
+        function updateDashboard() {
+            const myUnits = currentUser.role === 'admin' ? null : currentUser.myUnits;
+            const filterFn = (item) => !myUnits || myUnits.includes(item.unit);
+
+            document.getElementById('dash-student-count').innerText = globalData.students.filter(filterFn).length;
+            document.getElementById('dash-activity-count').innerText = globalData.reports.filter(filterFn).length;
+            document.getElementById('dash-attendance-count').innerText = globalData.attendance.filter(filterFn).length;
+            document.getElementById('dash-plan-count').innerText = globalData.annual_plans.filter(filterFn).length;
+
+            const breakdownBody = document.getElementById('dashboard-unit-breakdown');
+            let targetUnits = currentUser.role === 'admin' ? [...new Set(globalData.students.map(s => s.unit))].sort() : currentUser.myUnits;
+            
+            breakdownBody.innerHTML = targetUnits.map(unitName => {
+                const sCount = globalData.students.filter(s => s.unit === unitName).length;
+                const aCount = globalData.attendance.filter(a => a.unit === unitName).length;
+                const rCount = globalData.reports.filter(r => r.unit === unitName).length;
+                const pCount = globalData.annual_plans.filter(p => p.unit === unitName).length;
+                return `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-3 font-semibold text-slate-700">${unitName}</td>
+                    <td class="p-3 text-center"><span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-xs font-bold">${sCount}</span></td>
+                    <td class="p-3 text-center"><span class="bg-green-100 text-green-800 py-1 px-3 rounded-full text-xs font-bold">${aCount}</span></td>
+                    <td class="p-3 text-center"><span class="bg-purple-100 text-purple-800 py-1 px-3 rounded-full text-xs font-bold">${rCount}</span></td>
+                    <td class="p-3 text-center"><span class="bg-pink-100 text-pink-800 py-1 px-3 rounded-full text-xs font-bold">${pCount}</span></td>
+                </tr>`;
+            }).join('');
+        }
+
+        // --- STUDENTS ---
+        function renderStudentTable() {
+            const filter = document.getElementById('search-student').value.toLowerCase();
+            const unitFilter = document.getElementById('filter-student-unit').value;
+            let data = globalData.students;
+            if (currentUser.role !== 'admin') data = data.filter(s => currentUser.myUnits.includes(s.unit));
+            
+            const filtered = data.filter(s => (s.name.toLowerCase().includes(filter) || s.unit.toLowerCase().includes(filter)) && (unitFilter === "" || s.unit === unitFilter));
+            
+            document.getElementById('student-table-body').innerHTML = filtered.map(s => `
+                <tr class="hover:bg-slate-50 border-b transition"><td class="p-4 font-medium">${s.name}</td><td class="p-4 text-slate-500">${s.year}</td><td class="p-4">${s.gender}</td><td class="p-4"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-bold">${s.unit}</span></td><td class="p-4 text-center"><button onclick="deleteData('students_master','${s.doc_id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td></tr>
+            `).join('');
+            
+            document.getElementById('student-count-display').innerText = `Jumlah: ${filtered.length} murid`;
+            
+            // Populate Dropdown Unit
+            const unitDropdown = document.getElementById('filter-student-unit');
+            if(unitDropdown.children.length === 1) {
+                const units = currentUser.role === 'admin' ? [...new Set(globalData.students.map(s=>s.unit))].sort() : currentUser.myUnits;
+                units.forEach(u => { const opt = document.createElement('option'); opt.value = u; opt.innerText = u; unitDropdown.appendChild(opt); });
+            }
+        }
+        function openStudentModal() { document.getElementById('modal-student').classList.replace('hidden','flex'); }
+        async function saveStudent(e) {
+            e.preventDefault();
+            const data = { name: document.getElementById('std-name').value, gender: document.getElementById('std-gender').value, year: document.getElementById('std-year').value, unit: document.getElementById('std-unit').value };
+            showLoader(true);
+            await callApi('create', 'students_master', data);
+            closeModal('modal-student'); loadAllData();
+        }
+
+        // --- ATTENDANCE ---
+        function loadStudentsForAttendance() {
+            const unit = document.getElementById('att-unit').value;
+            const container = document.getElementById('att-student-list');
+            const students = globalData.students.filter(s => s.unit === unit);
+            container.innerHTML = students.length ? students.map(s => `<div class="flex items-center gap-2 p-1 hover:bg-slate-100 rounded"><input type="checkbox" value="${s.name}" class="att-checkbox h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"><label class="text-sm w-full">${s.name}</label></div>`).join('') : '<p class="text-red-400 text-center text-xs mt-4">Tiada murid.</p>';
+        }
+        function selectAllAttendance(checked) { document.querySelectorAll('.att-checkbox').forEach(cb => cb.checked = checked); }
+        async function submitAttendance(e) {
+            e.preventDefault();
+            const names = Array.from(document.querySelectorAll('.att-checkbox:checked')).map(cb => cb.value).join(", ");
+            if(!names) return alert("Pilih murid dahulu.");
+            showLoader(true);
+            await callApi('create', 'attendance', { date: document.getElementById('att-date').value, unit: document.getElementById('att-unit').value, title: document.getElementById('att-title').value, names: names, year: new Date().getFullYear() });
+            loadAllData();
+        }
+        function renderAttendanceHistory() {
+            let data = globalData.attendance;
+            if(currentUser.role !== 'admin') data = data.filter(a => currentUser.myUnits.includes(a.unit));
+            document.getElementById('attendance-history-body').innerHTML = data.map(a => `<tr class="border-b"><td class="p-3">${a.date}</td><td class="p-3"><span class="bg-gray-100 px-2 py-1 rounded text-xs font-bold">${a.unit}</span></td><td class="p-3 max-w-xs truncate">${a.title}</td><td class="p-3 text-center font-bold text-green-600">${a.names ? a.names.split(',').length : 0}</td><td class="p-3 text-center"><button onclick="deleteData('attendance','${a.doc_id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td></tr>`).join('');
+            
+            const sel = document.getElementById('att-unit');
+            if (sel.children.length <= 1) {
+                const units = currentUser.role === 'admin' ? [...new Set(globalData.students.map(s=>s.unit))].sort() : currentUser.myUnits;
+                units.forEach(u => { const opt = document.createElement('option'); opt.value = u; opt.innerText = u; sel.appendChild(opt); });
+            }
+        }
+
+        // --- ANNUAL PLANS ---
+        function renderAnnualPlans() {
+            let data = globalData.annual_plans;
+            if (currentUser.role !== 'admin') data = data.filter(p => currentUser.myUnits.includes(p.unit));
+            
+            document.getElementById('plans-table-body').innerHTML = data.map(p => {
+                let color = p.status === 'Selesai' ? 'bg-green-100 text-green-800' : p.status === 'Sedang Berjalan' ? 'bg-blue-100 text-blue-800' : p.status === 'Ditunda' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800';
+                return `<tr class="border-b hover:bg-slate-50">
+                    <td class="p-3 text-xs text-gray-500">${p.date}</td>
+                    <td class="p-3 font-medium">${p.title}</td>
+                    <td class="p-3 text-xs">${p.unit}</td>
+                    <td class="p-3"><select onchange="updatePlanStatus('${p.doc_id}', this.value)" class="text-xs font-bold border rounded px-2 py-1 cursor-pointer outline-none ${color}">
+                        <option value="Perancangan" ${p.status==='Perancangan'?'selected':''}>Perancangan</option>
+                        <option value="Sedang Berjalan" ${p.status==='Sedang Berjalan'?'selected':''}>Sedang Berjalan</option>
+                        <option value="Selesai" ${p.status==='Selesai'?'selected':''}>Selesai</option>
+                        <option value="Ditunda" ${p.status==='Ditunda'?'selected':''}>Ditunda</option>
+                    </select></td>
+                    <td class="p-3 text-xs max-w-xs truncate">${p.description}</td>
+                    <td class="p-3 text-center"><button onclick="deleteData('annual_plans','${p.doc_id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
+                </tr>`;
+            }).join('');
+            
+            const sel = document.getElementById('plan-unit');
+            if (sel.children.length <= 1) {
+                const units = currentUser.role === 'admin' ? [...new Set(globalData.students.map(s=>s.unit))].sort() : currentUser.myUnits;
+                units.forEach(u => { const opt = document.createElement('option'); opt.value = u; opt.innerText = u; sel.appendChild(opt); });
+            }
+        }
+        async function submitPlan(e) {
+            e.preventDefault();
+            const data = { date: document.getElementById('plan-date').value, title: document.getElementById('plan-title').value, unit: document.getElementById('plan-unit').value, status: document.getElementById('plan-status').value, description: document.getElementById('plan-desc').value };
+            showLoader(true); await callApi('create', 'annual_plans', data); loadAllData();
+        }
+        async function updatePlanStatus(docId, newStatus) {
+            showLoader(true); await callApi('update', 'annual_plans', { doc_id: docId, status: newStatus }); loadAllData();
+        }
+
+        // --- MERIT ---
+        async function submitMerit(e) {
+            e.preventDefault();
+            const sel = document.getElementById('merit-student');
+            showLoader(true);
+            await callApi('create', 'records', { names: sel.options[sel.selectedIndex].text, title: document.getElementById('merit-title').value, unit: document.getElementById('merit-unit').value, description: document.getElementById('merit-desc').value, venue: document.getElementById('merit-venue').value });
+            loadAllData();
+        }
+        function renderMerit() {
+            let data = globalData.records;
+            if(currentUser.role !== 'admin') data = data.filter(r => currentUser.myUnits.includes(r.unit));
+            document.getElementById('merit-table-body').innerHTML = data.map(r => `<tr class="border-b"><td class="p-3">${r.names}</td><td class="p-3">${r.title}</td><td class="p-3"><span class="bg-yellow-100 text-yellow-800 px-2 rounded text-xs">${r.description}</span></td><td class="p-3">${r.venue}</td><td class="p-3 text-center"><button onclick="deleteData('records','${r.doc_id}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td></tr>`).join('');
+            
+            const sel = document.getElementById('merit-student'); sel.innerHTML = '<option value="">Pilih Murid...</option>';
+            let students = globalData.students; if(currentUser.role !== 'admin') students = students.filter(s => currentUser.myUnits.includes(s.unit));
+            students.forEach(s => { const opt = document.createElement('option'); opt.value = s.doc_id; opt.innerText = s.name; sel.appendChild(opt); });
+            
+            const selUnit = document.getElementById('merit-unit'); selUnit.innerHTML = '<option value="">Pilih Unit...</option>';
+            const units = currentUser.role === 'admin' ? [...new Set(globalData.students.map(s=>s.unit))].sort() : currentUser.myUnits;
+            units.forEach(u => { const opt = document.createElement('option'); opt.value = u; opt.innerText = u; selUnit.appendChild(opt); });
+        }
+
+        // --- REPORTS ---
+        function openReportModal() { document.getElementById('modal-report').classList.replace('hidden','flex'); }
+        async function saveReport(e) {
+            e.preventDefault();
+            showLoader(true);
+            await callApi('create', 'reports', { 
+                date: document.getElementById('rpt-date').value, 
+                title: document.getElementById('rpt-title').value, 
+                unit: document.getElementById('rpt-unit').value, 
+                description: document.getElementById('rpt-desc').value,
+                names: document.getElementById('rpt-names').value, 
+                image: document.getElementById('rpt-img-final').value || document.getElementById('rpt-img-url').value 
+            });
+            closeModal('modal-report'); loadAllData();
+        }
+        function renderReports() {
+             let data = globalData.reports;
+             if(currentUser.role !== 'admin') data = data.filter(r => currentUser.myUnits.includes(r.unit));
+             const container = document.getElementById('reports-grid');
+             if(data.length === 0) container.innerHTML = '<div class="text-center p-6 text-slate-400">Tiada laporan dijumpai.</div>';
+             else {
+                 container.innerHTML = data.map(r => `
+                    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex items-center justify-between group hover:border-blue-300 transition">
+                        <div class="flex items-center gap-4 cursor-pointer flex-1" onclick="viewReportDetails('${r.doc_id}')">
+                            ${r.image ? `<img src="${r.image}" class="w-12 h-12 rounded-lg object-cover border">` : `<div class="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400"><i class="fas fa-image"></i></div>`}
+                            <div>
+                                <h4 class="font-bold text-slate-800 group-hover:text-blue-600 transition">${r.title}</h4>
+                                <div class="flex gap-2 text-xs text-slate-500 mt-1">
+                                    <span><i class="far fa-calendar mr-1"></i>${r.date}</span>
+                                    <span class="bg-slate-100 px-2 rounded text-slate-600 font-bold">${r.unit}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="deleteData('reports','${r.doc_id}')" class="text-slate-300 hover:text-red-500 p-2"><i class="fas fa-trash"></i></button>
+                    </div>
+                 `).join('');
+             }
+        }
+        function viewReportDetails(id) {
+            const report = globalData.reports.find(r => r.doc_id === id);
+            if(!report) return;
+            document.getElementById('view-rpt-img').src = report.image || 'https://via.placeholder.com/800x400?text=Tiada+Gambar';
+            document.getElementById('view-rpt-title').innerText = report.title;
+            document.getElementById('view-rpt-date').innerText = report.date;
+            document.getElementById('view-rpt-unit').innerText = report.unit;
+            document.getElementById('view-rpt-desc').innerText = report.description || "Tiada huraian tambahan.";
+            document.getElementById('view-rpt-names').innerText = (report.names || "Tiada senarai nama.");
+            document.getElementById('modal-view-report').classList.replace('hidden', 'flex');
+        }
+
+        // --- USERS MANAGEMENT (ADMIN) ---
+        function renderUsers() {
+            if (currentUser.role !== 'admin') return;
+            const tbody = document.getElementById('users-table-body');
+            tbody.innerHTML = globalData.users.map(u => `
+                <tr class="border-b hover:bg-slate-50 transition text-sm">
+                    <td class="p-4">
+                        <div class="font-bold text-slate-800">${u.name}</div>
+                        <div class="text-xs text-slate-500">${u.email}</div>
+                    </td>
+                    <td class="p-4 text-center">
+                        <span class="${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'} px-2 py-1 rounded text-[10px] font-bold uppercase">${u.role}</span>
+                    </td>
+                    <td class="p-4 text-xs">
+                        <div class="flex flex-wrap gap-1">
+                            ${(u.uniform && u.uniform!=='-') ? `<span class="bg-slate-100 px-2 py-0.5 rounded border">${u.uniform}</span>` : ''}
+                            ${(u.club && u.club!=='-') ? `<span class="bg-slate-100 px-2 py-0.5 rounded border">${u.club}</span>` : ''}
+                            ${(u.sport && u.sport!=='-') ? `<span class="bg-slate-100 px-2 py-0.5 rounded border">${u.sport}</span>` : ''}
+                        </div>
+                    </td>
+                    <td class="p-4 text-right">
+                        <button onclick="openUserModal('edit', '${u.doc_id}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteData('users', '${u.doc_id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function openUserModal(mode, docId = null) {
+            const modal = document.getElementById('modal-user');
+            const form = document.getElementById('form-user');
+            const title = document.getElementById('user-modal-title');
+            form.reset(); document.getElementById('user-doc-id').value = "";
+            
+            if (mode === 'edit') {
+                title.innerText = "Kemaskini Guru";
+                const user = globalData.users.find(u => u.doc_id === docId);
+                if (user) {
+                    document.getElementById('user-doc-id').value = user.doc_id;
+                    document.getElementById('user-name').value = user.name;
+                    document.getElementById('user-email').value = user.email;
+                    document.getElementById('user-password').value = user.password;
+                    document.getElementById('user-role').value = user.role;
+                    document.getElementById('user-uniform').value = user.uniform || "-";
+                    document.getElementById('user-club').value = user.club || "-";
+                    document.getElementById('user-sport').value = user.sport || "-";
+                }
+            } else {
+                title.innerText = "Tambah Guru Baru";
+            }
+            modal.classList.replace('hidden', 'flex');
+        }
+
+        document.getElementById('form-user').onsubmit = async function(e) {
+            e.preventDefault();
+            const docId = document.getElementById('user-doc-id').value;
+            const userData = {
+                name: document.getElementById('user-name').value,
+                email: document.getElementById('user-email').value,
+                password: document.getElementById('user-password').value,
+                role: document.getElementById('user-role').value,
+                uniform: document.getElementById('user-uniform').value || "-",
+                club: document.getElementById('user-club').value || "-",
+                sport: document.getElementById('user-sport').value || "-"
+            };
+            showLoader(true);
+            if (docId) {
+                await callApi('update', 'users', { doc_id: docId, ...userData });
+            } else {
+                userData.uid = "u_" + Date.now();
+                await callApi('create', 'users', userData);
+            }
+            closeModal('modal-user'); loadAllData();
         };
 
-        window.openModal = (id) => document.getElementById(id).classList.replace('hidden', 'flex');
-        window.closeModal = (id) => document.getElementById(id).classList.replace('flex', 'hidden');
-        window.deleteDocById = async (coll, id) => { if(confirm("Padam rekod?")) { await deleteDoc(doc(db, coll, id)); fetchData(); } };
+        // --- PRINTING (FIXED GROUP BY UNIT & FULL NAMES) ---
+        function printAnalysis(type) {
+             let generatedDate = new Date().toLocaleDateString('ms-MY', { day: 'numeric', month: 'long', year: 'numeric' });
+             let contentHTML = "";
+             
+             let dataAttendance = globalData.attendance;
+             let dataPlans = globalData.annual_plans;
+             let dataRecords = globalData.records;
+             let dataReports = globalData.reports;
+
+             if(currentUser.role !== 'admin') {
+                 const myU = currentUser.myUnits;
+                 dataAttendance = dataAttendance.filter(d => myU.includes(d.unit));
+                 dataPlans = dataPlans.filter(d => myU.includes(d.unit));
+                 dataRecords = dataRecords.filter(d => myU.includes(d.unit));
+                 dataReports = dataReports.filter(d => myU.includes(d.unit));
+             }
+
+             if (type === 'attendance') {
+                 if(dataAttendance.length === 0) return alert("Tiada rekod.");
+                 const uniqueUnits = [...new Set(dataAttendance.map(item => item.unit))];
+                 contentHTML += `<div class="header"><h1>Analisis Kehadiran Aktiviti</h1><h2>Laporan Gabungan</h2><p>Tarikh: ${generatedDate}</p></div>`;
+                 uniqueUnits.forEach(unitName => {
+                     const records = dataAttendance.filter(d => d.unit === unitName);
+                     contentHTML += `<div style="margin-top:30px;page-break-inside:avoid;"><h3 style="background:#eee;padding:5px;border:1px solid black;margin:0;">UNIT: ${unitName.toUpperCase()}</h3><table style="margin-top:0;"><thead><tr><th style="width:5%">Bil</th><th style="width:15%">Tarikh</th><th style="width:35%">Aktiviti</th><th style="width:10%">Hadir</th><th style="width:35%">Senarai Nama</th></tr></thead><tbody>${records.map((d, i) => `<tr><td style="text-align:center">${i + 1}</td><td style="text-align:center">${d.date}</td><td>${d.title}</td><td style="text-align:center;font-weight:bold;">${d.names ? d.names.split(',').length : 0}</td><td style="font-size:9pt;">${d.names || '-'}</td></tr>`).join('')}</tbody></table></div>`;
+                 });
+             }
+             else if (type === 'plans') {
+                 if(dataPlans.length === 0) return alert("Tiada data.");
+                 const uniqueUnits = [...new Set(dataPlans.map(item => item.unit))];
+                 contentHTML += `<div class="header"><h1>Laporan Perancangan Tahunan</h1><h2>Laporan Gabungan</h2></div>`;
+                 uniqueUnits.forEach(unitName => {
+                     const plans = dataPlans.filter(p => p.unit === unitName);
+                     contentHTML += `<div style="margin-top:30px;page-break-inside:avoid;"><h3 style="background:#eee;padding:5px;border:1px solid black;margin:0;">UNIT: ${unitName.toUpperCase()}</h3><table style="margin-top:0;"><thead><tr><th style="width:15%">Tarikh</th><th style="width:40%">Program</th><th style="width:30%">Objektif</th><th style="width:15%">Status</th></tr></thead><tbody>${plans.map(p => `<tr><td style="text-align:center">${p.date}</td><td>${p.title}</td><td>${p.description}</td><td style="text-align:center;">${p.status}</td></tr>`).join('')}</tbody></table></div>`;
+                 });
+             }
+             else if (type === 'merit') {
+                 if(dataRecords.length === 0) return alert("Tiada rekod.");
+                 const uniqueUnits = [...new Set(dataRecords.map(item => item.unit))];
+                 contentHTML += `<div class="header"><h1>Rekod Pencapaian & Merit</h1><h2>Laporan Gabungan</h2></div>`;
+                 uniqueUnits.forEach(unitName => {
+                     const records = dataRecords.filter(r => r.unit === unitName);
+                     contentHTML += `<div style="margin-top:30px;page-break-inside:avoid;"><h3 style="background:#eee;padding:5px;border:1px solid black;margin:0;">UNIT: ${unitName.toUpperCase()}</h3><table style="margin-top:0;"><thead><tr><th style="width:5%">Bil</th><th style="width:30%">Nama Murid</th><th style="width:30%">Acara</th><th style="width:20%">Pencapaian</th><th style="width:15%">Peringkat</th></tr></thead><tbody>${records.map((r, i) => `<tr><td style="text-align:center">${i + 1}</td><td>${r.names}</td><td>${r.title}</td><td style="text-align:center">${r.description}</td><td style="text-align:center">${r.venue}</td></tr>`).join('')}</tbody></table></div>`;
+                 });
+             }
+             else if (type === 'full_reports') {
+                 if(dataReports.length === 0) return alert("Tiada laporan.");
+                 contentHTML = dataReports.map(r => `
+                     <div class="report-page"><div class="header" style="border:none; margin-bottom:10px;"><h1>Laporan Aktiviti</h1><h2>${r.unit}</h2></div><table style="margin-bottom:20px;"><tr><td style="width:150px;font-weight:bold;background:#eee;">Tarikh</td><td>${r.date}</td></tr><tr><td style="font-weight:bold;background:#eee;">Tajuk Aktiviti</td><td>${r.title}</td></tr></table><div style="text-align:center;margin-bottom:20px;">${r.image ? `<img src="${r.image}" class="rpt-img">` : '<p style="border:1px dashed #999;padding:20px;">[Tiada Gambar]</p>'}</div><div style="margin-bottom:20px;"><strong>Ulasan:</strong><p style="text-align:justify;border:1px solid #ccc;padding:10px;">${r.description || '-'}</p></div><div><strong>Kehadiran:</strong><div style="font-size:10pt;border:1px solid #ccc;padding:10px;background:#f9f9f9;font-family:monospace;white-space:pre-wrap;">${r.names || "Tiada senarai nama."}</div></div><div class="footer"><div class="signature-box"><p>Disediakan oleh,</p><br><br><p>_______________________</p><p><strong>${currentUser.name}</strong></p></div></div></div>
+                 `).join('');
+             }
+
+             if (contentHTML) {
+                 if (type !== 'full_reports') {
+                     contentHTML += `<div class="footer" style="margin-top:50px;"><div class="signature-box"><p>Disahkan oleh,</p><br><br><p>_______________________</p><p>Pentadbir</p></div><div class="signature-box"><p>Disediakan oleh,</p><br><br><p>_______________________</p><p>${currentUser.name}</p></div></div>`;
+                 }
+                 const printWindow = window.open('', '_blank', 'width=900,height=700');
+                 printWindow.document.write(`<html><head><title>Cetak</title><style>@page{size:A4;margin:2cm;}body{font-family:'Times New Roman';padding:20px;}.header{text-align:center;border-bottom:2px solid black;margin-bottom:20px;}.header h1{font-size:18pt;margin:0;}.header h2{font-size:14pt;margin:5px 0;}table{width:100%;border-collapse:collapse;font-size:11pt;}th,td{border:1px solid black;padding:8px;}th{background:#f0f0f0;}.footer{display:flex;justify-content:flex-end;page-break-inside:avoid;}.signature-box{width:250px;text-align:center;margin-left:20px;}.report-page{page-break-after:always;padding-bottom:20px;}.rpt-img{max-height:350px;max-width:100%;object-fit:contain;border:1px solid #ccc;display:block;margin:10px auto;}</style></head><body>${contentHTML}<script>window.onload=function(){setTimeout(function(){window.print();},500);}`+'<'+'/script></body></html>');
+                 printWindow.document.close();
+             }
+        }
+
+        // --- SHARED UTILS ---
+        function toggleImgMode(mode) { 
+            document.getElementById('rpt-img-url').classList.toggle('hidden', mode !== 'url'); 
+            document.getElementById('rpt-img-file').classList.toggle('hidden', mode !== 'file'); 
+        }
+        function convertBase64(input) {
+            if(input.files[0].size > 50000) { alert("Fail terlalu besar (max 50KB). Sila guna URL."); input.value=""; return; }
+            const r = new FileReader(); r.onload = e => document.getElementById('rpt-img-final').value = e.target.result; r.readAsDataURL(input.files[0]);
+        }
+        function handleCSVImport(input) {
+             Papa.parse(input.files[0], { header: true, complete: async function(res) {
+                 const rows = res.data.filter(r => r.name).map(r => ({ name: r.name, gender: r.gender||"L", unit: r.unit||"Umum", year: r.year||"1" }));
+                 if(confirm(`Import ${rows.length} murid?`)) { showLoader(true); await callApi('batch_create', 'students_master', rows); showLoader(false); loadAllData(); }
+             }});
+        }
+        async function deleteData(col, id) { if(confirm("Padam data ini?")) { showLoader(true); await callApi('delete', col, { doc_id: id }); showLoader(false); loadAllData(); } }
+        
+        // UI & NAVIGATION
+        function closeModal(id) { document.getElementById(id).classList.replace('flex', 'hidden'); }
+        function showPage(id) { 
+            document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden')); 
+            document.getElementById('page-' + id).classList.remove('hidden');
+            
+            document.getElementById('header-title').innerText = 
+                id==='dashboard'?'Papan Pemuka': id==='students'?'Data Murid': id==='attendance'?'Kehadiran': 
+                id==='reports'?'Laporan': id==='annual_plans'?'Perancangan': id==='merit'?'Rekod Merit': 
+                id==='analysis'?'Analisis & Cetakan': id==='users'?'Pengurusan Guru': 'Sistem';
+
+            if(id === 'students') renderStudentTable();
+            if(id === 'attendance') renderAttendanceHistory();
+            if(id === 'reports') renderReports();
+            if(id === 'merit') renderMerit();
+            if(id === 'annual_plans') renderAnnualPlans();
+            if(id === 'users') renderUsers();
+
+            // Mobile: Close sidebar after click
+            if(window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('sidebar-overlay').classList.add('hidden');
+            }
+        }
+
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('sidebar-overlay');
+            if(sb.classList.contains('-translate-x-full')) { sb.classList.remove('-translate-x-full'); ov.classList.remove('hidden'); }
+            else { sb.classList.add('-translate-x-full'); ov.classList.add('hidden'); }
+        }
+
+        // AUTO START
+        if (localStorage.getItem('kms_user')) { 
+            currentUser = JSON.parse(localStorage.getItem('kms_user')); 
+            // Refresh logic units just in case
+            if(!currentUser.myUnits) currentUser.myUnits=[currentUser.uniform,currentUser.club,currentUser.sport].filter(u => u && u!=='-'); 
+            initApp(); 
+        }
     </script>
 </body>
 </html>
