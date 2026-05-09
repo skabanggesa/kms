@@ -721,13 +721,26 @@
         }
 
         // --- MERIT ---
-        async function submitMerit(e) {
-            e.preventDefault();
-            const sel = document.getElementById('merit-student');
-            showLoader(true);
-            await callApi('create', 'records', { names: sel.options[sel.selectedIndex].text, title: document.getElementById('merit-title').value, unit: document.getElementById('merit-unit').value, description: document.getElementById('merit-desc').value, venue: document.getElementById('merit-venue').value });
-            loadAllData();
-        }
+async function submitMerit(e) {
+    e.preventDefault();
+    showLoader(true);
+    
+    // Ambil rujukan elemen dropdown murid
+    const studentSelect = document.getElementById('merit-student');
+    // Ambil teks (nama murid) daripada pilihan yang dipilih
+    const studentName = studentSelect.options[studentSelect.selectedIndex].text;
+
+    await callApi('create', 'records', {
+        student_id: studentSelect.value,
+        names: studentName, // Tambah baris ini untuk simpan nama murid
+        title: document.getElementById('merit-title').value,
+        unit: document.getElementById('merit-unit').value,
+        description: document.getElementById('merit-desc').value,
+        venue: document.getElementById('merit-venue').value
+    });
+    
+    loadAllData();
+}
         function renderMerit() {
             let data = globalData.records;
             if(currentUser.role !== 'admin') data = data.filter(r => currentUser.myUnits.includes(r.unit));
