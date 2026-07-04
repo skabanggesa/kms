@@ -978,38 +978,47 @@ function autoFillReportFromAttendance() {
             closeModal('modal-report'); 
             loadAllData(); // Refresh senarai
         }
-        // 4. KEKALKAN: Fungsi Papar Senarai Laporan
+// 4. KEKALKAN: Fungsi Papar Senarai Laporan (VERSI DIKEMAS KINI & KALIS RALAT)
         function renderReports() {
-             let data = globalData.reports;
-             if(currentUser.role !== 'admin') data = data.filter(r => currentUser.myUnits.includes(r.unit));
+             // 1. Pastikan data tidak undefined (Gunakan array kosong jika tiada data)
+             let data = globalData.reports || [];
+             
+             // 2. TAPISAN KESELAMATAN (Elak Crash)
+             if(currentUser.role !== 'admin') {
+                 const userUnits = Array.isArray(currentUser.myUnits) ? currentUser.myUnits : [];
+                 data = data.filter(r => userUnits.includes(r.unit));
+             }
+             
              const container = document.getElementById('reports-grid');
-             if(data.length === 0) container.innerHTML = '<div class="text-center p-6 text-slate-400">Tiada laporan dijumpai.</div>';
-             else {
+             if(!container) return; // Hentikan fungsi jika elemen HTML tidak dijumpai
+             
+             if(data.length === 0) {
+                 container.innerHTML = '<div class="text-center p-6 text-slate-400">Tiada laporan dijumpai.</div>';
+             } else {
                  container.innerHTML = data.map(r => `
                     <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4 flex items-center justify-between group hover:border-blue-300 transition">
                         <div class="flex items-center gap-4 cursor-pointer flex-1" onclick="viewReportDetails('${r.doc_id}')">
                             ${r.image ? `<img src="${r.image}" class="w-12 h-12 rounded-lg object-cover border">` : `<div class="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400"><i class="fas fa-image"></i></div>`}
                             <div>
-                                <h4 class="font-bold text-slate-800 group-hover:text-blue-600 transition">${r.title}</h4>
+                                <h4 class="font-bold text-slate-800 group-hover:text-blue-600 transition">${r.title || 'Tiada Tajuk'}</h4>
                                 <div class="flex gap-2 text-xs text-slate-500 mt-1">
-                                    <span><i class="far fa-calendar mr-1"></i>${r.date}</span>
-                                    <span class="bg-slate-100 px-2 rounded text-slate-600 font-bold">${r.unit}</span>
+                                    <span><i class="far fa-calendar mr-1"></i>${r.date || '-'}</span>
+                                    <span class="bg-slate-100 px-2 rounded text-slate-600 font-bold">${r.unit || '-'}</span>
                                 </div>
                             </div>
                         </div>
-                       <div class="flex flex-col gap-2 border-l pl-3 ml-2">
-            <button onclick="editReport('${r.doc_id}')" class="text-slate-400 hover:text-blue-600" title="Edit Laporan">
-                <i class="fas fa-edit"></i>
-            </button>
-            <button onclick="deleteData('reports','${r.doc_id}')" class="text-slate-400 hover:text-red-500" title="Padam">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>
+                        <div class="flex flex-col gap-2 border-l pl-3 ml-2">
+                            <button onclick="editReport('${r.doc_id}')" class="text-slate-400 hover:text-blue-600" title="Edit Laporan">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteData('reports','${r.doc_id}')" class="text-slate-400 hover:text-red-500" title="Padam">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                  `).join('');
              }
         }
-
         // 5. KEKALKAN: Fungsi Lihat Detail Laporan
         function viewReportDetails(id) {
             const report = globalData.reports.find(r => r.doc_id === id);
