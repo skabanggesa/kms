@@ -288,7 +288,7 @@
                             <input type="text" id="merit-title" class="input-field" placeholder="Acara / Pertandingan" required>
                             <select id="merit-unit" class="input-field" required><option value="">Pilih Unit...</option></select>
                             <select id="merit-desc" class="input-field"><option value="Penyertaan">Penyertaan</option><option value="Johan">Johan</option><option value="Naib Johan">Naib Johan</option><option value="Ketiga">Ketiga</option></select>
-                            <select id="merit-venue" class="input-field"><option value="Sekolah">Sekolah</option><option value="Daerah">Daerah</option><option value="Negeri">Negeri</option><option value="Kebangsaan">Kebangsaan</option></select>
+                            <select id="merit-venue" class="input-field"><option value="Sekolah">Sekolah</option><option value="Daerah">Daerah</option><option value="Bahagian"</option><option value="Negeri">Negeri</option><option value="Kebangsaan">Kebangsaan</option></select>
                             <button type="submit" class="btn-primary md:col-span-2">SIMPAN</button>
                         </form>
                     </div>
@@ -473,7 +473,7 @@
         </div>
     </div>
 
-    <script>
+<script>
         // CONFIGURATION
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzLf0WBthx-icFZuzOHMJQvKyGCvCTRqD4-QY1kT1aBPo87k3hWkH215zldGQTHsn6D/exec";
         
@@ -524,6 +524,17 @@
             });
         }
 
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.replace('flex', 'hidden');
+        }
+
+        async function deleteData(collection, docId) {
+            if (!confirm("Adakah anda pasti mahu memadam rekod ini?")) return;
+            showLoader(true);
+            await callApi('delete', collection, { doc_id: docId });
+            await loadAllData();
+        }
+
         // --- AUTH ---
         async function handleLogin() {
             const email = document.getElementById('login-email').value.trim();
@@ -572,14 +583,13 @@
         async function loadAllData() {
             showLoader(true);
             try {
-                // Gunakan Promise.all supaya semua jalan serentak
                 const results = await Promise.all([
                     callApi('read', 'students_master'),
                     callApi('read', 'attendance'),
                     callApi('read', 'reports'),
                     callApi('read', 'records'),
                     callApi('read', 'annual_plans'),
-                    callApi('read', 'users') // PENTING: Untuk admin
+                    callApi('read', 'users')
                 ]);
 
                 globalData.students = cleanFirestoreData(results[0].data || []);
@@ -639,7 +649,6 @@
             
             document.getElementById('student-count-display').innerText = `Jumlah: ${filtered.length} murid`;
             
-            // Populate Dropdown Unit
             const unitDropdown = document.getElementById('filter-student-unit');
             if(unitDropdown.children.length === 1) {
                 const units = currentUser.role === 'admin' ? [...new Set(globalData.students.map(s=>s.unit))].sort() : currentUser.myUnits;
@@ -720,242 +729,197 @@
             showLoader(true); await callApi('update', 'annual_plans', { doc_id: docId, status: newStatus }); loadAllData();
         }
 
-// --- FUNGSI SUBMIT MERIT ---
-async function submitMerit(e) {
-    e.preventDefault();
-    
-    const studentSelect = document.getElementById('merit-student');
-    
-    // 1. KAWALAN KESELAMATAN: Jika dropdown kosong atau tiada murid dipilih, sekat di sini supaya kod tidak crash
-    if (!studentSelect || studentSelect.selectedIndex === -1 || studentSelect.value === "") {
-        alert("Sila pilih nama murid terlebih dahulu! Jika senarai kosong, pastikan murid wujud dalam sistem.");
-        return;
-    }
-    
-    showLoader(true);
-    
-    try {
-        // 2. HANTAR DATA KE GOOGLE SHEETS
-        await callApi('create', 'records', {
-            folder: 'Merit', 
-            student_id: studentSelect.value, // Menyimpan ID murid (doc_id dari sheet students)
-            title: document.getElementById('merit-title').value,
-            unit: document.getElementById('merit-unit').value, // Menyimpan unit spesifik murid
-            description: document.getElementById('merit-desc').value,
-            venue: document.getElementById('merit-venue').value
-        });
-        
-        alert("Data merit berjaya disimpan ke pangkalan data (Google Sheets)!");
-        
-        // Kosongkan form selepas berjaya
-        document.getElementById('merit-title').value = '';
-        document.getElementById('merit-desc').value = '';
-        document.getElementById('merit-venue').value = '';
-        
-        // Muat semula data global agar tabel merit langsung diperbarui
-        await loadAllData();
-        
-    } catch (error) {
-        // Memapar ralat jika Google Sheets/Apps Script menolak
-        console.error("Ralat Google Sheets:", error);
-        alert("Sistem menolak kemasukan data: " + error.message);
-    } finally {
-        showLoader(false);
-    }
-}
-// --- FUNGSI RENDER MERIT (DIKEMAS KINI DENGAN VLOOKUP NAMA) ---
-function renderMerit() {
-    let data = globalData.records || [];
-    
-    // Tapis supaya data Laporan Aktiviti lain tidak bercampur ke jadual merit
-    if (data.length > 0 && data[0].hasOwnProperty('folder')) {
-        data = data.filter(r => r.folder === 'Merit');
-    }
-    
-    // Tapis mengikut unit portfolio guru (Jika nak semua guru nampak semua merit, letak // di depan baris ini)
-    if(currentUser.role !== 'admin') data = data.filter(r => currentUser.myUnits.includes(r.unit));
-    
-    // Papar data ke jadual
-    const tableBody = document.getElementById('merit-table-body');
-    if (tableBody) {
-        tableBody.innerHTML = data.map(r => {
+        // --- MERIT (REKOD PENCAPAIAN) ---
+        async function submitMerit(e) {
+            e.preventDefault();
             
-            // ========================================================
-            // FUNGSI "VLOOKUP" JAVASCRIPT: CARI NAMA SEBENAR MURID
-            // ========================================================
-            // Padankan ID murid yang disimpan dalam rekod dengan s.doc_id (ID murid dari Google Sheet)
-            // *Nota: 'r.student_id' merujuk kepada ID murid yang anda simpan sewaktu submitMerit
-            const padananMurid = (globalData.students || []).find(s => 
-                String(s.doc_id) === String(r.student_id)
-            );
+            const studentSelect = document.getElementById('merit-student');
+            const levelSelect = document.getElementById('merit-level');
             
-            // Jika jumpa padanan, papar nama murid. Jika tak jumpa, cuba papar r.names (data lama) atau 'Tiada Nama'
-            const namaMuridSebenar = padananMurid ? padananMurid.name : (r.names || 'Tiada Nama');
-            // ========================================================
+            // 1. KAWALAN KESELAMATAN
+            if (!studentSelect || studentSelect.selectedIndex === -1 || studentSelect.value === "") {
+                alert("Sila pilih nama murid terlebih dahulu!");
+                return;
+            }
+            if (!levelSelect || levelSelect.value === "") {
+                alert("Sila pilih Peringkat Penyertaan!");
+                return;
+            }
+            
+            showLoader(true);
+            
+            try {
+                // 2. HANTAR DATA KE GOOGLE SHEETS
+                await callApi('create', 'records', {
+                    folder: 'Merit', 
+                    student_id: studentSelect.value, 
+                    level: levelSelect.value, // Data Peringkat Penyertaan
+                    title: document.getElementById('merit-title').value,
+                    unit: document.getElementById('merit-unit').value, 
+                    description: document.getElementById('merit-desc').value,
+                    venue: document.getElementById('merit-venue').value
+                });
+                
+                alert("Data merit berjaya disimpan ke pangkalan data (Google Sheets)!");
+                
+                // Kosongkan form selepas berjaya
+                const form = document.getElementById('merit-form');
+                if(form) form.reset();
+                
+                await loadAllData();
+                
+            } catch (error) {
+                console.error("Ralat Google Sheets:", error);
+                alert("Sistem menolak kemasukan data: " + error.message);
+            } finally {
+                showLoader(false);
+            }
+        }
 
-            return `
-                <tr class="border-b">
-                    <td class="p-3 font-semibold text-gray-800">${namaMuridSebenar}</td>
-                    <td class="p-3">${r.title || '-'}</td>
-                    <td class="p-3"><span class="bg-yellow-100 text-yellow-800 px-2 rounded text-xs">${r.description || '-'}</span></td>
-                    <td class="p-3">${r.venue || '-'}</td>
-                    <td class="p-3 text-center">
-                        <button onclick="deleteData('records','${r.doc_id}')" class="text-red-400 hover:text-red-600">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
-    
-    // 3. MEMBINA DROPDOWN MURID (MENYELESAIKAN ISU GURU MEMANAH)
-    const sel = document.getElementById('merit-student'); 
-    if (sel) {
-        sel.innerHTML = '<option value="">Pilih Murid...</option>';
-        
-        let students = globalData.students || []; 
-        
-        // Tapisan unit dibuang supaya Guru Memanah boleh nampak murid PBSM/unit lain
-        students.forEach(s => { 
-            const opt = document.createElement('option'); 
-            opt.value = s.doc_id; // Menyimpan ID spesifik unit (Contoh ID Zya Aisy untuk Pengakap/Memanah)
-            opt.innerText = `${s.name} (${s.unit})`; // Memapar nama sekali dengan unit murid
-            sel.appendChild(opt); 
-        });
-    }
-    
-    // 4. MEMBINA DROPDOWN UNIT
-    const selUnit = document.getElementById('merit-unit'); 
-    if (selUnit) {
-        selUnit.innerHTML = '<option value="">Pilih Unit...</option>';
-        const units = currentUser.role === 'admin' ? [...new Set(globalData.students.map(s=>s.unit))].sort() : currentUser.myUnits;
-        units.forEach(u => { 
-            const opt = document.createElement('option'); 
-            opt.value = u; 
-            opt.innerText = u; 
-            selUnit.appendChild(opt); 
-        });
-    }
-// --- REPORTS ---
-        // --- 1. Fungsi Buka Modal (CREATE NEW) ---
+        function renderMerit() {
+            let data = globalData.records || [];
+            
+            if (data.length > 0 && data[0].hasOwnProperty('folder')) {
+                data = data.filter(r => r.folder === 'Merit');
+            }
+            
+            // Tapis mengikut portfolio - Buang // jika nak admin shj nampak semua, biarkan macam ini jika guru cuma nampak merit unitnya
+            if(currentUser.role !== 'admin') {
+                const userUnits = Array.isArray(currentUser.myUnits) ? currentUser.myUnits : [];
+                data = data.filter(r => userUnits.includes(r.unit));
+            }
+            
+            const tableBody = document.getElementById('merit-table-body');
+            if (tableBody) {
+                tableBody.innerHTML = data.map(r => {
+                    const padananMurid = (globalData.students || []).find(s => String(s.doc_id) === String(r.student_id));
+                    const namaMuridSebenar = padananMurid ? padananMurid.name : (r.names || 'Tiada Nama');
+                    
+                    return `
+                        <tr class="border-b hover:bg-slate-50 transition">
+                            <td class="p-3 font-semibold text-gray-800">${namaMuridSebenar}</td>
+                            <td class="p-3">
+                                <div class="font-bold">${r.title || '-'}</div>
+                                <div class="text-xs text-blue-600 font-semibold">${r.level || '-'}</div>
+                            </td>
+                            <td class="p-3"><span class="bg-yellow-100 text-yellow-800 px-2 rounded text-xs">${r.description || '-'}</span></td>
+                            <td class="p-3">${r.venue || '-'}</td>
+                            <td class="p-3 text-center">
+                                <button onclick="deleteData('records','${r.doc_id}')" class="text-red-400 hover:text-red-600">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+            // 3. DROPDOWN MURID (SEMUA GURU NAMPAK SEMUA MURID)
+            const sel = document.getElementById('merit-student'); 
+            if (sel) {
+                sel.innerHTML = '<option value="">Pilih Murid...</option>';
+                let students = globalData.students || []; 
+                
+                // Tiada tapisan - semua pelajar akan dipaparkan dalam dropdown
+                students.forEach(s => { 
+                    const opt = document.createElement('option'); 
+                    opt.value = s.doc_id; 
+                    opt.innerText = `${s.name} (${s.unit})`; 
+                    sel.appendChild(opt); 
+                });
+            }
+            
+            // 4. DROPDOWN UNIT
+            const selUnit = document.getElementById('merit-unit'); 
+            if (selUnit) {
+                selUnit.innerHTML = '<option value="">Pilih Unit...</option>';
+                const units = currentUser.role === 'admin' ? [...new Set(globalData.students.map(s=>s.unit))].sort() : currentUser.myUnits;
+                units.forEach(u => { 
+                    const opt = document.createElement('option'); 
+                    opt.value = u; opt.innerText = u; 
+                    selUnit.appendChild(opt); 
+                });
+            }
+
+            // 5. DROPDOWN PERINGKAT (DIBINA MELALUI JS JIKA TIADA DALAM HTML)
+            const selLevel = document.getElementById('merit-level');
+            if(selLevel && selLevel.children.length <= 1) {
+                selLevel.innerHTML = '<option value="">Pilih Peringkat...</option>';
+                ['Peringkat Sekolah', 'Peringkat Daerah', 'Peringkat Bahagian', 'Peringkat Negeri', 'Peringkat Kebangsaan'].forEach(lvl => {
+                    const opt = document.createElement('option');
+                    opt.value = lvl; opt.innerText = lvl; selLevel.appendChild(opt);
+                });
+            }
+        }
+
+        // --- REPORTS ---
         function openReportModal() { 
             document.getElementById('modal-report').classList.replace('hidden','flex'); 
-            
-            // PENTING: Kosongkan ID supaya sistem tahu ini laporan BARU
             document.getElementById('rpt-id').value = ""; 
             
-            // Reset borang lain
-            document.getElementById('rpt-date').value = "";
-            document.getElementById('rpt-title').value = "";
-            document.getElementById('rpt-names').value = "";
-            document.getElementById('rpt-desc').value = "";
-            document.getElementById('rpt-img-final').value = "";
-            document.getElementById('rpt-img-url').value = "";
-            document.getElementById('rpt-img-file').value = "";
+            ['rpt-date', 'rpt-title', 'rpt-names', 'rpt-desc', 'rpt-img-final', 'rpt-img-url', 'rpt-img-file'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.value = "";
+            });
             
-            // Reset butang upload
-            const btnUpload = document.getElementById('rpt-img-file').previousElementSibling;
+            const btnUpload = document.getElementById('rpt-img-file')?.previousElementSibling;
             if(btnUpload) btnUpload.innerText = "Upload Fail";
 
-            // Isi Dropdown Unit (Kod lama anda kekal di sini...)
             const sel = document.getElementById('rpt-unit');
             sel.innerHTML = '<option value="">Pilih Unit...</option>'; 
-            const units = currentUser.role === 'admin' ? 
-                          [...new Set(globalData.students.map(s=>s.unit))].sort() : 
-                          currentUser.myUnits;
+            const units = currentUser.role === 'admin' ? [...new Set(globalData.students.map(s=>s.unit))].sort() : currentUser.myUnits;
             units.forEach(u => { 
-                const opt = document.createElement('option'); 
-                opt.value = u; opt.innerText = u; sel.appendChild(opt); 
+                const opt = document.createElement('option'); opt.value = u; opt.innerText = u; sel.appendChild(opt); 
             });
         }
 
-        // --- 2. Fungsi Buka Modal (EDIT MODE) ---
         function editReport(id) {
-            // Cari data laporan berdasarkan ID
             const r = globalData.reports.find(item => item.doc_id === id);
             if(!r) return;
-
-            // Buka Modal (Guna setup yang sama)
             openReportModal(); 
 
-            // Isi Semula Data Lama
-            document.getElementById('rpt-id').value = r.doc_id; // Set ID
+            document.getElementById('rpt-id').value = r.doc_id;
             document.getElementById('rpt-date').value = r.date;
             document.getElementById('rpt-unit').value = r.unit;
             document.getElementById('rpt-title').value = r.title;
             document.getElementById('rpt-names').value = r.names;
             document.getElementById('rpt-desc').value = r.description;
-            
-            // Nota: Gambar lama tidak perlu dipaparkan dalam input file, 
-            // tapi kita simpan nilai lama dalam hidden field incase tak nak tukar gambar
             document.getElementById('rpt-img-final').value = r.image;
         }
 
-// --- FUNGSI AUTO-FILL (DIPERBAIKI: Masalah Format Tarikh ISO) ---
-function autoFillReportFromAttendance() {
-    const dateVal = document.getElementById('rpt-date').value; // Cth: "2026-02-25"
-    const unitVal = document.getElementById('rpt-unit').value;
+        function autoFillReportFromAttendance() {
+            const dateVal = document.getElementById('rpt-date').value; 
+            const unitVal = document.getElementById('rpt-unit').value;
 
-    // 1. Pastikan input tidak kosong
-    if (!dateVal || !unitVal) return;
+            if (!dateVal || !unitVal) return;
 
-    console.log("MENCARI PADANAN...", dateVal, unitVal);
+            const record = globalData.attendance.find(a => {
+                if (!a.date) return false;
+                let dbDateStr = a.date;
+                if (a.date.includes('T')) {
+                    const d = new Date(a.date);
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    dbDateStr = `${year}-${month}-${day}`;
+                }
+                return (dbDateStr === dateVal) && (a.unit.trim().toLowerCase() === unitVal.trim().toLowerCase());
+            });
 
-    // 2. Cari padanan dalam data kehadiran
-    const record = globalData.attendance.find(a => {
-        if (!a.date) return false;
-
-        // --- PEMBAIKAN UTAMA DI SINI ---
-        // Tukar format database (ISO Long) kepada YYYY-MM-DD
-        let dbDateStr = a.date;
-        
-        // Jika data ada format masa (ada huruf 'T'), kita proses jadi tarikh tempatan
-        if (a.date.includes('T')) {
-            const d = new Date(a.date);
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            dbDateStr = `${year}-${month}-${day}`;
+            if (record) {
+                document.getElementById('rpt-title').value = record.title || "";
+                const nameField = document.getElementById('rpt-names');
+                nameField.value = record.names || "";
+                nameField.classList.add('bg-green-100');
+                setTimeout(() => nameField.classList.remove('bg-green-100'), 500);
+            }
         }
-        // -------------------------------
 
-        // Bandingkan
-        const dateMatch = (dbDateStr === dateVal);
-        const unitMatch = (a.unit.trim().toLowerCase() === unitVal.trim().toLowerCase());
-        
-        return dateMatch && unitMatch;
-    });
-
-    // 3. Jika Jumpa
-    if (record) {
-        console.log("REKOD DIJUMPAI!", record);
-        
-        // Isi Tajuk
-        document.getElementById('rpt-title').value = record.title || "";
-        
-        // Isi Nama
-        const nameField = document.getElementById('rpt-names');
-        nameField.value = record.names || "";
-        
-        // Visual Feedback (Kelip Hijau)
-        nameField.classList.add('bg-green-100');
-        setTimeout(() => nameField.classList.remove('bg-green-100'), 500);
-
-    } else {
-        console.log("Masih tiada rekod. Pastikan tarikh kehadiran di Google Sheet betul.");
-    }
-}
-
-        // 3. KEKALKAN: Fungsi Simpan Laporan
         async function saveReport(e) {
             e.preventDefault();
             showLoader(true);
 
-            // Ambil ID (jika ada)
             const id = document.getElementById('rpt-id').value;
-            
-            // Data Borang
             const formData = { 
                 date: document.getElementById('rpt-date').value, 
                 title: document.getElementById('rpt-title').value, 
@@ -966,31 +930,26 @@ function autoFillReportFromAttendance() {
             };
 
             if (id) {
-                // --- MOD EDIT (UPDATE) ---
-                formData.doc_id = id; // Masukkan ID untuk rujukan database
+                formData.doc_id = id; 
                 await callApi('update', 'reports', formData);
                 alert("Laporan berjaya dikemaskini!");
             } else {
-                // --- MOD BARU (CREATE) ---
                 await callApi('create', 'reports', formData);
             }
-
             closeModal('modal-report'); 
-            loadAllData(); // Refresh senarai
+            loadAllData(); 
         }
-// 4. KEKALKAN: Fungsi Papar Senarai Laporan (VERSI DIKEMAS KINI & KALIS RALAT)
+
         function renderReports() {
-             // 1. Pastikan data tidak undefined (Gunakan array kosong jika tiada data)
              let data = globalData.reports || [];
              
-             // 2. TAPISAN KESELAMATAN (Elak Crash)
              if(currentUser.role !== 'admin') {
                  const userUnits = Array.isArray(currentUser.myUnits) ? currentUser.myUnits : [];
                  data = data.filter(r => userUnits.includes(r.unit));
              }
              
              const container = document.getElementById('reports-grid');
-             if(!container) return; // Hentikan fungsi jika elemen HTML tidak dijumpai
+             if(!container) return; 
              
              if(data.length === 0) {
                  container.innerHTML = '<div class="text-center p-6 text-slate-400">Tiada laporan dijumpai.</div>';
@@ -1019,7 +978,7 @@ function autoFillReportFromAttendance() {
                  `).join('');
              }
         }
-        // 5. KEKALKAN: Fungsi Lihat Detail Laporan
+
         function viewReportDetails(id) {
             const report = globalData.reports.find(r => r.doc_id === id);
             if(!report) return;
@@ -1036,6 +995,8 @@ function autoFillReportFromAttendance() {
         function renderUsers() {
             if (currentUser.role !== 'admin') return;
             const tbody = document.getElementById('users-table-body');
+            if(!tbody) return;
+
             tbody.innerHTML = globalData.users.map(u => `
                 <tr class="border-b hover:bg-slate-50 transition text-sm">
                     <td class="p-4">
@@ -1052,15 +1013,42 @@ function autoFillReportFromAttendance() {
                             ${(u.sport && u.sport!=='-') ? `<span class="bg-slate-100 px-2 py-0.5 rounded border">${u.sport}</span>` : ''}
                         </div>
                     </td>
-                    <td class="p-4 text-right">
-                        <button onclick="openUserModal('edit', '${u.doc_id}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-edit"></i></button>
-                        <button onclick="deleteData('users', '${u.doc_id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
-                    </td>
                 </tr>
             `).join('');
         }
-        
-        function openUserModal(mode, docId = null) {
+
+        // --- NAVIGATION (KALIS RALAT) ---
+        function showPage(id) {
+            try {
+                document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
+                const selectedPage = document.getElementById('page-' + id);
+                if (selectedPage) selectedPage.classList.remove('hidden');
+
+                const headerTitle = document.getElementById('header-title');
+                if (headerTitle) {
+                    const titles = { 'dashboard': 'Dashboard Utama', 'students': 'Data Murid', 'attendance': 'Kehadiran', 'reports': 'Laporan Aktiviti', 'annual_plans': 'Perancangan Tahunan', 'merit': 'Rekod Pencapaian (Merit)', 'analysis': 'Cetakan & Analisis', 'users': 'Pengurusan Guru' };
+                    headerTitle.innerText = titles[id] || 'Sistem KMS';
+                }
+
+                if(id === 'students') renderStudentTable();
+                if(id === 'attendance') renderAttendanceHistory();
+                if(id === 'reports') renderReports();
+                if(id === 'merit') renderMerit();
+                if(id === 'annual_plans') renderAnnualPlans();
+                if(id === 'users') renderUsers();
+
+                if(window.innerWidth < 768) {
+                    const sb = document.getElementById('sidebar');
+                    const ov = document.getElementById('sidebar-overlay');
+                    if (sb) sb.classList.add('-translate-x-full');
+                    if (ov) ov.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error("Ralat pada showPage:", error);
+            }
+        }
+
+            function openUserModal(mode, docId = null) {
             const modal = document.getElementById('modal-user');
             const form = document.getElementById('form-user');
             const title = document.getElementById('user-modal-title');
@@ -1314,49 +1302,6 @@ function convertBase64(input) {
             initApp(); 
         }
     }
-
-// --- FUNGSI KAWALAN HALAMAN (KALIS RALAT) ---
-function showPage(id) {
-    try {
-        document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
-        
-        const selectedPage = document.getElementById('page-' + id);
-        if (selectedPage) selectedPage.classList.remove('hidden');
-
-        const headerTitle = document.getElementById('header-title');
-        if (headerTitle) {
-            const titles = {
-                'dashboard': 'Dashboard Utama',
-                'students': 'Data Murid',
-                'attendance': 'Kehadiran',
-                'reports': 'Laporan Aktiviti',
-                'annual_plans': 'Perancangan Tahunan',
-                'merit': 'Rekod Pencapaian (Merit)',
-                'analysis': 'Cetakan & Analisis',
-                'users': 'Pengurusan Guru'
-            };
-            headerTitle.innerText = titles[id] || 'Sistem KMS';
-        }
-
-        // Laksanakan render mengikut halaman
-        if(id === 'students') { if(typeof renderStudentTable === 'function') renderStudentTable(); }
-        if(id === 'attendance') { if(typeof renderAttendanceHistory === 'function') renderAttendanceHistory(); }
-        if(id === 'reports') { if(typeof renderReports === 'function') renderReports(); }
-        if(id === 'merit') { if(typeof renderMerit === 'function') renderMerit(); }
-        if(id === 'annual_plans') { if(typeof renderAnnualPlans === 'function') renderAnnualPlans(); }
-        if(id === 'users') { if(typeof renderUsers === 'function') renderUsers(); }
-
-        if(window.innerWidth < 768) {
-            const sb = document.getElementById('sidebar');
-            const ov = document.getElementById('sidebar-overlay');
-            if (sb) sb.classList.add('-translate-x-full');
-            if (ov) ov.classList.add('hidden');
-        }
-    } catch (error) {
-        console.error("Ralat pada showPage:", error);
-        alert("RALAT PADA HALAMAN '" + id + "':\n" + error.message + "\n\nSila semak Console (F12) untuk butiran.");
-    }
-}
     </script>
 </body>
 </html>
