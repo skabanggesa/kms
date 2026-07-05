@@ -1130,6 +1130,59 @@ async function callApi(action, collection, data = {}) {
             closeModal('modal-user'); loadAllData();
         };
 
+// --- SISTEM MARKAH MERIT / PENCAPAIAN ---
+        function dapatkanMarkahPeringkat(peringkat) {
+            if (!peringkat) return 0;
+            let p = peringkat.toLowerCase();
+            if (p.includes('antarabangsa')) return 20;
+            if (p.includes('kebangsaan')) return 17;
+            if (p.includes('negeri')) return 14;
+            if (p.includes('bahagian') || p.includes('daerah')) return 11;
+            if (p.includes('sekolah')) return 8;
+            return 0;
+        }
+
+        function dapatkanMarkahPencapaian(peringkat, pencapaian) {
+            if (!peringkat || !pencapaian) return 0;
+            let p = peringkat.toLowerCase();
+            let c = pencapaian.toLowerCase();
+            
+            // Tentukan kedudukan berdasarkan kata kunci
+            let rankIndex = -1;
+            if (c.includes('johan') && !c.includes('naib')) rankIndex = 0; // Johan / Pertama
+            else if (c.includes('kedua') || c.includes('naib johan')) rankIndex = 1;
+            else if (c.includes('ketiga')) rankIndex = 2;
+            else if (c.includes('keempat')) rankIndex = 3;
+            else if (c.includes('kelima')) rankIndex = 4;
+            else if (c.includes('keenam')) rankIndex = 5;
+            else if (c.includes('ketujuh')) rankIndex = 6;
+            else if (c.includes('kelapan')) rankIndex = 7;
+            
+            if (rankIndex === -1) return 0;
+            
+            // Tentukan kunci peringkat
+            let pKey = '';
+            if (p.includes('antarabangsa')) pKey = 'antarabangsa';
+            else if (p.includes('kebangsaan')) pKey = 'kebangsaan';
+            else if (p.includes('negeri')) pKey = 'negeri';
+            else if (p.includes('bahagian')) pKey = 'bahagian';
+            else if (p.includes('daerah')) pKey = 'daerah';
+            else if (p.includes('sekolah')) pKey = 'sekolah';
+            else return 0;
+            
+            // Peta Markah Rasmi
+            const petaMarkah = {
+                'antarabangsa': [20, 19, 18, 17, 16, 15, 14, 13],
+                'kebangsaan': [11, 10, 9, 8, 7, 6, 5, 4],
+                'negeri': [8, 7, 6, 5, 5, 4, 3, 2],
+                'bahagian': [6, 5, 4, 3, 2, 1, 0, 0],
+                'daerah': [6, 5, 4, 3, 2, 1, 0, 0],
+                'sekolah': [8, 7, 6, 5, 4, 3, 2, 1]
+            };
+            
+            return petaMarkah[pKey][rankIndex] || 0;
+        }
+
         // --- PRINTING (FIXED GROUP BY UNIT & FULL NAMES) ---
         function printAnalysis(type) {
              let generatedDate = new Date().toLocaleDateString('ms-MY', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -1166,13 +1219,44 @@ async function callApi(action, collection, data = {}) {
                      contentHTML += `<div style="margin-top:30px;page-break-inside:avoid;"><h3 style="background:#eee;padding:5px;border:1px solid black;margin:0;">UNIT: ${unitName.toUpperCase()}</h3><table style="margin-top:0;"><thead><tr><th style="width:15%">Tarikh</th><th style="width:40%">Program</th><th style="width:30%">Objektif</th><th style="width:15%">Status</th></tr></thead><tbody>${plans.map(p => `<tr><td style="text-align:center">${p.date}</td><td>${p.title}</td><td>${p.description}</td><td style="text-align:center;">${p.status}</td></tr>`).join('')}</tbody></table></div>`;
                  });
              }
+             // BLAHAGIAN MERIT YANG DIKEMAS KINI
              else if (type === 'merit') {
                  if(dataRecords.length === 0) return alert("Tiada rekod.");
                  const uniqueUnits = [...new Set(dataRecords.map(item => item.unit))];
                  contentHTML += `<div class="header"><h1>Rekod Pencapaian & Merit</h1><h2>Laporan Gabungan</h2></div>`;
                  uniqueUnits.forEach(unitName => {
                      const records = dataRecords.filter(r => r.unit === unitName);
-                     contentHTML += `<div style="margin-top:30px;page-break-inside:avoid;"><h3 style="background:#eee;padding:5px;border:1px solid black;margin:0;">UNIT: ${unitName.toUpperCase()}</h3><table style="margin-top:0;"><thead><tr><th style="width:5%">Bil</th><th style="width:30%">Nama Murid</th><th style="width:30%">Acara</th><th style="width:20%">Pencapaian</th><th style="width:15%">Peringkat</th></tr></thead><tbody>${records.map((r, i) => `<tr><td style="text-align:center">${i + 1}</td><td>${r.names}</td><td>${r.title}</td><td style="text-align:center">${r.description}</td><td style="text-align:center">${r.venue}</td></tr>`).join('')}</tbody></table></div>`;
+                     contentHTML += `<div style="margin-top:30px;page-break-inside:avoid;">
+                     <h3 style="background:#eee;padding:5px;border:1px solid black;margin:0;">UNIT: ${unitName.toUpperCase()}</h3>
+                     <table style="margin-top:0;">
+                     <thead>
+                         <tr>
+                             <th style="width:5%">Bil</th>
+                             <th style="width:30%">Nama Murid</th>
+                             <th style="width:25%">Acara</th>
+                             <th style="width:20%">Pencapaian</th>
+                             <th style="width:20%">Peringkat</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         ${records.map((r, i) => {
+                             // Kira markah secara automatik
+                             let markahPeringkat = dapatkanMarkahPeringkat(r.venue);
+                             let markahPencapaian = dapatkanMarkahPencapaian(r.venue, r.description);
+                             
+                             // Tangani isu Undefined: cuba pelbagai nama kolum yang biasa
+                             let namaMurid = r.name || r.names || r.student || r.student_name || 'Tiada Rekod';
+                             
+                             return `<tr>
+                                 <td style="text-align:center">${i + 1}</td>
+                                 <td>${namaMurid}</td>
+                                 <td>${r.title || '-'}</td>
+                                 <td style="text-align:center">${r.description || '-'} <br><strong>(${markahPencapaian}m)</strong></td>
+                                 <td style="text-align:center">${r.venue || '-'} <br><strong>(${markahPeringkat}m)</strong></td>
+                             </tr>`;
+                         }).join('')}
+                     </tbody>
+                     </table></div>`;
                  });
              }
              else if (type === 'full_reports') {
