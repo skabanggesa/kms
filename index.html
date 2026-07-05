@@ -1220,7 +1220,7 @@ async function callApi(action, collection, data = {}) {
                  });
              }
              // BLAHAGIAN MERIT YANG DIKEMAS KINI
-             else if (type === 'merit') {
+else if (type === 'merit') {
                  if(dataRecords.length === 0) return alert("Tiada rekod.");
                  const uniqueUnits = [...new Set(dataRecords.map(item => item.unit))];
                  contentHTML += `<div class="header"><h1>Rekod Pencapaian & Merit</h1><h2>Laporan Gabungan</h2></div>`;
@@ -1244,8 +1244,9 @@ async function callApi(action, collection, data = {}) {
                              let markahPeringkat = dapatkanMarkahPeringkat(r.venue);
                              let markahPencapaian = dapatkanMarkahPencapaian(r.venue, r.description);
                              
-                             // Tangani isu Undefined: cuba pelbagai nama kolum yang biasa
-                             let namaMurid = r.name || r.names || r.student || r.student_name || 'Tiada Rekod';
+                             // KOD PADANAN NAMA (Dari fungsi renderMerit anda yang bijak)
+                             const padananMurid = (globalData.students || []).find(s => String(s.doc_id) === String(r.student_id));
+                             const namaMurid = padananMurid ? padananMurid.name : (r.names || 'Tiada Rekod');
                              
                              return `<tr>
                                  <td style="text-align:center">${i + 1}</td>
