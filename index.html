@@ -362,6 +362,7 @@
         <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl">
             <h3 class="font-bold text-lg mb-4">Maklumat Murid</h3>
             <form onsubmit="saveStudent(event)" class="space-y-3">
+                <input type="text" id="std-id" class="input-field" placeholder="No. KP / ID Murid" required>
                 <input type="text" id="std-name" class="input-field" placeholder="Nama Penuh" required>
                 <div class="grid grid-cols-2 gap-3">
                     <select id="std-gender" class="input-field"><option value="L">Lelaki</option><option value="P">Perempuan</option></select>
@@ -701,12 +702,19 @@ async function callApi(action, collection, data = {}) {
         }
         function openStudentModal() { document.getElementById('modal-student').classList.replace('hidden','flex'); }
         async function saveStudent(e) {
-            e.preventDefault();
-            const data = { name: document.getElementById('std-name').value, gender: document.getElementById('std-gender').value, year: document.getElementById('std-year').value, unit: document.getElementById('std-unit').value };
-            showLoader(true);
-            await callApi('write', 'students_master', data);
-            closeModal('modal-student'); loadAllData();
-        }
+    e.preventDefault();
+    // Kemaskini baris ini untuk tarik nilai std-id
+    const data = { 
+        id_murid: document.getElementById('std-id').value,
+        name: document.getElementById('std-name').value, 
+        gender: document.getElementById('std-gender').value, 
+        year: document.getElementById('std-year').value, 
+        unit: document.getElementById('std-unit').value 
+    };
+    showLoader(true);
+    await callApi('write', 'students_master', data);
+    closeModal('modal-student'); loadAllData();
+}
 
         // --- ATTENDANCE ---
         function loadStudentsForAttendance() {
@@ -1452,11 +1460,20 @@ function convertBase64(input) {
     reader.readAsDataURL(file);
 }
         function handleCSVImport(input) {
-             Papa.parse(input.files[0], { header: true, complete: async function(res) {
-                 const rows = res.data.filter(r => r.name).map(r => ({ name: r.name, gender: r.gender||"L", unit: r.unit||"Umum", year: r.year||"1" }));
-                 if(confirm(`Import ${rows.length} murid?`)) { showLoader(true); await callApi('batch_write', 'students_master', rows); showLoader(false); loadAllData(); }
-             }});
+    Papa.parse(input.files[0], { header: true, complete: async function(res) {
+        // Tambah pemetaan id_murid di sini
+        const rows = res.data.filter(r => r.name).map(r => ({ 
+            id_murid: r.id_murid || "-", 
+            name: r.name, 
+            gender: r.gender || "L", 
+            unit: r.unit || "Umum", 
+            year: r.year || "1" 
+        }));
+        if(confirm(`Import ${rows.length} murid?`)) { 
+            showLoader(true); await callApi('batch_write', 'students_master', rows); showLoader(false); loadAllData(); 
         }
+    }});
+}
         async function deleteData(col, id) { if(confirm("Padam data ini?")) { showLoader(true); await callApi('delete', col, { doc_id: id }); showLoader(false); loadAllData(); } }
         
         // UI & NAVIGATION
