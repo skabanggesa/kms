@@ -71,12 +71,12 @@
         </button>
       </div>
 
-      <div class="p-6">
+     <div class="p-6">
   <!-- TAB 1: PENGURUSAN GURU -->
   <div id="tab-pengurusan-guru" class="tab-content">
     <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
       <div class="flex flex-1 gap-2">
-        <!-- Input Carian Nama -->
+        <!-- Input Carian Nama Guru -->
         <input 
           type="text" 
           id="filterGuruNama" 
@@ -84,7 +84,7 @@
           oninput="tapisGuru()" 
           class="w-full md:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-        <!-- Dropdown Kategori Dinamik -->
+        <!-- Dropdown Kategori Dinamik (Unit/Kelab/Sukan) -->
         <select 
           id="filterGuruUnit" 
           onchange="tapisGuru()" 
@@ -95,117 +95,115 @@
       </div>
     </div>
 
-          <!-- Jadual Guru -->
-          <div class="overflow-x-auto rounded-lg border">
-            <table class="table-kms">
-  <thead>
-    <tr>
-      <th>NAMA GURU</th>
-      <th>E-MEL</th>
-      <th>UNIT</th>
-      <th>KELAB</th>
-      <th>SUKAN</th>
-      <th>PERANAN</th>
-      <th>TINDAKAN</th>
-    </tr>
-  </thead>
-  <tbody id="tbodyPengurusanGuru">
-    <!-- Baris data guru akan dimuatkan di sini oleh JS -->
-  </tbody>
-</table>
-          </div>
-        </div>
-
-        <!-- TAB 2: SENARAI MURID -->
-<div id="tab-senarai-murid" class="tab-content">
-  <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
-    <div class="flex flex-wrap flex-1 gap-2">
-      <!-- Input Carian Nama / ID -->
-      <input 
-        type="text" 
-        id="filterMuridCari" 
-        placeholder="Cari nama murid / ID..." 
-        oninput="tapisMurid()" 
-        class="w-full md:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-      <!-- Dropdown Unit/Kelab/Sukan -->
-      <select 
-        id="filterMuridKategori" 
-        onchange="tapisMurid()" 
-        class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Semua Unit / Kelab / Sukan</option>
-      </select>
-      <!-- Dropdown Kelas -->
-      <select 
-        id="filterMuridKelas" 
-        onchange="tapisMurid()" 
-        class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Semua Tingkatan/Kelas</option>
-      </select>
+    <!-- Jadual Guru -->
+    <div class="overflow-x-auto rounded-lg border">
+      <table class="table-kms">
+        <thead>
+          <tr>
+            <th>NAMA GURU</th>
+            <th>E-MEL</th>
+            <th>UNIT</th>
+            <th>KELAB</th>
+            <th>SUKAN</th>
+            <th>PERANAN</th>
+            <th>TINDAKAN</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyPengurusanGuru">
+          <!-- Baris data guru dimuatkan oleh JS -->
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <!-- Jadual Senarai Murid -->
-  <div style="width: 100%; overflow-x: auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
-    <table class="table-kms">
-      <thead>
-        <tr>
-          <th>ID / MYKID</th>
-          <th>NAMA MURID</th>
-          <th>KELAS</th>
-          <th>UNIT</th>
-          <th>KELAB</th>
-          <th>SUKAN</th>
-          <th>TINDAKAN</th>
-        </tr>
-      </thead>
-      <tbody id="tbodySenaraiMurid">
-        <!-- Data murid dipanggil oleh JavaScript -->
-      </tbody>
-    </table>
-  </div>
-</div>
+  <!-- TAB 2: SENARAI MURID -->
+  <div id="tab-senarai-murid" class="tab-content hidden">
+    <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
+      <div class="flex flex-wrap flex-1 gap-2">
+        <!-- Input Carian Nama / ID -->
+        <input 
+          type="text" 
+          id="filterMuridCari" 
+          placeholder="Cari nama murid / ID..." 
+          oninput="tapisMurid()" 
+          class="w-full md:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+        <!-- Dropdown Unit/Kelab/Sukan -->
+        <select 
+          id="filterMuridKategori" 
+          onchange="tapisMurid()" 
+          class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Semua Unit / Kelab / Sukan</option>
+        </select>
+        <!-- Dropdown Kelas -->
+        <select 
+          id="filterMuridKelas" 
+          onchange="tapisMurid()" 
+          class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Semua Tingkatan/Kelas</option>
+        </select>
+      </div>
+    </div>
 
-        <!-- TAB 3: ANALISIS -->
-        <div id="tab-analisis" class="tab-content hidden">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
-              <p class="text-xs font-bold text-slate-400 uppercase">Total Overall</p>
-              <h3 class="text-2xl font-extrabold text-slate-800 mt-1">1,240</h3>
-              <p class="text-xs text-slate-500 mt-2">Jumlah Murid Berdaftar</p>
-            </div>
-            <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
-              <p class="text-xs font-bold text-slate-400 uppercase">Pecahan Unit</p>
-              <h3 class="text-2xl font-extrabold text-blue-600 mt-1">12 Unit</h3>
-              <p class="text-xs text-slate-500 mt-2">Jumlah Murid Ikut Unit</p>
-            </div>
-            <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
-              <p class="text-xs font-bold text-slate-400 uppercase">Kehadiran</p>
-              <h3 class="text-2xl font-extrabold text-indigo-600 mt-1">85</h3>
-              <p class="text-xs text-slate-500 mt-2">Jumlah Laporan Kehadiran</p>
-            </div>
-            <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
-              <p class="text-xs font-bold text-slate-400 uppercase">Pelaporan Aktif</p>
-              <h3 class="text-2xl font-extrabold text-emerald-600 mt-1">142</h3>
-              <p class="text-xs text-slate-500 mt-2">Jumlah Laporan Aktiviti</p>
-            </div>
-            <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
-              <p class="text-xs font-bold text-slate-400 uppercase">Perancangan Tahunan</p>
-              <h3 class="text-2xl font-extrabold text-purple-600 mt-1">12 / 12</h3>
-              <p class="text-xs text-slate-500 mt-2">Jumlah Perancangan Tahunan Slotted</p>
-            </div>
-            <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
-              <p class="text-xs font-bold text-slate-400 uppercase">Pemberian Merit</p>
-              <h3 class="text-2xl font-extrabold text-amber-600 mt-1">3,450</h3>
-              <p class="text-xs text-slate-500 mt-2">Jumlah Merit Terkumpul</p>
-            </div>
-          </div>
-        </div>
+    <!-- Jadual Senarai Murid -->
+    <div class="overflow-x-auto rounded-lg border">
+      <table class="table-kms">
+        <thead>
+          <tr>
+            <th>ID / MYKID</th>
+            <th>NAMA MURID</th>
+            <th>KELAS</th>
+            <th>UNIT</th>
+            <th>KELAB</th>
+            <th>SUKAN</th>
+            <th>TINDAKAN</th>
+          </tr>
+        </thead>
+        <tbody id="tbodySenaraiMurid">
+          <!-- Baris data murid dimuatkan oleh JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 3: ANALISIS -->
+  <div id="tab-analisis" class="tab-content hidden">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
+        <p class="text-xs font-bold text-slate-400 uppercase">Total Overall</p>
+        <h3 class="text-2xl font-extrabold text-slate-800 mt-1">1,240</h3>
+        <p class="text-xs text-slate-500 mt-2">Jumlah Murid Berdaftar</p>
+      </div>
+      <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
+        <p class="text-xs font-bold text-slate-400 uppercase">Pecahan Unit</p>
+        <h3 class="text-2xl font-extrabold text-blue-600 mt-1">12 Unit</h3>
+        <p class="text-xs text-slate-500 mt-2">Jumlah Murid Ikut Unit</p>
+      </div>
+      <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
+        <p class="text-xs font-bold text-slate-400 uppercase">Kehadiran</p>
+        <h3 class="text-2xl font-extrabold text-indigo-600 mt-1">85</h3>
+        <p class="text-xs text-slate-500 mt-2">Jumlah Laporan Kehadiran</p>
+      </div>
+      <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
+        <p class="text-xs font-bold text-slate-400 uppercase">Pelaporan Aktif</p>
+        <h3 class="text-2xl font-extrabold text-emerald-600 mt-1">142</h3>
+        <p class="text-xs text-slate-500 mt-2">Jumlah Laporan Aktiviti</p>
+      </div>
+      <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
+        <p class="text-xs font-bold text-slate-400 uppercase">Perancangan Tahunan</p>
+        <h3 class="text-2xl font-extrabold text-purple-600 mt-1">12 / 12</h3>
+        <p class="text-xs text-slate-500 mt-2">Jumlah Perancangan Tahunan Slotted</p>
+      </div>
+      <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
+        <p class="text-xs font-bold text-slate-400 uppercase">Pemberian Merit</p>
+        <h3 class="text-2xl font-extrabold text-amber-600 mt-1">3,450</h3>
+        <p class="text-xs text-slate-500 mt-2">Jumlah Merit Terkumpul</p>
       </div>
     </div>
   </div>
+</div>
 
   <!-- MODAL 1: KEHADIRAN -->
   <div id="modalKehadiran" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
