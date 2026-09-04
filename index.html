@@ -733,24 +733,44 @@ function renderSenaraiMurid(muridList) {
 
 // 1. Panggil dalam fungsi muatkanDataKMS() atau kendali respons backend
 function prosesDanPaparKehadiran(res) {
-  if (!res) return;
+  if (!res || !Array.isArray(res.attendance)) return;
 
-  // HANYA BACA SHEET [attendance] (KOKURIKULUM KMS)
-  const dataKehadiran = (Array.isArray(res.attendance)) ? res.attendance : [];
-  senaraiKehadiranInduk = dataKehadiran;
+  const rekodKms = res.attendance;
+  let totalMuridHadir = 0;
+  let rekodIndividu = [];
 
-  console.log(">>> Data Kehadiran KMS Diterima:", senaraiKehadiranInduk.length);
+  rekodKms.forEach(item => {
+    if (item.nama) {
+      // Pecahkan string nama mengikut koma & buang ruang kosong
+      const senaraiNama = item.nama.split(',').map(n => n.trim()).filter(n => n !== '');
+      
+      totalMuridHadir += senaraiNama.length;
 
-  // Kemaskini Angka Pada Kad Kehadiran
+      // Bina semula rekod untuk jadual (1 baris = 1 murid)
+      senaraiNama.forEach(namaMurid => {
+        rekodIndividu.push({
+          tarikh: item.tarikh,
+          tahun: item.tahun,
+          unit: item.unit,
+          perkara: item.perkara,
+          nama: namaMurid
+        });
+      });
+    }
+  });
+
+  // Kemaskini Kad Statistik dengan jumlah sebenar murid
   const statKehadiran = document.getElementById("statTotalKehadiran");
   if (statKehadiran) {
-    statKehadiran.textContent = senaraiKehadiranInduk.length.toLocaleString('ms-MY');
+    statKehadiran.textContent = totalMuridHadir.toLocaleString('ms-MY');
   }
 
-  // Isi dropdown dan bina jadual
+  // Gunakan 'rekodIndividu' untuk paparan jadual
+  senaraiKehadiranInduk = rekodIndividu;
   isiDropdownKehadiran(senaraiKehadiranInduk);
   tapisKehadiran();
 }
+    
 // 2. Logik Pertukaran Sub-Tab Analisis
 function tukarSubTabAnalisis(namaSubTab) {
   // Sembunyikan semua subtab-content
