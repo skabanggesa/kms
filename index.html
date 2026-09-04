@@ -167,38 +167,79 @@
   </div>
 
   <!-- TAB 3: ANALISIS -->
-  <div id="tab-analisis" class="tab-content hidden">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
-        <p class="text-xs font-bold text-slate-400 uppercase">Total Overall</p>
-        <h3 class="text-2xl font-extrabold text-slate-800 mt-1">1,240</h3>
-        <p class="text-xs text-slate-500 mt-2">Jumlah Murid Berdaftar</p>
+<div id="tab-analisis" class="tab-content hidden">
+  <!-- Kad Ringkasan (Summary Cards Grid) -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+    <!-- 1. Total Overall -->
+    <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
+      <p class="text-xs font-bold text-slate-400 uppercase">Total Overall</p>
+      <h3 id="statTotalOverall" class="text-2xl font-extrabold text-slate-800 mt-1">0</h3>
+      <p class="text-xs text-slate-500 mt-2">Jumlah Murid Berdaftar</p>
+    </div>
+
+    <!-- 2. Kehadiran (Hold) -->
+    <div class="p-5 border rounded-xl bg-slate-50 border-slate-200 opacity-60">
+      <p class="text-xs font-bold text-slate-400 uppercase">Kehadiran</p>
+      <h3 class="text-2xl font-extrabold text-indigo-600 mt-1">-</h3>
+      <p class="text-xs text-slate-500 mt-2">Data dari [attendance] (Hold)</p>
+    </div>
+
+    <!-- 3. Pelaporan Aktif (Hold) -->
+    <div class="p-5 border rounded-xl bg-slate-50 border-slate-200 opacity-60">
+      <p class="text-xs font-bold text-slate-400 uppercase">Pelaporan Aktif</p>
+      <h3 class="text-2xl font-extrabold text-emerald-600 mt-1">-</h3>
+      <p class="text-xs text-slate-500 mt-2">Data dari [reports] (Hold)</p>
+    </div>
+
+    <!-- 4. Perancangan Tahunan (Hold) -->
+    <div class="p-5 border rounded-xl bg-slate-50 border-slate-200 opacity-60">
+      <p class="text-xs font-bold text-slate-400 uppercase">Perancangan Tahunan</p>
+      <h3 class="text-2xl font-extrabold text-purple-600 mt-1">-</h3>
+      <p class="text-xs text-slate-500 mt-2">Data dari [annual] (Hold)</p>
+    </div>
+
+    <!-- 5. Pemberian Merit (Hold) -->
+    <div class="p-5 border rounded-xl bg-slate-50 border-slate-200 opacity-60">
+      <p class="text-xs font-bold text-slate-400 uppercase">Pemberian Merit</p>
+      <h3 class="text-2xl font-extrabold text-amber-600 mt-1">-</h3>
+      <p class="text-xs text-slate-500 mt-2">Data dari [merits] (Hold)</p>
+    </div>
+  </div>
+
+  <!-- Bahagian Pecahan Kategori (Unit / Kelab / Sukan) -->
+  <div class="p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+      <div>
+        <h4 class="text-lg font-bold text-slate-800">Analisis Pecahan Murid</h4>
+        <p class="text-xs text-slate-500">Pecahan bilangan murid mengikut jantina</p>
       </div>
-      <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
-        <p class="text-xs font-bold text-slate-400 uppercase">Pecahan Unit</p>
-        <h3 class="text-2xl font-extrabold text-blue-600 mt-1">12 Unit</h3>
-        <p class="text-xs text-slate-500 mt-2">Jumlah Murid Ikut Unit</p>
-      </div>
-      <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
-        <p class="text-xs font-bold text-slate-400 uppercase">Kehadiran</p>
-        <h3 class="text-2xl font-extrabold text-indigo-600 mt-1">85</h3>
-        <p class="text-xs text-slate-500 mt-2">Jumlah Laporan Kehadiran</p>
-      </div>
-      <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
-        <p class="text-xs font-bold text-slate-400 uppercase">Pelaporan Aktif</p>
-        <h3 class="text-2xl font-extrabold text-emerald-600 mt-1">142</h3>
-        <p class="text-xs text-slate-500 mt-2">Jumlah Laporan Aktiviti</p>
-      </div>
-      <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
-        <p class="text-xs font-bold text-slate-400 uppercase">Perancangan Tahunan</p>
-        <h3 class="text-2xl font-extrabold text-purple-600 mt-1">12 / 12</h3>
-        <p class="text-xs text-slate-500 mt-2">Jumlah Perancangan Tahunan Slotted</p>
-      </div>
-      <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
-        <p class="text-xs font-bold text-slate-400 uppercase">Pemberian Merit</p>
-        <h3 class="text-2xl font-extrabold text-amber-600 mt-1">3,450</h3>
-        <p class="text-xs text-slate-500 mt-2">Jumlah Merit Terkumpul</p>
-      </div>
+      <!-- Dropdown Kategori Analisis -->
+      <select 
+        id="selectAnalisisKategori" 
+        onchange="renderPecahanAnalisis()" 
+        class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+      >
+        <option value="unit">Unit Beruniform</option>
+        <option value="kelab">Kelab & Persatuan</option>
+        <option value="sukan">Sukan & Permainan</option>
+      </select>
+    </div>
+
+    <!-- Jadual Analisis Pecahan -->
+    <div class="overflow-x-auto rounded-lg border">
+      <table class="table-kms">
+        <thead>
+          <tr>
+            <th id="thNamaKategori">NAMA UNIT BERUNIFORM</th>
+            <th style="text-align: center;">LELAKI</th>
+            <th style="text-align: center;">PEREMPUAN</th>
+            <th style="text-align: center;">JUMLAH</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyPecahanAnalisis">
+          <!-- Baris data analisis dipanggil oleh JavaScript -->
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -459,6 +500,7 @@ function prosesDanPaparMurid(res) {
     senaraiMuridInduk = dataMurid;
     isiDropdownMurid(senaraiMuridInduk);
     tapisMurid();
+    renderPecahanAnalisis();
   }
 }
 
@@ -544,6 +586,85 @@ function renderSenaraiMurid(muridList) {
       </td>
     </tr>
   `).join('');
+}
+
+    function renderPecahanAnalisis() {
+  if (!senaraiMuridInduk || senaraiMuridInduk.length === 0) return;
+
+  // 1. Kemaskini Total Overall Murid
+  const statTotal = document.getElementById("statTotalOverall");
+  if (statTotal) statTotal.textContent = senaraiMuridInduk.length;
+
+  // 2. Baca pilihan Kategori dari Dropdown (unit / kelab / sukan)
+  const katDipilih = document.getElementById("selectAnalisisKategori")?.value || "unit";
+  const thNama = document.getElementById("thNamaKategori");
+  if (thNama) {
+    if (katDipilih === "unit") thNama.textContent = "NAMA UNIT BERUNIFORM";
+    else if (katDipilih === "kelab") thNama.textContent = "NAMA KELAB & PERSATUAN";
+    else if (katDipilih === "sukan") thNama.textContent = "NAMA SUKAN & PERMAINAN";
+  }
+
+  // 3. Kumpul data mengikut Kategori & Jantina
+  const petaAnalisis = {};
+
+  senaraiMuridInduk.forEach(m => {
+    const namaKategori = (m[katDipilih] || "").trim();
+    if (!namaKategori) return;
+
+    if (!petaAnalisis[namaKategori]) {
+      petaAnalisis[namaKategori] = { lelaki: 0, perempuan: 0 };
+    }
+
+    const jantina = (m.jantina || "").toUpperCase().trim();
+    if (jantina === "LELAKI" || jantina === "L") {
+      petaAnalisis[namaKategori].lelaki++;
+    } else if (jantina === "PEREMPUAN" || jantina === "P") {
+      petaAnalisis[namaKategori].perempuan++;
+    }
+  });
+
+  const tbody = document.getElementById("tbodyPecahanAnalisis");
+  if (!tbody) return;
+
+  const senaraiNama = Object.keys(petaAnalisis).sort();
+
+  if (senaraiNama.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:15px;">Tiada data murid bagi kategori ini.</td></tr>`;
+    return;
+  }
+
+  let totalLelaki = 0;
+  let totalPerempuan = 0;
+
+  const htmlBaris = senaraiNama.map(nama => {
+    const d = petaAnalisis[nama];
+    const jumlah = d.lelaki + d.perempuan;
+    totalLelaki += d.lelaki;
+    totalPerempuan += d.perempuan;
+
+    return `
+      <tr>
+        <td><strong>${nama}</strong></td>
+        <td style="text-align: center;">${d.lelaki}</td>
+        <td style="text-align: center;">${d.perempuan}</td>
+        <td style="text-align: center;"><strong>${jumlah}</strong></td>
+      </tr>
+    `;
+  }).join('');
+
+  const totalKeseluruhan = totalLelaki + totalPerempuan;
+
+  // Baris Jumlah Keseluruhan di bahagian bawah jadual
+  const htmlFooter = `
+    <tr style="background-color: #f8fafc; font-weight: bold; border-top: 2px solid #e2e8f0;">
+      <td>JUMLAH KESELURAHAN</td>
+      <td style="text-align: center;">${totalLelaki}</td>
+      <td style="text-align: center;">${totalPerempuan}</td>
+      <td style="text-align: center; color: #2563eb;">${totalKeseluruhan}</td>
+    </tr>
+  `;
+
+  tbody.innerHTML = htmlBaris + htmlFooter;
 }
   </script>
 </body>
