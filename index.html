@@ -194,11 +194,11 @@
     </div>
 
     <!-- 3. Pelaporan Aktif (Cyan/Biru Laut) -->
-    <div class="p-5 border border-cyan-200 border-l-4 border-l-cyan-500 rounded-xl bg-cyan-50/60 opacity-80 hover:opacity-100 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
-      <p class="text-xs font-bold text-cyan-600 uppercase tracking-wider">Pelaporan Aktif</p>
-      <h3 class="text-3xl font-extrabold text-cyan-700 mt-1">-</h3>
-      <p class="text-xs text-cyan-600/80 mt-2 font-medium">Data dari [reports] (Hold)</p>
-    </div>
+<div class="p-5 border border-cyan-200 border-l-4 border-l-cyan-500 rounded-xl bg-cyan-50/60 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+  <p class="text-xs font-bold text-cyan-600 uppercase tracking-wider">Pelaporan Aktif</p>
+  <h3 id="statTotalPelaporan" class="text-3xl font-extrabold text-cyan-700 mt-1">0</h3>
+  <p class="text-xs text-cyan-600/80 mt-2 font-medium">Jumlah Rekod Pelaporan</p>
+</div>
 
     <!-- 4. Perancangan Tahunan (Purple/Ungu) -->
     <div class="p-5 border border-purple-200 border-l-4 border-l-purple-500 rounded-xl bg-purple-50/60 opacity-80 hover:opacity-100 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
@@ -936,6 +936,135 @@ function renderKadTaburanAhli() {
     </div>
   `).join('');
 }
+
+    // Variable Global Pelaporan
+let senaraiPelaporanInduk = [];
+let senaraiPelaporanTapis = [];
+
+// 1. Proses Data dari Apps Script
+function prosesDanPaparPelaporan(res) {
+  const dataReports = res.reports || res.pelaporan || [];
+  senaraiPelaporanInduk = dataReports;
+  senaraiPelaporanTapis = [...senaraiPelaporanInduk];
+
+  // Kemaskini Kad Statistik Pelaporan Aktif
+  const statEl = document.querySelector("#tab-analisis h3.text-emerald-600, #tab-analisis h3.text-cyan-700");
+  if (statEl) statEl.textContent = senaraiPelaporanInduk.length;
+
+  isiDropdownFilterPelaporan();
+  renderJadualPelaporan(senaraiPelaporanTapis);
+}
+
+// 2. Render Jadual
+function renderJadualPelaporan(data) {
+  const tbody = document.getElementById("jadualPelaporanBody");
+  if (!tbody) return;
+
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Tiada rekod pelaporan dijumpai.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map((item, index) => {
+    const adaGambar = item.image && item.image.trim().length > 10;
+    const senaraiNama = Array.isArray(item.names) ? item.names : (item.names ? item.names.split(',').map(n => n.trim()) : []);
+
+    return `
+      <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+        <td class="p-3 font-medium text-slate-700">${item.tarikh || '-'}</td>
+        <td class="p-3 text-slate-600">${item.unit || '-'}</td>
+        <td class="p-3 font-semibold text-slate-800">${item.tajuk || item.perkara || '-'}</td>
+        <td class="p-3 text-center">
+          ${adaGambar 
+            ? `<button onclick="bukaModalImages(${index})" class="bg-cyan-50 text-cyan-700 border border-cyan-200 px-2.5 py-1 rounded-md text-[11px] font-semibold hover:bg-cyan-100">📷 Lihat Gambar</button>` 
+            : `<span class="text-slate-400 text-[11px]">Tiada</span>`}
+        </td>
+        <td class="p-3 text-center">
+          <button onclick="bukaModalReportsName(${index})" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-md text-[11px] font-semibold hover:bg-emerald-100">
+            👥 ${senaraiNama.length} Orang
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// 3. Penapis Pelaporan
+function tapisPelaporan() {
+  const cari = (document.getElementById("filterPelaporanCari")?.value || "").toLowerCase().trim();
+  const unit = document.getElementById("filterPelaporanUnit")?.value || "";
+
+  senaraiPelaporanTapis = senaraiPelaporanInduk.filter(item => {
+    const tajuk = (item.tajuk || item.perkara || "").toLowerCase();
+    const padanCari = !cari || tajuk.includes(cari);
+    const padanUnit = !unit || item.unit === unit;
+    return padanCari && padanUnit;
+  });
+
+  renderJadualPelaporan(senaraiPelaporanTapis);
+}
+
+// 4. Kawalan Modal Gambar (modalImages)
+window.bukaModalImages = function(index) {
+  const item = senaraiPelaporanTapis[index];
+  if (!item || !item.image) return;
+
+  let rawBase64 = item.image.trim();
+  const srcFinal = rawBase64.startsWith("data:image") ? rawBase64 : `data:image/jpeg;base64,${rawBase64}`;
+
+  document.getElementById("imgModalElement").src = srcFinal;
+  document.getElementById("modalImagesTajuk").textContent = item.tajuk || item.perkara || "Gambar Laporan";
+
+  const modal = document.getElementById("modalImages");
+  modal.style.display = "flex";
+  modal.classList.remove("hidden");
+};
+
+window.tutupModalImages = function() {
+  const modal = document.getElementById("modalImages");
+  modal.style.display = "none";
+  modal.classList.add("hidden");
+};
+
+// 5. Kawalan Modal Nama (modalReportsName)
+window.bukaModalReportsName = function(index) {
+  const item = senaraiPelaporanTapis[index];
+  if (!item) return;
+
+  const senaraiNama = Array.isArray(item.names) ? item.names : (item.names ? item.names.split(',').map(n => n.trim()) : []);
+
+  document.getElementById("modalReportsTajuk").textContent = item.tajuk || item.perkara || "Senarai Murid";
+  document.getElementById("modalReportsSubtajuk").textContent = `${item.unit || '-'} | ${item.tarikh || '-'} (${senaraiNama.length} Murid)`;
+
+  const container = document.getElementById("modalKandunganNamaReports");
+  if (senaraiNama.length > 0) {
+    container.innerHTML = senaraiNama.map((nama, i) => `
+      <div style="background:#f0fdf4; color:#166534; padding:6px 10px; border-radius:6px; font-size:13px; border-left:3px solid #059669;">
+        <strong>${i + 1}.</strong> ${nama}
+      </div>
+    `).join('');
+  } else {
+    container.innerHTML = `<p style="color:#94a3b8; font-size:13px;">Tiada rekod nama murid.</p>`;
+  }
+
+  const modal = document.getElementById("modalReportsName");
+  modal.style.display = "flex";
+  modal.classList.remove("hidden");
+};
+
+window.tutupModalReportsName = function() {
+  const modal = document.getElementById("modalReportsName");
+  modal.style.display = "none";
+  modal.classList.add("hidden");
+};
+
+function isiDropdownFilterPelaporan() {
+  const select = document.getElementById("filterPelaporanUnit");
+  if (!select) return;
+  const unitSet = new Set(senaraiPelaporanInduk.map(i => i.unit).filter(Boolean));
+  select.innerHTML = `<option value="">Semua Unit/Kelab/Sukan</option>` + 
+    Array.from(unitSet).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+}
   </script>
 
        <!-- MODAL SENARAI MURID HADIR -->
@@ -953,6 +1082,74 @@ function renderKadTaburanAhli() {
     </div>
     <div style="text-align: right; margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
       <button onclick="tutupModalKehadiran()" style="background: #2563eb; color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size: 13px;">Tutup</button>
+    </div>
+  </div>
+</div>
+
+      <!-- MODAL 1: PAPARAN GAMBAR PELAPORAN (modalImages) -->
+<div id="modalImages" class="modal-backdrop hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 9999;">
+  <div style="background: white; border-radius: 12px; padding: 20px; width: 90%; max-width: 600px; max-height: 85vh; display: flex; flex-direction: column; align-items: center;">
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">
+      <h3 id="modalImagesTajuk" style="margin: 0; font-size: 16px; font-weight: bold; color: #1e293b;">Gambar Laporan</h3>
+      <button onclick="tutupModalImages()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: #64748b;">&times;</button>
+    </div>
+    <div style="flex: 1; overflow-y: auto; width: 100%; display: flex; justify-content: center; align-items: center; background: #f8fafc; border-radius: 8px; padding: 10px;">
+      <img id="imgModalElement" src="" alt="Gambar Laporan" style="max-width: 100%; max-height: 55vh; border-radius: 6px; object-fit: contain;">
+    </div>
+    <div style="width: 100%; text-align: right; margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+      <button onclick="tutupModalImages()" style="background: #475569; color: white; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 13px;">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 2: SENARAI NAMA MURID PELAPORAN (modalReportsName) -->
+<div id="modalReportsName" class="modal-backdrop hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999;">
+  <div style="background: white; border-radius: 12px; padding: 20px; width: 90%; max-width: 500px; max-height: 80vh; display: flex; flex-direction: column;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">
+      <div>
+        <h3 id="modalReportsTajuk" style="margin: 0; font-size: 16px; font-weight: bold; color: #1e293b;">Senarai Murid Terlibat</h3>
+        <p id="modalReportsSubtajuk" style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;"></p>
+      </div>
+      <button onclick="tutupModalReportsName()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">&times;</button>
+    </div>
+    <div id="modalKandunganNamaReports" style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 5px;">
+      <!-- Senarai nama dimasukkan secara dinamik -->
+    </div>
+    <div style="text-align: right; margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+      <button onclick="tutupModalReportsName()" style="background: #059669; color: white; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 13px;">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- TAB KANDUNGAN PELAPORAN -->
+<div id="tab-pelaporan" class="tab-content hidden">
+  <!-- Bar Penapis Pelaporan -->
+  <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-4 flex flex-wrap gap-3 items-center justify-between">
+    <div class="flex flex-wrap gap-2 items-center flex-1">
+      <input type="text" id="filterPelaporanCari" onkeyup="tapisPelaporan()" placeholder="Cari tajuk / aktiviti..." class="p-2 text-xs border rounded-lg border-slate-300 w-full sm:w-64">
+      <select id="filterPelaporanUnit" onchange="tapisPelaporan()" class="p-2 text-xs border rounded-lg border-slate-300">
+        <option value="">Semua Unit/Kelab/Sukan</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Jadual Pelaporan -->
+  <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-semibold">
+            <th class="p-3">Tarikh</th>
+            <th class="p-3">Unit</th>
+            <th class="p-3">Tajuk / Aktiviti</th>
+            <th class="p-3 text-center">Gambar</th>
+            <th class="p-3 text-center">Murid Terlibat</th>
+          </tr>
+        </thead>
+        <tbody id="jadualPelaporanBody">
+          <tr><td colspan="5" class="p-4 text-center text-slate-400">Memuatkan data pelaporan...</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
