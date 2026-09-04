@@ -400,9 +400,20 @@ function tapisGuru() {
   const inputNama = (document.getElementById("filterGuruNama")?.value || "").toLowerCase().trim();
   const kategoriDipilih = document.getElementById("filterGuruUnit")?.value || "";
 
+  // 1. TAPIS DATA GURU
   const hasilTapis = senaraiGuruInduk.filter(guru => {
+    const email = (guru.email || "").toLowerCase().trim();
+    const peranan = (guru.peranan || "").toLowerCase().trim();
+
+    // Sembunyikan jika Peranan ialah 'Super Admin' DAN E-mel mengandungi 'yba6103'
+    if (peranan === "super admin" && email.includes("yba6103")) {
+      return false;
+    }
+
+    // Tapis mengikut carian nama
     const padanNama = (guru.nama || "").toLowerCase().includes(inputNama);
 
+    // Tapis mengikut dropdown (Unit, Kelab, atau Sukan)
     const padanKategori = !kategoriDipilih || 
       guru.unit === kategoriDipilih || 
       guru.kelab === kategoriDipilih || 
@@ -411,6 +422,25 @@ function tapisGuru() {
     return padanNama && padanKategori;
   });
 
+  // 2. SUSUN DATA (Penyelia Dahulu -> Guru Ikut Abjad)
+  hasilTapis.sort((a, b) => {
+    const perananA = (a.peranan || "").toLowerCase().trim();
+    const perananB = (b.peranan || "").toLowerCase().trim();
+
+    const isPenyeliaA = perananA === "penyelia";
+    const isPenyeliaB = perananB === "penyelia";
+
+    // Keutamaan 1: Penyelia diletakkan di bahagian paling atas
+    if (isPenyeliaA && !isPenyeliaB) return -1;
+    if (!isPenyeliaA && isPenyeliaB) return 1;
+
+    // Keutamaan 2: Susun nama mengikut urutan abjad A-Z
+    const namaA = a.nama || "";
+    const namaB = b.nama || "";
+    return namaA.localeCompare(namaB, 'ms', { sensitivity: 'base' });
+  });
+
+  // 3. PAPAR KE JADUAL
   renderPengurusanGuru(hasilTapis);
 }
   </script>
