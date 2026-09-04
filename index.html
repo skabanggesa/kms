@@ -321,7 +321,6 @@
       <td>${user.sukan || '-'}</td>
       <td>${user.peranan || '-'}</td>
       <td>
-        <button onclick="editGuru('${user.email}')" class="btn-link-edit">Edit</button>
       </td>
     </tr>
   `).join('');
@@ -542,7 +541,6 @@ function renderSenaraiMurid(muridList) {
       <td>${m.kelab || '-'}</td>
       <td>${m.sukan || '-'}</td>
       <td>
-        <button onclick="editMurid('${m.id}')" class="btn-link-edit">Edit</button>
       </td>
     </tr>
   `).join('');
