@@ -598,6 +598,11 @@ function tapisGuru() {
 // ==========================================
 function prosesDanPaparMurid(res) {
   if (!res) return;
+
+  // 1. Simpan keseluruhan res ke window.allData supaya boleh dicapai oleh sub-tab lain
+  window.allData = res;
+
+  // 2. Memproses data murid
   const dataMurid = res.pelajar || res.students || [];
   console.log(">>> Memproses data murid, jumlah:", dataMurid.length);
 
@@ -606,10 +611,26 @@ function prosesDanPaparMurid(res) {
     isiDropdownMurid(senaraiMuridInduk);
     tapisMurid();
     renderPecahanAnalisis();
-    renderKadTaburanAhli(); // TAMBAH BARIS INI DI SINI
+    renderKadTaburanAhli();
+  }
+
+  // ==========================================
+  // TAMBAHAN BAHARU: KEMASKINI PELAPORAN AKTIF
+  // ==========================================
+  const dataPelaporan = res.reports || [];
+  console.log(">>> Memproses data pelaporan, jumlah:", dataPelaporan.length);
+
+  // A. Kemaskini Angka pada Kad 'Pelaporan Aktif'
+  const statPelaporan = document.getElementById("statTotalPelaporan");
+  if (statPelaporan) {
+    statPelaporan.innerText = dataPelaporan.length;
+  }
+
+  // B. Kemaskini Jadual Pelaporan
+  if (typeof renderPelaporanTable === "function") {
+    renderPelaporanTable();
   }
 }
-
 function isiDropdownMurid(muridList) {
   const selectKategori = document.getElementById("filterMuridKategori");
   const selectKelas = document.getElementById("filterMuridKelas");
@@ -899,6 +920,7 @@ window.tutupModalKehadiran = function() {
     modal.style.display = "none";
   }
 };
+    
     // Daftarkan terus ke window scope
 window.tukarSubTabAnalisis = function(namaSubTab) {
   // 1. Sembunyikan semua kandungan subtab
@@ -916,14 +938,23 @@ window.tukarSubTabAnalisis = function(namaSubTab) {
     const btn = document.getElementById('btnSubtabPecahan');
     btn?.classList.add('border-blue-600', 'text-blue-600');
     btn?.classList.remove('border-transparent', 'text-slate-500');
+    if (typeof renderPecahanAnalisis === "function") renderPecahanAnalisis();
+
   } else if (namaSubTab === 'kehadiran') {
     document.getElementById('subtab-kehadiran')?.classList.remove('hidden');
     const btn = document.getElementById('btnSubtabKehadiran');
     btn?.classList.add('border-blue-600', 'text-blue-600');
     btn?.classList.remove('border-transparent', 'text-slate-500');
+    if (typeof renderKehadiranTable === "function") renderKehadiranTable();
+
+  } else if (namaSubTab === 'pelaporan') {
+    document.getElementById('subtab-pelaporan')?.classList.remove('hidden');
+    const btn = document.getElementById('btnSubtabPelaporan');
+    btn?.classList.add('border-blue-600', 'text-blue-600');
+    btn?.classList.remove('border-transparent', 'text-slate-500');
+    if (typeof renderPelaporanTable === "function") renderPelaporanTable();
   }
 };
-
     // ==========================================
 // RENDER KAD TABURAN AHLI UNIT / KELAB / SUKAN
 // ==========================================
@@ -1091,6 +1122,40 @@ function isiDropdownFilterPelaporan() {
   const unitSet = new Set(senaraiPelaporanInduk.map(i => i.unit).filter(Boolean));
   select.innerHTML = `<option value="">Semua Unit/Kelab/Sukan</option>` + 
     Array.from(unitSet).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+}
+
+    function renderPelaporanTable() {
+  const tbody = document.getElementById("tbodyPelaporan");
+  const reports = (window.allData && window.allData.reports) ? window.allData.reports : [];
+
+  // Kemaskini Angka Kad Pelaporan Aktif
+  const statElem = document.getElementById("statTotalPelaporan");
+  if (statElem) {
+    statElem.innerText = reports.length;
+  }
+
+  if (!tbody) return;
+
+  // Paparkan mesej jika tiada data
+  if (reports.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" class="text-center py-6 text-slate-400 font-medium">
+          Tiada rekod pelaporan dijumpai.
+        </td>
+      </tr>`;
+    return;
+  }
+
+  // Masukkan data ke dalam jadual
+  tbody.innerHTML = reports.map(item => `
+    <tr class="border-b hover:bg-slate-50 transition">
+      <td class="px-4 py-3 text-sm text-slate-600">${item.tarikh || '-'}</td>
+      <td class="px-4 py-3 text-sm font-semibold text-slate-700">${item.unit || '-'}</td>
+      <td class="px-4 py-3 text-sm font-bold text-slate-800">${item.tajuk || item.perkara || '-'}</td>
+      <td class="px-4 py-3 text-sm text-slate-600">${item.names || item.laporan || item.ringkasan || '-'}</td>
+    </tr>
+  `).join('');
 }
   </script>
 
