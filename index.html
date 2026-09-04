@@ -170,55 +170,57 @@
 <div id="tab-analisis" class="tab-content hidden">
   <!-- Kad Ringkasan (Summary Cards Grid) -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-    <!-- 1. Total Overall -->
-    <div class="p-5 border rounded-xl bg-slate-50 border-slate-200">
-      <p class="text-xs font-bold text-slate-400 uppercase">Total Overall</p>
-      <h3 id="statTotalOverall" class="text-2xl font-extrabold text-slate-800 mt-1">0</h3>
-      <p class="text-xs text-slate-500 mt-2">Jumlah Murid Berdaftar</p>
+    
+    <!-- 1. Total Overall (Indigo/Biru Gelap) -->
+    <div class="p-5 border border-indigo-200 border-l-4 border-l-indigo-500 rounded-xl bg-indigo-50/60 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+      <p class="text-xs font-bold text-indigo-500 uppercase tracking-wider">Total Overall</p>
+      <h3 id="statTotalOverall" class="text-3xl font-extrabold text-indigo-700 mt-1">0</h3>
+      <p class="text-xs text-indigo-600/80 mt-2 font-medium">Jumlah Murid Berdaftar</p>
     </div>
 
-    <!-- 2. Kehadiran (Aktif) -->
-    <div class="p-5 border rounded-xl bg-white border-blue-200 shadow-sm">
-      <p class="text-xs font-bold text-blue-500 uppercase">Kehadiran</p>
-      <h3 id="statTotalKehadiran" class="text-2xl font-extrabold text-blue-600 mt-1">0</h3>
-      <p class="text-xs text-slate-500 mt-2">Jumlah Rekod Kehadiran</p>
+    <!-- 2. Kehadiran (Emerald/Hijau Zamrud) -->
+    <div class="p-5 border border-emerald-200 border-l-4 border-l-emerald-500 rounded-xl bg-emerald-50/60 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+      <p class="text-xs font-bold text-emerald-500 uppercase tracking-wider">Kehadiran</p>
+      <h3 id="statTotalKehadiran" class="text-3xl font-extrabold text-emerald-700 mt-1">0</h3>
+      <p class="text-xs text-emerald-600/80 mt-2 font-medium">Jumlah Rekod Kehadiran</p>
     </div>
 
-    <!-- 3. Pelaporan Aktif (Hold) -->
-    <div class="p-5 border rounded-xl bg-slate-50 border-slate-200 opacity-60">
-      <p class="text-xs font-bold text-slate-400 uppercase">Pelaporan Aktif</p>
-      <h3 class="text-2xl font-extrabold text-emerald-600 mt-1">-</h3>
-      <p class="text-xs text-slate-500 mt-2">Data dari [reports] (Hold)</p>
+    <!-- 3. Pelaporan Aktif (Cyan/Biru Laut) -->
+    <div class="p-5 border border-cyan-200 border-l-4 border-l-cyan-500 rounded-xl bg-cyan-50/60 opacity-80 hover:opacity-100 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+      <p class="text-xs font-bold text-cyan-600 uppercase tracking-wider">Pelaporan Aktif</p>
+      <h3 class="text-3xl font-extrabold text-cyan-700 mt-1">-</h3>
+      <p class="text-xs text-cyan-600/80 mt-2 font-medium">Data dari [reports] (Hold)</p>
     </div>
 
-    <!-- 4. Perancangan Tahunan (Hold) -->
-    <div class="p-5 border rounded-xl bg-slate-50 border-slate-200 opacity-60">
-      <p class="text-xs font-bold text-slate-400 uppercase">Perancangan Tahunan</p>
-      <h3 class="text-2xl font-extrabold text-purple-600 mt-1">-</h3>
-      <p class="text-xs text-slate-500 mt-2">Data dari [annual] (Hold)</p>
+    <!-- 4. Perancangan Tahunan (Purple/Ungu) -->
+    <div class="p-5 border border-purple-200 border-l-4 border-l-purple-500 rounded-xl bg-purple-50/60 opacity-80 hover:opacity-100 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+      <p class="text-xs font-bold text-purple-600 uppercase tracking-wider">Perancangan Tahunan</p>
+      <h3 class="text-3xl font-extrabold text-purple-700 mt-1">-</h3>
+      <p class="text-xs text-purple-600/80 mt-2 font-medium">Data dari [annual] (Hold)</p>
     </div>
 
-    <!-- 5. Pemberian Merit (Hold) -->
-    <div class="p-5 border rounded-xl bg-slate-50 border-slate-200 opacity-60">
-      <p class="text-xs font-bold text-slate-400 uppercase">Pemberian Merit</p>
-      <h3 class="text-2xl font-extrabold text-amber-600 mt-1">-</h3>
-      <p class="text-xs text-slate-500 mt-2">Data dari [merits] (Hold)</p>
+    <!-- 5. Pemberian Merit (Amber/Emas) -->
+    <div class="p-5 border border-amber-200 border-l-4 border-l-amber-500 rounded-xl bg-amber-50/60 opacity-80 hover:opacity-100 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+      <p class="text-xs font-bold text-amber-600 uppercase tracking-wider">Pemberian Merit</p>
+      <h3 class="text-3xl font-extrabold text-amber-700 mt-1">-</h3>
+      <p class="text-xs text-amber-600/80 mt-2 font-medium">Data dari [merits] (Hold)</p>
     </div>
 
-    <!-- 6. KAD KE-6: TABURAN AHLI UNIT / KELAB / SUKAN -->
-    <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200" style="display: flex; flex-direction: column; justify-content: space-between; min-width: 220px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
-        <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Taburan Ahli</span>
-        <span style="font-size: 10px; background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 10px; font-weight: 600;">Ringkasan</span>
+    <!-- 6. Taburan Ahli Unit (Slate/Royal Blue Accent) -->
+    <div class="p-4 border border-slate-200 border-l-4 border-l-blue-500 rounded-xl bg-white shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200 flex flex-col justify-between min-w-[220px]">
+      <div class="flex justify-between items-center mb-2 pb-1.5 border-b border-slate-100">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Taburan Ahli</span>
+        <span class="text-[10px] bg-blue-50 text-blue-600 font-bold px-2 py-0.5 rounded-full border border-blue-100">Ringkasan</span>
       </div>
 
-      <!-- Boks Senarai dengan Skrol Dalaman (Tinggi Tetap: 110px) -->
-      <div id="kandunganTaburanAhli" style="max-height: 110px; overflow-y: auto; padding-right: 4px;">
-        <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 20px;">Memuatkan data...</p>
+      <!-- Boks Senarai dengan Skrol Dalaman (Tinggi Tetap) -->
+      <div id="kandunganTaburanAhli" class="max-h-[105px] overflow-y-auto pr-1">
+        <p class="text-xs text-slate-400 text-center mt-4">Memuatkan data...</p>
       </div>
     </div>
-  </div> <!-- PENUTUP GRID KAD (grid-cols-3) -->
-</div> <!-- PENUTUP TAB ANALISIS (tab-analisis) -->
+
+  </div> <!-- PENUTUP GRID KAD -->
+</div> <!-- PENUTUP TAB ANALISIS -->
 
   <!-- MENU SUB-TAB ANALISIS -->
   <div class="border-b border-slate-200 mb-4 flex flex-wrap gap-2">
