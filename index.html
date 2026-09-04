@@ -72,19 +72,28 @@
       </div>
 
       <div class="p-6">
-        <!-- TAB 1: PENGURUSAN GURU -->
-        <div id="tab-pengurusan-guru" class="tab-content">
-          <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
-            <div class="flex flex-1 gap-2">
-              <input type="text" id="filterGuruNama" placeholder="Cari nama guru..." class="w-full md:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <select id="filterGuruUnit" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Semua Unit</option>
-                <option value="Pengakap">Pengakap</option>
-                <option value="BSMM">BSMM</option>
-                <option value="Kadet Remaja">Kadet Remaja</option>
-              </select>
-            </div>
-          </div>
+  <!-- TAB 1: PENGURUSAN GURU -->
+  <div id="tab-pengurusan-guru" class="tab-content">
+    <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
+      <div class="flex flex-1 gap-2">
+        <!-- Input Carian Nama -->
+        <input 
+          type="text" 
+          id="filterGuruNama" 
+          placeholder="Cari nama guru..." 
+          oninput="tapisGuru()" 
+          class="w-full md:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+        <!-- Dropdown Kategori Dinamik -->
+        <select 
+          id="filterGuruUnit" 
+          onchange="tapisGuru()" 
+          class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Semua Unit / Kelab / Sukan</option>
+        </select>
+      </div>
+    </div>
 
           <!-- Jadual Guru -->
           <div class="overflow-x-auto rounded-lg border">
@@ -355,6 +364,55 @@ function prosesDanPaparUsers(res) {
 document.addEventListener("DOMContentLoaded", function() {
   muatkanDataKMS();
 });
+
+    let senaraiGuruInduk = [];
+
+// Panggil fungsi ini selepas data users berjaya diterima dari backend
+function prosesDanPaparUsers(res) {
+  if (res && res.users) {
+    senaraiGuruInduk = res.users;
+    isiDropdownKategori(senaraiGuruInduk);
+    tapisGuru();
+  }
+}
+
+// Ekstrak semua UNIT, KELAB, dan SUKAN secara dinamik (tanpa duplikasi)
+function isiDropdownKategori(users) {
+  const select = document.getElementById("filterGuruUnit");
+  if (!select) return;
+
+  const nilaiUnik = new Set();
+
+  users.forEach(guru => {
+    if (guru.unit && guru.unit.trim() !== '') nilaiUnik.add(guru.unit.trim());
+    if (guru.kelab && guru.kelab.trim() !== '') nilaiUnik.add(guru.kelab.trim());
+    if (guru.sukan && guru.sukan.trim() !== '') nilaiUnik.add(guru.sukan.trim());
+  });
+
+  const senaraiSusun = Array.from(nilaiUnik).sort();
+
+  select.innerHTML = `<option value="">Semua Unit / Kelab / Sukan</option>` + 
+    senaraiSusun.map(kat => `<option value="${kat}">${kat}</option>`).join('');
+}
+
+// Logik Tapisan Jadual (Nama & Kategori)
+function tapisGuru() {
+  const inputNama = (document.getElementById("filterGuruNama")?.value || "").toLowerCase().trim();
+  const kategoriDipilih = document.getElementById("filterGuruUnit")?.value || "";
+
+  const hasilTapis = senaraiGuruInduk.filter(guru => {
+    const padanNama = (guru.nama || "").toLowerCase().includes(inputNama);
+
+    const padanKategori = !kategoriDipilih || 
+      guru.unit === kategoriDipilih || 
+      guru.kelab === kategoriDipilih || 
+      guru.sukan === kategoriDipilih;
+
+    return padanNama && padanKategori;
+  });
+
+  renderPengurusanGuru(hasilTapis);
+}
   </script>
 </body>
 </html>
