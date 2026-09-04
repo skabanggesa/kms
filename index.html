@@ -336,23 +336,23 @@ function muatkanDataKMS() {
   console.log(">>> 1. Memulakan muatkanDataKMS()...");
 
   if (typeof google !== 'undefined' && google.script && google.script.run) {
-    console.log(">>> 2A. Menggunakan google.script.run...");
     google.script.run
       .withSuccessHandler(function(res) {
-        console.log(">>> 3A. Respons diterima dari google.script.run:", res);
-        prosesDanPaparUsers(res);
+        console.log(">>> Respons diterima:", res);
+        prosesDanPaparUsers(res);   // Papar Guru
+        prosesDanPaparMurid(res);   // TAMBAH INI: Papar Murid
       })
       .withFailureHandler(function(err) {
         console.error(">>> Ralat google.script.run:", err);
       })
       .getAllData();
   } else {
-    console.log(">>> 2B. Menggunakan fetch API...");
     fetch(`${WEB_APP_URL}?action=getAllData`)
       .then(response => response.json())
       .then(res => {
-        console.log(">>> 3B. Respons diterima dari fetch:", res);
-        prosesDanPaparUsers(res);
+        console.log(">>> Respons diterima dari fetch:", res);
+        prosesDanPaparUsers(res);   // Papar Guru
+        prosesDanPaparMurid(res);   // TAMBAH INI: Papar Murid
       })
       .catch(err => console.error(">>> Ralat fetch:", err));
   }
@@ -454,7 +454,10 @@ function tapisGuru() {
 
 // 1. Panggil fungsi ini apabila data diterima dari backend (res.pelajar atau res.students)
 function prosesDanPaparMurid(res) {
+  if (!res) return;
   const dataMurid = res.pelajar || res.students || [];
+  console.log(">>> Memproses data murid, jumlah:", dataMurid.length);
+
   if (dataMurid.length > 0) {
     senaraiMuridInduk = dataMurid;
     isiDropdownMurid(senaraiMuridInduk);
