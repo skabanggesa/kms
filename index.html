@@ -985,10 +985,9 @@
     };
 
     // ==========================================
-    // 6. MODUL PELAPORAN (DIBETULKAN TARIKH & KOLUM D TITLE)
+    // 6. MODUL PELAPORAN (LENGKAP DENGAN TUTUP MODAL GAMBAR)
     // ==========================================
 
-    // Fungsi pembantu untuk mengemaskan paparan tarikh (DD/MM/YYYY)
     function formatTarikhKemas(rawDate) {
       if (!rawDate || rawDate === '-') return '-';
       try {
@@ -1030,9 +1029,7 @@
         const adaGambar = item.image && item.image.trim().length > 10;
         const senaraiNama = Array.isArray(item.names) ? item.names : (item.names ? item.names.split(',').map(n => n.trim()) : []);
 
-        // Mengambil Kolum D (title) & Format Tarikh Kemas
-        const tarikhRaw = item.date || item.tarikh;
-        const tarikhPaparan = formatTarikhKemas(tarikhRaw);
+        const tarikhPaparan = formatTarikhKemas(item.date || item.tarikh);
         const tajukPaparan = item.title || item.tajuk || item.perkara || '-';
 
         return `
@@ -1077,6 +1074,7 @@
         Array.from(unitSet).sort().map(u => `<option value="${u}">${u}</option>`).join('');
     }
 
+    // Modal Gambar
     window.bukaModalImages = function(index) {
       const item = senaraiPelaporanTapis[index];
       if (!item || !item.image) return;
@@ -1090,6 +1088,11 @@
       openModal("modalImages");
     };
 
+    window.tutupModalImages = function() {
+      closeModal("modalImages");
+    };
+
+    // Modal Senarai Murid
     window.bukaModalReportsName = function(index) {
       const item = senaraiPelaporanTapis[index];
       if (!item) return;
