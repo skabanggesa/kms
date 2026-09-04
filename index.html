@@ -733,16 +733,21 @@ function renderSenaraiMurid(muridList) {
 
 // 1. Panggil dalam fungsi muatkanDataKMS() atau kendali respons backend
 function prosesDanPaparKehadiran(res) {
-  if (res && res.attendance) {
-    senaraiKehadiranInduk = res.attendance;
-    
-    // Kemaskini Angka Pada Kad Kehadiran
-    const statKehadiran = document.getElementById("statTotalKehadiran");
-    if (statKehadiran) statKehadiran.textContent = senaraiKehadiranInduk.length;
+  if (!res) return;
 
-    isiDropdownKehadiran(senaraiKehadiranInduk);
-    tapisKehadiran();
+  // Semak res.attendance dahulu, jika tiada gunakan res.logs
+  const dataKehadiran = res.attendance || res.logs || [];
+  senaraiKehadiranInduk = dataKehadiran;
+
+  // Kemaskini Angka Pada Kad Kehadiran
+  const statKehadiran = document.getElementById("statTotalKehadiran");
+  if (statKehadiran) {
+    statKehadiran.textContent = senaraiKehadiranInduk.length;
   }
+
+  // Muatkan dropdown dan paparkan jadual
+  isiDropdownKehadiran(senaraiKehadiranInduk);
+  tapisKehadiran();
 }
 
 // 2. Logik Pertukaran Sub-Tab Analisis
