@@ -315,24 +315,41 @@
   `).join('');
 }
 
-    // 1. Fungsi untuk mengambil data daripada Code.gs dan memuatkannya ke jadual
+// masukkan URL Web App Apps Script anda di sini (daripada menu Deploy > Test deployments / Manage deployments)
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMcWyfOAkHawx3WjhAWQGjkB9MbbRcFkYTfDmXllz1mGKnUzB9Syi7ppsKPeDhFU2vqA/exec"; 
+
 function muatkanDataKMS() {
-  google.script.run
-    .withSuccessHandler(function(res) {
-      if (res && res.users) {
-        // Hantar data users ke fungsi pembina jadual
-        renderPengurusanGuru(res.users); 
-      } else {
-        console.warn("Data users tidak dijumpai dalam respon backend.");
-      }
-    })
-    .withFailureHandler(function(err) {
-      console.error("Gagal mengambil data dari Google Sheet:", err);
-    })
-    .getAllData();
+  // 1. JIKA DIJALANKAN DALAM GOOGLE APPS SCRIPT (google.script.run WUJUD)
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (res && res.users) {
+          renderPengurusanGuru(res.users);
+        } else {
+          console.warn("Data users tidak dijumpai dalam respon backend.");
+        }
+      })
+      .withFailureHandler(function(err) {
+        console.error("Gagal mengambil data dari Google Sheet:", err);
+      })
+      .getAllData();
+  } 
+  // 2. JIKA DIJALANKAN DARI LUAR / FAIL TEMPATAN (GUNAKAN FETCH API)
+  else {
+    fetch(`${WEB_APP_URL}?action=getAllData`)
+      .then(response => response.json())
+      .then(res => {
+        if (res && res.users) {
+          renderPengurusanGuru(res.users);
+        } else {
+          console.warn("Data users tidak dijumpai dalam respon backend.");
+        }
+      })
+      .catch(err => console.error("Ralat memuatkan data KMS via fetch:", err));
+  }
 }
 
-// 2. Jalankan fungsi ini secara automatik sebaik sahaja halaman selesai dimuatkan
+// Jalankan fungsi ini sebaik sahaja halaman selesai dimuatkan
 document.addEventListener("DOMContentLoaded", function() {
   muatkanDataKMS();
 });
