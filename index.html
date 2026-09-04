@@ -817,6 +817,31 @@ function renderJadualKehadiran(list) {
     `;
   }).join('');
 }
+
+    // Daftarkan terus ke window scope
+window.tukarSubTabAnalisis = function(namaSubTab) {
+  // 1. Sembunyikan semua kandungan subtab
+  document.querySelectorAll('.subtab-content').forEach(el => el.classList.add('hidden'));
+
+  // 2. Reset gaya semua butang subtab
+  document.querySelectorAll('.btn-subtab').forEach(btn => {
+    btn.classList.remove('border-blue-600', 'text-blue-600');
+    btn.classList.add('border-transparent', 'text-slate-500');
+  });
+
+  // 3. Tunjukkan subtab yang dipilih dan aktifkan butang
+  if (namaSubTab === 'pecahan') {
+    document.getElementById('subtab-pecahan')?.classList.remove('hidden');
+    const btn = document.getElementById('btnSubtabPecahan');
+    btn?.classList.add('border-blue-600', 'text-blue-600');
+    btn?.classList.remove('border-transparent', 'text-slate-500');
+  } else if (namaSubTab === 'kehadiran') {
+    document.getElementById('subtab-kehadiran')?.classList.remove('hidden');
+    const btn = document.getElementById('btnSubtabKehadiran');
+    btn?.classList.add('border-blue-600', 'text-blue-600');
+    btn?.classList.remove('border-transparent', 'text-slate-500');
+  }
+};
   </script>
 </body>
 </html>
