@@ -434,6 +434,7 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMcWyfOAkHawx3WjhA
 let senaraiGuruInduk = [];
 let senaraiMuridInduk = [];
 let senaraiKehadiranInduk = [];
+let senaraiKehadiranTapis = [];
 
 // ==========================================
 // 1. UTAMA: MUATKAN DATA KMS
@@ -775,7 +776,6 @@ function tapisKehadiran() {
   const unitDipilih = document.getElementById("filterKehadiranUnit")?.value || "";
 
   const hasil = senaraiKehadiranInduk.filter(item => {
-    // Boleh cari mengikut nama murid dalam sesi, perkara, atau unit
     const padanNamaMurid = item.senaraiNama.some(nama => nama.toLowerCase().includes(inputCari));
     const padanPerkara = item.perkara.toLowerCase().includes(inputCari);
     const padanCari = !inputCari || padanNamaMurid || padanPerkara;
@@ -786,7 +786,9 @@ function tapisKehadiran() {
     return padanCari && padanTahun && padanUnit;
   });
 
-  renderJadualKehadiran(hasil);
+  // Simpan hasil tapis ke pembolehubah global
+  senaraiKehadiranTapis = hasil;
+  renderJadualKehadiran(senaraiKehadiranTapis);
 }
 
 function renderJadualKehadiran(list) {
@@ -815,7 +817,8 @@ function renderJadualKehadiran(list) {
 
 // 2. TAMBAH DUA FUNGSI INI DI BAWAHNYA
 window.bukaModalKehadiran = function(index) {
-  const item = senaraiKehadiranInduk[index];
+  // Ditukar kepada senaraiKehadiranTapis supaya padan dengan hasil tapisan
+  const item = senaraiKehadiranTapis[index];
   if (!item) return;
 
   document.getElementById("modalTajuk").textContent = item.perkara;
