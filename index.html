@@ -431,15 +431,22 @@
 // masukkan URL Web App Apps Script anda di sini (daripada menu Deploy > Test deployments / Manage deployments)
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMcWyfOAkHawx3WjhAWQGjkB9MbbRcFkYTfDmXllz1mGKnUzB9Syi7ppsKPeDhFU2vqA/exec"; 
 
+let senaraiGuruInduk = [];
+let senaraiMuridInduk = [];
+let senaraiKehadiranInduk = [];
+
+// ==========================================
+// 1. UTAMA: MUATKAN DATA KMS
+// ==========================================
 function muatkanDataKMS() {
   console.log(">>> 1. Memulakan muatkanDataKMS()...");
 
   if (typeof google !== 'undefined' && google.script && google.script.run) {
     google.script.run
       .withSuccessHandler(function(res) {
-        console.log(">>> Respons diterima:", res);
-        prosesDanPaparUsers(res);   // Papar Guru
-        prosesDanPaparMurid(res);   // TAMBAH INI: Papar Murid
+        console.log(">>> Respons diterima dari Apps Script:", res);
+        prosesDanPaparUsers(res);
+        prosesDanPaparMurid(res);
         prosesDanPaparKehadiran(res);
       })
       .withFailureHandler(function(err) {
@@ -451,19 +458,11 @@ function muatkanDataKMS() {
       .then(response => response.json())
       .then(res => {
         console.log(">>> Respons diterima dari fetch:", res);
-        prosesDanPaparUsers(res);   // Papar Guru
-        prosesDanPaparMurid(res);   // TAMBAH INI: Papar Murid
+        prosesDanPaparUsers(res);
+        prosesDanPaparMurid(res);
+        prosesDanPaparKehadiran(res); // DITAMBAH: Sebelum ini tertinggal di sini!
       })
       .catch(err => console.error(">>> Ralat fetch:", err));
-  }
-}
-
-function prosesDanPaparUsers(res) {
-  if (res && res.users) {
-    console.log(">>> 4. Data users ditemui, jumlah rekod:", res.users.length);
-    renderPengurusanGuru(res.users);
-  } else {
-    console.warn(">>> 4. Amaran: res.users tiada atau kosong!", res);
   }
 }
 
@@ -471,24 +470,25 @@ document.addEventListener("DOMContentLoaded", function() {
   muatkanDataKMS();
 });
 
-    let senaraiGuruInduk = [];
-
-// Panggil fungsi ini selepas data users berjaya diterima dari backend
+// ==========================================
+// 2. MODUL GURU
+// ==========================================
 function prosesDanPaparUsers(res) {
   if (res && res.users) {
+    console.log(">>> Data users ditemui, jumlah rekod:", res.users.length);
     senaraiGuruInduk = res.users;
     isiDropdownKategori(senaraiGuruInduk);
     tapisGuru();
+  } else {
+    console.warn(">>> Amaran: res.users tiada atau kosong!", res);
   }
 }
 
-// Ekstrak semua UNIT, KELAB, dan SUKAN secara dinamik (tanpa duplikasi)
 function isiDropdownKategori(users) {
   const select = document.getElementById("filterGuruUnit");
   if (!select) return;
 
   const nilaiUnik = new Set();
-
   users.forEach(guru => {
     if (guru.unit && guru.unit.trim() !== '') nilaiUnik.add(guru.unit.trim());
     if (guru.kelab && guru.kelab.trim() !== '') nilaiUnik.add(guru.kelab.trim());
@@ -496,30 +496,23 @@ function isiDropdownKategori(users) {
   });
 
   const senaraiSusun = Array.from(nilaiUnik).sort();
-
   select.innerHTML = `<option value="">Semua Unit / Kelab / Sukan</option>` + 
     senaraiSusun.map(kat => `<option value="${kat}">${kat}</option>`).join('');
 }
 
-// Logik Tapisan Jadual (Nama & Kategori)
 function tapisGuru() {
   const inputNama = (document.getElementById("filterGuruNama")?.value || "").toLowerCase().trim();
   const kategoriDipilih = document.getElementById("filterGuruUnit")?.value || "";
 
-  // 1. TAPIS DATA GURU
   const hasilTapis = senaraiGuruInduk.filter(guru => {
     const email = (guru.email || "").toLowerCase().trim();
     const peranan = (guru.peranan || "").toLowerCase().trim();
 
-    // Sembunyikan jika Peranan ialah 'Super Admin' DAN E-mel mengandungi 'yba6103'
     if (peranan === "super admin" && email.includes("yba6103")) {
       return false;
     }
 
-    // Tapis mengikut carian nama
     const padanNama = (guru.nama || "").toLowerCase().includes(inputNama);
-
-    // Tapis mengikut dropdown (Unit, Kelab, atau Sukan)
     const padanKategori = !kategoriDipilih || 
       guru.unit === kategoriDipilih || 
       guru.kelab === kategoriDipilih || 
@@ -528,7 +521,6 @@ function tapisGuru() {
     return padanNama && padanKategori;
   });
 
-  // 2. SUSUN DATA (Penyelia Dahulu -> Guru Ikut Abjad)
   hasilTapis.sort((a, b) => {
     const perananA = (a.peranan || "").toLowerCase().trim();
     const perananB = (b.peranan || "").toLowerCase().trim();
@@ -536,23 +528,22 @@ function tapisGuru() {
     const isPenyeliaA = perananA === "penyelia";
     const isPenyeliaB = perananB === "penyelia";
 
-    // Keutamaan 1: Penyelia diletakkan di bahagian paling atas
     if (isPenyeliaA && !isPenyeliaB) return -1;
     if (!isPenyeliaA && isPenyeliaB) return 1;
 
-    // Keutamaan 2: Susun nama mengikut urutan abjad A-Z
     const namaA = a.nama || "";
     const namaB = b.nama || "";
     return namaA.localeCompare(namaB, 'ms', { sensitivity: 'base' });
   });
 
-  // 3. PAPAR KE JADUAL
-  renderPengurusanGuru(hasilTapis);
+  if (typeof renderPengurusanGuru === 'function') {
+    renderPengurusanGuru(hasilTapis);
+  }
 }
 
-    let senaraiMuridInduk = [];
-
-// 1. Panggil fungsi ini apabila data diterima dari backend (res.pelajar atau res.students)
+// ==========================================
+// 3. MODUL MURID & ANALISIS
+// ==========================================
 function prosesDanPaparMurid(res) {
   if (!res) return;
   const dataMurid = res.pelajar || res.students || [];
@@ -566,7 +557,6 @@ function prosesDanPaparMurid(res) {
   }
 }
 
-// 2. Isi Dropdown Kategori (Unit/Kelab/Sukan) & Kelas secara dinamik
 function isiDropdownMurid(muridList) {
   const selectKategori = document.getElementById("filterMuridKategori");
   const selectKelas = document.getElementById("filterMuridKelas");
@@ -592,30 +582,23 @@ function isiDropdownMurid(muridList) {
   }
 }
 
-// 3. Tapis & Susun Data Murid
 function tapisMurid() {
   const inputCari = (document.getElementById("filterMuridCari")?.value || "").toLowerCase().trim();
   const katDipilih = document.getElementById("filterMuridKategori")?.value || "";
   const kelasDipilih = document.getElementById("filterMuridKelas")?.value || "";
 
   const hasilTapis = senaraiMuridInduk.filter(m => {
-    // Carian berdasarkan Nama ATAU ID Murid
     const padanCari = (m.nama || "").toLowerCase().includes(inputCari) || 
                       (m.id || "").toLowerCase().includes(inputCari);
-
-    // Tapisan Kategori (Unit/Kelab/Sukan)
     const padanKat = !katDipilih || 
                      m.unit === katDipilih || 
                      m.kelab === katDipilih || 
                      m.sukan === katDipilih;
-
-    // Tapisan Kelas
     const padanKelas = !kelasDipilih || m.kelas === kelasDipilih;
 
     return padanCari && padanKat && padanKelas;
   });
 
-  // Susun mengikut Kelas kemudian Nama Murid (A-Z)
   hasilTapis.sort((a, b) => {
     const kelasA = a.kelas || "";
     const kelasB = b.kelas || "";
@@ -626,7 +609,6 @@ function tapisMurid() {
   renderSenaraiMurid(hasilTapis);
 }
 
-// 4. Pembina Jadual Murid
 function renderSenaraiMurid(muridList) {
   const tbody = document.getElementById("tbodySenaraiMurid");
   if (!tbody) return;
@@ -644,20 +626,17 @@ function renderSenaraiMurid(muridList) {
       <td><span class="badge-tag">${m.unit || '-'}</span></td>
       <td>${m.kelab || '-'}</td>
       <td>${m.sukan || '-'}</td>
-      <td>
-      </td>
+      <td></td>
     </tr>
   `).join('');
 }
 
-    function renderPecahanAnalisis() {
+function renderPecahanAnalisis() {
   if (!senaraiMuridInduk || senaraiMuridInduk.length === 0) return;
 
-  // 1. Kemaskini Total Overall Murid
   const statTotal = document.getElementById("statTotalOverall");
   if (statTotal) statTotal.textContent = senaraiMuridInduk.length;
 
-  // 2. Baca pilihan Kategori dari Dropdown (unit / kelab / sukan)
   const katDipilih = document.getElementById("selectAnalisisKategori")?.value || "unit";
   const thNama = document.getElementById("thNamaKategori");
   if (thNama) {
@@ -666,9 +645,7 @@ function renderSenaraiMurid(muridList) {
     else if (katDipilih === "sukan") thNama.textContent = "NAMA SUKAN & PERMAINAN";
   }
 
-  // 3. Kumpul data mengikut Kategori & Jantina
   const petaAnalisis = {};
-
   senaraiMuridInduk.forEach(m => {
     const namaKategori = (m[katDipilih] || "").trim();
     if (!namaKategori) return;
@@ -716,7 +693,6 @@ function renderSenaraiMurid(muridList) {
 
   const totalKeseluruhan = totalLelaki + totalPerempuan;
 
-  // Baris Jumlah Keseluruhan di bahagian bawah jadual
   const htmlFooter = `
     <tr style="background-color: #f8fafc; font-weight: bold; border-top: 2px solid #e2e8f0;">
       <td>JUMLAH KESELURAHAN</td>
@@ -729,28 +705,29 @@ function renderSenaraiMurid(muridList) {
   tbody.innerHTML = htmlBaris + htmlFooter;
 }
 
-    let senaraiKehadiranInduk = [];
-
-// 1. Panggil dalam fungsi muatkanDataKMS() atau kendali respons backend
+// ==========================================
+// 4. MODUL KEHADIRAN
+// ==========================================
 function prosesDanPaparKehadiran(res) {
-  if (!res || !Array.isArray(res.attendance)) return;
+  if (!res || !Array.isArray(res.attendance)) {
+    console.warn(">>> Data res.attendance tiada atau bukan Array!", res);
+    return;
+  }
 
   const sesiPerjumpaan = res.attendance;
+  console.log(">>> Data kehadiran diproses, jumlah:", sesiPerjumpaan.length);
 
-  // 1. Kad Statistik: PAPAR JUMLAH SESI PERJUMPAAN SAHAJA (Contoh: 105)
+  // 1. Kemaskini Kad Statistik Kehadiran
   const statKehadiran = document.getElementById("statTotalKehadiran");
   if (statKehadiran) {
     statKehadiran.textContent = sesiPerjumpaan.length.toLocaleString('ms-MY');
   }
 
-  // 2. Penjadualan: Pecahkan nama berkelompok untuk paparan jadual murid
+  // 2. Pecahkan nama berkelompok untuk paparan jadual
   let rekodIndividuMurid = [];
-
   sesiPerjumpaan.forEach(item => {
     if (item.nama) {
-      // Pecahkan string nama berasingan koma
       const senaraiNama = item.nama.split(',').map(n => n.trim()).filter(n => n !== '');
-      
       senaraiNama.forEach(namaMurid => {
         rekodIndividuMurid.push({
           tarikh: item.tarikh,
@@ -763,26 +740,18 @@ function prosesDanPaparKehadiran(res) {
     }
   });
 
-  // Simpan senarai nama individu ke dalam pembolehubah jadual
   senaraiKehadiranInduk = rekodIndividuMurid;
-
-  // Muatkan pilihan dropdown dan paparkan jadual
   isiDropdownKehadiran(senaraiKehadiranInduk);
   tapisKehadiran();
 }
-    
-// 2. Logik Pertukaran Sub-Tab Analisis
-function tukarSubTabAnalisis(namaSubTab) {
-  // Sembunyikan semua subtab-content
-  document.querySelectorAll('.subtab-content').forEach(el => el.classList.add('hidden'));
 
-  // Reset gaya butang
+function tukarSubTabAnalisis(namaSubTab) {
+  document.querySelectorAll('.subtab-content').forEach(el => el.classList.add('hidden'));
   document.querySelectorAll('.btn-subtab').forEach(btn => {
     btn.classList.remove('border-blue-600', 'text-blue-600');
     btn.classList.add('border-transparent', 'text-slate-500');
   });
 
-  // Tunjukkan kandungan yang dipilih
   if (namaSubTab === 'pecahan') {
     document.getElementById('subtab-pecahan')?.classList.remove('hidden');
     const btn = document.getElementById('btnSubtabPecahan');
@@ -796,7 +765,6 @@ function tukarSubTabAnalisis(namaSubTab) {
   }
 }
 
-// 3. Isi Dropdown Penapis Kehadiran Secara Dinamik
 function isiDropdownKehadiran(list) {
   const selectTahun = document.getElementById("filterKehadiranTahun");
   const selectUnit = document.getElementById("filterKehadiranUnit");
@@ -820,7 +788,6 @@ function isiDropdownKehadiran(list) {
   }
 }
 
-// 4. Tapisan & Paparan Jadual Kehadiran
 function tapisKehadiran() {
   const inputCari = (document.getElementById("filterKehadiranCari")?.value || "").toLowerCase().trim();
   const tahunDipilih = document.getElementById("filterKehadiranTahun")?.value || "";
