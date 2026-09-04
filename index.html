@@ -735,20 +735,24 @@ function renderSenaraiMurid(muridList) {
 function prosesDanPaparKehadiran(res) {
   if (!res || !Array.isArray(res.attendance)) return;
 
-  const rekodKms = res.attendance;
-  let totalMuridHadir = 0;
-  let rekodIndividu = [];
+  const sesiPerjumpaan = res.attendance;
 
-  rekodKms.forEach(item => {
+  // 1. Kad Statistik: PAPAR JUMLAH SESI PERJUMPAAN SAHAJA (Contoh: 105)
+  const statKehadiran = document.getElementById("statTotalKehadiran");
+  if (statKehadiran) {
+    statKehadiran.textContent = sesiPerjumpaan.length.toLocaleString('ms-MY');
+  }
+
+  // 2. Penjadualan: Pecahkan nama berkelompok untuk paparan jadual murid
+  let rekodIndividuMurid = [];
+
+  sesiPerjumpaan.forEach(item => {
     if (item.nama) {
-      // Pecahkan string nama mengikut koma & buang ruang kosong
+      // Pecahkan string nama berasingan koma
       const senaraiNama = item.nama.split(',').map(n => n.trim()).filter(n => n !== '');
       
-      totalMuridHadir += senaraiNama.length;
-
-      // Bina semula rekod untuk jadual (1 baris = 1 murid)
       senaraiNama.forEach(namaMurid => {
-        rekodIndividu.push({
+        rekodIndividuMurid.push({
           tarikh: item.tarikh,
           tahun: item.tahun,
           unit: item.unit,
@@ -759,14 +763,10 @@ function prosesDanPaparKehadiran(res) {
     }
   });
 
-  // Kemaskini Kad Statistik dengan jumlah sebenar murid
-  const statKehadiran = document.getElementById("statTotalKehadiran");
-  if (statKehadiran) {
-    statKehadiran.textContent = totalMuridHadir.toLocaleString('ms-MY');
-  }
+  // Simpan senarai nama individu ke dalam pembolehubah jadual
+  senaraiKehadiranInduk = rekodIndividuMurid;
 
-  // Gunakan 'rekodIndividu' untuk paparan jadual
-  senaraiKehadiranInduk = rekodIndividu;
+  // Muatkan pilihan dropdown dan paparkan jadual
   isiDropdownKehadiran(senaraiKehadiranInduk);
   tapisKehadiran();
 }
