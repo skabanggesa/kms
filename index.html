@@ -177,11 +177,11 @@
       <p class="text-xs text-slate-500 mt-2">Jumlah Murid Berdaftar</p>
     </div>
 
-    <!-- 2. Kehadiran (Hold) -->
-    <div class="p-5 border rounded-xl bg-slate-50 border-slate-200 opacity-60">
-      <p class="text-xs font-bold text-slate-400 uppercase">Kehadiran</p>
-      <h3 class="text-2xl font-extrabold text-indigo-600 mt-1">-</h3>
-      <p class="text-xs text-slate-500 mt-2">Data dari [attendance] (Hold)</p>
+    <!-- 2. Kehadiran (Aktif) -->
+    <div class="p-5 border rounded-xl bg-white border-blue-200 shadow-sm">
+      <p class="text-xs font-bold text-blue-500 uppercase">Kehadiran</p>
+      <h3 id="statTotalKehadiran" class="text-2xl font-extrabold text-blue-600 mt-1">0</h3>
+      <p class="text-xs text-slate-500 mt-2">Jumlah Rekod Kehadiran</p>
     </div>
 
     <!-- 3. Pelaporan Aktif (Hold) -->
@@ -206,14 +206,32 @@
     </div>
   </div>
 
-  <!-- Bahagian Pecahan Kategori (Unit / Kelab / Sukan) -->
-  <div class="p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
+  <!-- MENU SUB-TAB ANALISIS -->
+  <div class="border-b border-slate-200 mb-4 flex flex-wrap gap-2">
+    <button onclick="tukarSubTabAnalisis('pecahan')" id="btnSubtabPecahan" class="btn-subtab font-semibold py-2 px-4 border-b-2 border-blue-600 text-blue-600 text-sm">
+      Analisis Pecahan Murid
+    </button>
+    <button onclick="tukarSubTabAnalisis('kehadiran')" id="btnSubtabKehadiran" class="btn-subtab font-semibold py-2 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 text-sm">
+      Kehadiran
+    </button>
+    <button disabled class="font-semibold py-2 px-4 text-slate-300 text-sm cursor-not-allowed">
+      Pelaporan
+    </button>
+    <button disabled class="font-semibold py-2 px-4 text-slate-300 text-sm cursor-not-allowed">
+      Perancangan
+    </button>
+    <button disabled class="font-semibold py-2 px-4 text-slate-300 text-sm cursor-not-allowed">
+      Merit
+    </button>
+  </div>
+
+  <!-- KANDUNGAN SUB-TAB 1: PECAHAN MURID -->
+  <div id="subtab-pecahan" class="subtab-content p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
       <div>
         <h4 class="text-lg font-bold text-slate-800">Analisis Pecahan Murid</h4>
         <p class="text-xs text-slate-500">Pecahan bilangan murid mengikut jantina</p>
       </div>
-      <!-- Dropdown Kategori Analisis -->
       <select 
         id="selectAnalisisKategori" 
         onchange="renderPecahanAnalisis()" 
@@ -225,7 +243,6 @@
       </select>
     </div>
 
-    <!-- Jadual Analisis Pecahan -->
     <div class="overflow-x-auto rounded-lg border">
       <table class="table-kms">
         <thead>
@@ -237,13 +254,57 @@
           </tr>
         </thead>
         <tbody id="tbodyPecahanAnalisis">
-          <!-- Baris data analisis dipanggil oleh JavaScript -->
+          <!-- Data pecahan dipanggil oleh JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- KANDUNGAN SUB-TAB 2: KEHADIRAN -->
+  <div id="subtab-kehadiran" class="subtab-content hidden p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+      <div>
+        <h4 class="text-lg font-bold text-slate-800">Rekod Kehadiran</h4>
+        <p class="text-xs text-slate-500">Senarai penuh rekod kehadiran murid</p>
+      </div>
+      <!-- Penapis Kehadiran -->
+      <div class="flex flex-wrap gap-2 w-full md:w-auto">
+        <input 
+          type="text" 
+          id="filterKehadiranCari" 
+          placeholder="Cari nama / perkara..." 
+          oninput="tapisKehadiran()" 
+          class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-48"
+        >
+        <select id="filterKehadiranTahun" onchange="tapisKehadiran()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">Semua Tahun</option>
+        </select>
+        <select id="filterKehadiranUnit" onchange="tapisKehadiran()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">Semua Unit/Kelab/Sukan</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Jadual Rekod Kehadiran -->
+    <div class="overflow-x-auto rounded-lg border">
+      <table class="table-kms">
+        <thead>
+          <tr>
+            <th>TARIKH</th>
+            <th>TAHUN</th>
+            <th>UNIT / KELAB / SUKAN</th>
+            <th>PERKARA / AKTIVITI</th>
+            <th>NAMA MURID</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyKehadiran">
+          <!-- Data Kehadiran dipanggil oleh JS -->
         </tbody>
       </table>
     </div>
   </div>
 </div>
-
+       
   <!-- MODAL 1: KEHADIRAN -->
   <div id="modalKehadiran" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
@@ -379,6 +440,7 @@ function muatkanDataKMS() {
         console.log(">>> Respons diterima:", res);
         prosesDanPaparUsers(res);   // Papar Guru
         prosesDanPaparMurid(res);   // TAMBAH INI: Papar Murid
+        prosesDanPaparKehadiran(res);
       })
       .withFailureHandler(function(err) {
         console.error(">>> Ralat google.script.run:", err);
@@ -665,6 +727,109 @@ function renderSenaraiMurid(muridList) {
   `;
 
   tbody.innerHTML = htmlBaris + htmlFooter;
+}
+
+    let senaraiKehadiranInduk = [];
+
+// 1. Panggil dalam fungsi muatkanDataKMS() atau kendali respons backend
+function prosesDanPaparKehadiran(res) {
+  if (res && res.attendance) {
+    senaraiKehadiranInduk = res.attendance;
+    
+    // Kemaskini Angka Pada Kad Kehadiran
+    const statKehadiran = document.getElementById("statTotalKehadiran");
+    if (statKehadiran) statKehadiran.textContent = senaraiKehadiranInduk.length;
+
+    isiDropdownKehadiran(senaraiKehadiranInduk);
+    tapisKehadiran();
+  }
+}
+
+// 2. Logik Pertukaran Sub-Tab Analisis
+function tukarSubTabAnalisis(namaSubTab) {
+  // Sembunyikan semua subtab-content
+  document.querySelectorAll('.subtab-content').forEach(el => el.classList.add('hidden'));
+
+  // Reset gaya butang
+  document.querySelectorAll('.btn-subtab').forEach(btn => {
+    btn.classList.remove('border-blue-600', 'text-blue-600');
+    btn.classList.add('border-transparent', 'text-slate-500');
+  });
+
+  // Tunjukkan kandungan yang dipilih
+  if (namaSubTab === 'pecahan') {
+    document.getElementById('subtab-pecahan')?.classList.remove('hidden');
+    const btn = document.getElementById('btnSubtabPecahan');
+    btn?.classList.add('border-blue-600', 'text-blue-600');
+    btn?.classList.remove('border-transparent', 'text-slate-500');
+  } else if (namaSubTab === 'kehadiran') {
+    document.getElementById('subtab-kehadiran')?.classList.remove('hidden');
+    const btn = document.getElementById('btnSubtabKehadiran');
+    btn?.classList.add('border-blue-600', 'text-blue-600');
+    btn?.classList.remove('border-transparent', 'text-slate-500');
+  }
+}
+
+// 3. Isi Dropdown Penapis Kehadiran Secara Dinamik
+function isiDropdownKehadiran(list) {
+  const selectTahun = document.getElementById("filterKehadiranTahun");
+  const selectUnit = document.getElementById("filterKehadiranUnit");
+
+  const tahunSet = new Set();
+  const unitSet = new Set();
+
+  list.forEach(item => {
+    if (item.tahun) tahunSet.add(item.tahun);
+    if (item.unit) unitSet.add(item.unit);
+  });
+
+  if (selectTahun) {
+    selectTahun.innerHTML = `<option value="">Semua Tahun</option>` + 
+      Array.from(tahunSet).sort().map(t => `<option value="${t}">${t}</option>`).join('');
+  }
+
+  if (selectUnit) {
+    selectUnit.innerHTML = `<option value="">Semua Unit/Kelab/Sukan</option>` + 
+      Array.from(unitSet).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+  }
+}
+
+// 4. Tapisan & Paparan Jadual Kehadiran
+function tapisKehadiran() {
+  const inputCari = (document.getElementById("filterKehadiranCari")?.value || "").toLowerCase().trim();
+  const tahunDipilih = document.getElementById("filterKehadiranTahun")?.value || "";
+  const unitDipilih = document.getElementById("filterKehadiranUnit")?.value || "";
+
+  const hasil = senaraiKehadiranInduk.filter(item => {
+    const padanCari = (item.nama || "").toLowerCase().includes(inputCari) || 
+                      (item.perkara || "").toLowerCase().includes(inputCari);
+    const padanTahun = !tahunDipilih || item.tahun === tahunDipilih;
+    const padanUnit = !unitDipilih || item.unit === unitDipilih;
+
+    return padanCari && padanTahun && padanUnit;
+  });
+
+  renderJadualKehadiran(hasil);
+}
+
+function renderJadualKehadiran(list) {
+  const tbody = document.getElementById("tbodyKehadiran");
+  if (!tbody) return;
+
+  if (!list || list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px;">Tiada rekod kehadiran dijumpai.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(item => `
+    <tr>
+      <td>${item.tarikh || '-'}</td>
+      <td>${item.tahun || '-'}</td>
+      <td><span class="badge-tag">${item.unit || '-'}</span></td>
+      <td>${item.perkara || '-'}</td>
+      <td><strong>${item.nama || '-'}</strong></td>
+    </tr>
+  `).join('');
 }
   </script>
 </body>
