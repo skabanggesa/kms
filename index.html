@@ -117,48 +117,56 @@
         </div>
 
         <!-- TAB 2: SENARAI MURID -->
-        <div id="tab-senarai-murid" class="tab-content hidden">
-          <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
-            <div class="flex flex-1 gap-2">
-              <input type="text" id="filterMuridNama" placeholder="Cari nama murid / ID..." class="w-full md:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <select id="filterMuridUnit" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Semua Unit</option>
-                <option value="Pengakap">Pengakap</option>
-                <option value="BSMM">BSMM</option>
-              </select>
-              <select id="filterMuridTahun" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Semua Tingkatan/Tahun</option>
-                <option value="Tahun 4">Tahun 4</option>
-                <option value="Tahun 5">Tahun 5</option>
-              </select>
-            </div>
-            <button class="bg-slate-800 text-white text-xs px-4 py-2 rounded-lg font-medium hover:bg-slate-700">+ Tambah Murid</button>
-          </div>
+<div id="tab-senarai-murid" class="tab-content">
+  <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
+    <div class="flex flex-wrap flex-1 gap-2">
+      <!-- Input Carian Nama / ID -->
+      <input 
+        type="text" 
+        id="filterMuridCari" 
+        placeholder="Cari nama murid / ID..." 
+        oninput="tapisMurid()" 
+        class="w-full md:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+      <!-- Dropdown Unit/Kelab/Sukan -->
+      <select 
+        id="filterMuridKategori" 
+        onchange="tapisMurid()" 
+        class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">Semua Unit / Kelab / Sukan</option>
+      </select>
+      <!-- Dropdown Kelas -->
+      <select 
+        id="filterMuridKelas" 
+        onchange="tapisMurid()" 
+        class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">Semua Tingkatan/Kelas</option>
+      </select>
+    </div>
+  </div>
 
-          <!-- Jadual Murid -->
-          <div class="overflow-x-auto rounded-lg border">
-            <table class="w-full text-left text-sm text-slate-600">
-              <thead class="bg-slate-50 text-slate-700 uppercase text-xs font-semibold border-b">
-                <tr>
-                  <th class="p-3">ID/MyKid</th>
-                  <th class="p-3">Nama Murid</th>
-                  <th class="p-3">Kelas</th>
-                  <th class="p-3">Unit</th>
-                  <th class="p-3">Jumlah Merit</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="border-b hover:bg-slate-50">
-                  <td class="p-3 font-mono text-xs">M1001</td>
-                  <td class="p-3 font-medium text-slate-800">Siti Nurhaliza</td>
-                  <td class="p-3">5 Cemerlang</td>
-                  <td class="p-3"><span class="bg-emerald-50 text-emerald-700 px-2 py-1 rounded text-xs">BSMM</span></td>
-                  <td class="p-3 font-semibold text-amber-600">25 Mata</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+  <!-- Jadual Senarai Murid -->
+  <div style="width: 100%; overflow-x: auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
+    <table class="table-kms">
+      <thead>
+        <tr>
+          <th>ID / MYKID</th>
+          <th>NAMA MURID</th>
+          <th>KELAS</th>
+          <th>UNIT</th>
+          <th>KELAB</th>
+          <th>SUKAN</th>
+          <th>TINDAKAN</th>
+        </tr>
+      </thead>
+      <tbody id="tbodySenaraiMurid">
+        <!-- Data murid dipanggil oleh JavaScript -->
+      </tbody>
+    </table>
+  </div>
+</div>
 
         <!-- TAB 3: ANALISIS -->
         <div id="tab-analisis" class="tab-content hidden">
@@ -442,6 +450,103 @@ function tapisGuru() {
 
   // 3. PAPAR KE JADUAL
   renderPengurusanGuru(hasilTapis);
+}
+
+    let senaraiMuridInduk = [];
+
+// 1. Panggil fungsi ini apabila data diterima dari backend (res.pelajar atau res.students)
+function prosesDanPaparMurid(res) {
+  const dataMurid = res.pelajar || res.students || [];
+  if (dataMurid.length > 0) {
+    senaraiMuridInduk = dataMurid;
+    isiDropdownMurid(senaraiMuridInduk);
+    tapisMurid();
+  }
+}
+
+// 2. Isi Dropdown Kategori (Unit/Kelab/Sukan) & Kelas secara dinamik
+function isiDropdownMurid(muridList) {
+  const selectKategori = document.getElementById("filterMuridKategori");
+  const selectKelas = document.getElementById("filterMuridKelas");
+
+  const katUnik = new Set();
+  const kelasUnik = new Set();
+
+  muridList.forEach(m => {
+    if (m.unit && m.unit.trim() !== '') katUnik.add(m.unit.trim());
+    if (m.kelab && m.kelab.trim() !== '') katUnik.add(m.kelab.trim());
+    if (m.sukan && m.sukan.trim() !== '') katUnik.add(m.sukan.trim());
+    if (m.kelas && m.kelas.trim() !== '') kelasUnik.add(m.kelas.trim());
+  });
+
+  if (selectKategori) {
+    selectKategori.innerHTML = `<option value="">Semua Unit / Kelab / Sukan</option>` +
+      Array.from(katUnik).sort().map(k => `<option value="${k}">${k}</option>`).join('');
+  }
+
+  if (selectKelas) {
+    selectKelas.innerHTML = `<option value="">Semua Tingkatan/Kelas</option>` +
+      Array.from(kelasUnik).sort().map(kls => `<option value="${kls}">${kls}</option>`).join('');
+  }
+}
+
+// 3. Tapis & Susun Data Murid
+function tapisMurid() {
+  const inputCari = (document.getElementById("filterMuridCari")?.value || "").toLowerCase().trim();
+  const katDipilih = document.getElementById("filterMuridKategori")?.value || "";
+  const kelasDipilih = document.getElementById("filterMuridKelas")?.value || "";
+
+  const hasilTapis = senaraiMuridInduk.filter(m => {
+    // Carian berdasarkan Nama ATAU ID Murid
+    const padanCari = (m.nama || "").toLowerCase().includes(inputCari) || 
+                      (m.id || "").toLowerCase().includes(inputCari);
+
+    // Tapisan Kategori (Unit/Kelab/Sukan)
+    const padanKat = !katDipilih || 
+                     m.unit === katDipilih || 
+                     m.kelab === katDipilih || 
+                     m.sukan === katDipilih;
+
+    // Tapisan Kelas
+    const padanKelas = !kelasDipilih || m.kelas === kelasDipilih;
+
+    return padanCari && padanKat && padanKelas;
+  });
+
+  // Susun mengikut Kelas kemudian Nama Murid (A-Z)
+  hasilTapis.sort((a, b) => {
+    const kelasA = a.kelas || "";
+    const kelasB = b.kelas || "";
+    if (kelasA !== kelasB) return kelasA.localeCompare(kelasB);
+    return (a.nama || "").localeCompare(b.nama || "", 'ms', { sensitivity: 'base' });
+  });
+
+  renderSenaraiMurid(hasilTapis);
+}
+
+// 4. Pembina Jadual Murid
+function renderSenaraiMurid(muridList) {
+  const tbody = document.getElementById("tbodySenaraiMurid");
+  if (!tbody) return;
+
+  if (!muridList || muridList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:15px;">Tiada data murid dijumpai.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = muridList.map(m => `
+    <tr>
+      <td>${m.id || '-'}</td>
+      <td><strong>${m.nama || '-'}</strong></td>
+      <td>${m.kelas || '-'}</td>
+      <td><span class="badge-tag">${m.unit || '-'}</span></td>
+      <td>${m.kelab || '-'}</td>
+      <td>${m.sukan || '-'}</td>
+      <td>
+        <button onclick="editMurid('${m.id}')" class="btn-link-edit">Edit</button>
+      </td>
+    </tr>
+  `).join('');
 }
   </script>
 </body>
