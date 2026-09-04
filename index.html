@@ -294,8 +294,7 @@
     <th>Tahun</th>
     <th>Unit / Kelab / Sukan</th>
     <th>Perkara / Aktiviti</th>
-    <th>Bil. Hadir</th>
-    <th>Senarai Murid Hadir</th>
+    <th style="text-align:center;">Kehadiran</th>
   </tr>
 </thead>
         <tbody id="tbodyKehadiran">
@@ -377,6 +376,25 @@
       </form>
     </div>
   </div>
+
+       <!-- MODAL SENARAI MURID HADIR -->
+<div id="modalKehadiran" class="modal-backdrop hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+  <div style="background: white; border-radius: 8px; padding: 20px; width: 90%; max-width: 500px; max-height: 80vh; display: flex; flex-direction: column;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">
+      <div>
+        <h3 id="modalTajuk" style="margin: 0; font-size: 16px; font-weight: bold; color: #1e293b;">Senarai Murid Hadir</h3>
+        <p id="modalSubtajuk" style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;"></p>
+      </div>
+      <button onclick="tutupModalKehadiran()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">&times;</button>
+    </div>
+    <div id="modalKandunganNama" style="overflow-y: auto; flex: 1; display: flex; flex-wrap: wrap; gap: 6px; padding: 5px;">
+      <!-- Senarai nama murid akan dimasukkan di sini secara dinamik -->
+    </div>
+    <div style="text-align: right; margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+      <button onclick="tutupModalKehadiran()" style="background: #2563eb; color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size: 13px;">Tutup</button>
+    </div>
+  </div>
+</div>
 
   <script>
     // Kawalan Tab
@@ -795,29 +813,59 @@ function renderJadualKehadiran(list) {
   if (!tbody) return;
 
   if (!list || list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:15px;">Tiada rekod kehadiran dijumpai.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px;">Tiada rekod kehadiran dijumpai.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = list.map(item => {
-    // Bina susunan senarai nama murid dalam bentuk badge/tag kecil
-    const paparanNamaHtml = item.senaraiNama.length > 0
-      ? item.senaraiNama.map(nama => `<span class="badge-namamurid" style="display:inline-block; background:#f1f5f9; color:#334155; padding:2px 8px; margin:2px; border-radius:4px; font-size:12px;">${nama}</span>`).join('')
-      : '<span style="color:#94a3b8;">Tiada rekod nama</span>';
-
-    return `
-      <tr>
-        <td>${item.tarikh}</td>
-        <td>${item.tahun}</td>
-        <td><span class="badge-tag">${item.unit}</span></td>
-        <td><strong>${item.perkara}</strong></td>
-        <td style="text-align:center;"><strong style="color:#2563eb;">${item.jumlahHadir}</strong> Orang</td>
-        <td style="max-width:350px;">${paparanNamaHtml}</td>
-      </tr>
-    `;
-  }).join('');
+  tbody.innerHTML = list.map((item, index) => `
+    <tr>
+      <td>${item.tarikh}</td>
+      <td>${item.tahun}</td>
+      <td><span class="badge-tag">${item.unit}</span></td>
+      <td><strong>${item.perkara}</strong></td>
+      <td style="text-align:center;">
+        <button onclick="bukaModalKehadiran(${index})" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; padding:4px 12px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px;">
+          👁️ ${item.jumlahHadir} Orang
+        </button>
+      </td>
+    </tr>
+  `).join('');
 }
 
+// 2. TAMBAH DUA FUNGSI INI DI BAWAHNYA
+window.bukaModalKehadiran = function(index) {
+  const item = senaraiKehadiranInduk[index];
+  if (!item) return;
+
+  document.getElementById("modalTajuk").textContent = item.perkara;
+  document.getElementById("modalSubtajuk").textContent = `${item.unit} | ${item.tarikh} (${item.jumlahHadir} Murid Hadir)`;
+
+  const container = document.getElementById("modalKandunganNama");
+  
+  if (item.senaraiNama.length > 0) {
+    container.innerHTML = item.senaraiNama.map((nama, i) => `
+      <div style="background:#f1f5f9; color:#1e293b; padding:6px 10px; border-radius:6px; font-size:13px; width:100%; border-left:3px solid #2563eb;">
+        <strong>${i + 1}.</strong> ${nama}
+      </div>
+    `).join('');
+  } else {
+    container.innerHTML = `<p style="color:#94a3b8; font-size:13px;">Tiada rekod nama bagi perjumpaan ini.</p>`;
+  }
+
+  const modal = document.getElementById("modalKehadiran");
+  if (modal) {
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
+  }
+};
+
+window.tutupModalKehadiran = function() {
+  const modal = document.getElementById("modalKehadiran");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.style.display = "none";
+  }
+};
     // Daftarkan terus ke window scope
 window.tukarSubTabAnalisis = function(namaSubTab) {
   // 1. Sembunyikan semua kandungan subtab
