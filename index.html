@@ -314,6 +314,28 @@
     </tr>
   `).join('');
 }
+
+    // 1. Fungsi untuk mengambil data daripada Code.gs dan memuatkannya ke jadual
+function muatkanDataKMS() {
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (res && res.users) {
+        // Hantar data users ke fungsi pembina jadual
+        renderPengurusanGuru(res.users); 
+      } else {
+        console.warn("Data users tidak dijumpai dalam respon backend.");
+      }
+    })
+    .withFailureHandler(function(err) {
+      console.error("Gagal mengambil data dari Google Sheet:", err);
+    })
+    .getAllData();
+}
+
+// 2. Jalankan fungsi ini secara automatik sebaik sahaja halaman selesai dimuatkan
+document.addEventListener("DOMContentLoaded", function() {
+  muatkanDataKMS();
+});
   </script>
 </body>
 </html>
