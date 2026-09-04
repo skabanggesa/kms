@@ -985,7 +985,7 @@
     };
 
     // ==========================================
-    // 6. MODUL PELAPORAN
+    // 6. MODUL PELAPORAN (DIBETULKAN HEADER)
     // ==========================================
     function prosesDanPaparPelaporan(res) {
       const dataReports = res.reports || res.pelaporan || [];
@@ -1012,11 +1012,15 @@
         const adaGambar = item.image && item.image.trim().length > 10;
         const senaraiNama = Array.isArray(item.names) ? item.names : (item.names ? item.names.split(',').map(n => n.trim()) : []);
 
+        // Pemetaan semula header mengikut Google Sheet [reports]
+        const tarikhPaparan = item.date || item.tarikh || '-';
+        const tajukPaparan = item.description || item.tajuk || item.perkara || '-';
+
         return `
           <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-            <td class="p-3 font-medium text-slate-700">${item.tarikh || '-'}</td>
+            <td class="p-3 font-medium text-slate-700">${tarikhPaparan}</td>
             <td class="p-3 text-slate-600">${item.unit || '-'}</td>
-            <td class="p-3 font-semibold text-slate-800">${item.tajuk || item.perkara || '-'}</td>
+            <td class="p-3 font-semibold text-slate-800">${tajukPaparan}</td>
             <td class="p-3 text-center">
               ${adaGambar 
                 ? `<button onclick="bukaModalImages(${index})" class="bg-cyan-50 text-cyan-700 border border-cyan-200 px-2.5 py-1 rounded-md text-[11px] font-semibold hover:bg-cyan-100">📷 Lihat Gambar</button>` 
@@ -1037,7 +1041,7 @@
       const unit = document.getElementById("filterPelaporanUnit")?.value || "";
 
       senaraiPelaporanTapis = senaraiPelaporanInduk.filter(item => {
-        const tajuk = (item.tajuk || item.perkara || "").toLowerCase();
+        const tajuk = (item.description || item.tajuk || item.perkara || "").toLowerCase();
         const padanCari = !cari || tajuk.includes(cari);
         const padanUnit = !unit || item.unit === unit;
         return padanCari && padanUnit;
@@ -1062,13 +1066,9 @@
       const srcFinal = rawBase64.startsWith("data:image") ? rawBase64 : `data:image/jpeg;base64,${rawBase64}`;
 
       document.getElementById("imgModalElement").src = srcFinal;
-      document.getElementById("modalImagesTajuk").textContent = item.tajuk || item.perkara || "Gambar Laporan";
+      document.getElementById("modalImagesTajuk").textContent = item.description || item.tajuk || item.perkara || "Gambar Laporan";
 
       openModal("modalImages");
-    };
-
-    window.tutupModalImages = function() {
-      closeModal("modalImages");
     };
 
     window.bukaModalReportsName = function(index) {
@@ -1076,9 +1076,11 @@
       if (!item) return;
 
       const senaraiNama = Array.isArray(item.names) ? item.names : (item.names ? item.names.split(',').map(n => n.trim()) : []);
+      const tarikh = item.date || item.tarikh || '-';
+      const tajuk = item.description || item.tajuk || item.perkara || "Senarai Murid";
 
-      document.getElementById("modalReportsTajuk").textContent = item.tajuk || item.perkara || "Senarai Murid";
-      document.getElementById("modalReportsSubtajuk").textContent = `${item.unit || '-'} | ${item.tarikh || '-'} (${senaraiNama.length} Murid)`;
+      document.getElementById("modalReportsTajuk").textContent = tajuk;
+      document.getElementById("modalReportsSubtajuk").textContent = `${item.unit || '-'} | ${tarikh} (${senaraiNama.length} Murid)`;
 
       const container = document.getElementById("modalKandunganNamaReports");
       if (senaraiNama.length > 0) {
