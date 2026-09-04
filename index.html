@@ -289,14 +289,15 @@
     <div class="overflow-x-auto rounded-lg border">
       <table class="table-kms">
         <thead>
-          <tr>
-            <th>TARIKH</th>
-            <th>TAHUN</th>
-            <th>UNIT / KELAB / SUKAN</th>
-            <th>PERKARA / AKTIVITI</th>
-            <th>NAMA MURID</th>
-          </tr>
-        </thead>
+  <tr>
+    <th>Tarikh</th>
+    <th>Tahun</th>
+    <th>Unit / Kelab / Sukan</th>
+    <th>Perkara / Aktiviti</th>
+    <th>Bil. Hadir</th>
+    <th>Senarai Murid Hadir</th>
+  </tr>
+</thead>
         <tbody id="tbodyKehadiran">
           <!-- Data Kehadiran dipanggil oleh JS -->
         </tbody>
@@ -708,6 +709,9 @@ function renderPecahanAnalisis() {
 // ==========================================
 // 4. MODUL KEHADIRAN
 // ==========================================
+// ==========================================
+// 4. MODUL KEHADIRAN (VERSI RINGKAS & KEMAS)
+// ==========================================
 function prosesDanPaparKehadiran(res) {
   if (!res || !Array.isArray(res.attendance)) {
     console.warn(">>> Data res.attendance tiada atau bukan Array!", res);
@@ -715,54 +719,32 @@ function prosesDanPaparKehadiran(res) {
   }
 
   const sesiPerjumpaan = res.attendance;
-  console.log(">>> Data kehadiran diproses, jumlah:", sesiPerjumpaan.length);
+  console.log(">>> Data kehadiran diproses, jumlah sesi:", sesiPerjumpaan.length);
 
-  // 1. Kemaskini Kad Statistik Kehadiran
+  // 1. Kemaskini Kad Statistik Kehadiran (Jumlah Sesi)
   const statKehadiran = document.getElementById("statTotalKehadiran");
   if (statKehadiran) {
     statKehadiran.textContent = sesiPerjumpaan.length.toLocaleString('ms-MY');
   }
 
-  // 2. Pecahkan nama berkelompok untuk paparan jadual
-  let rekodIndividuMurid = [];
-  sesiPerjumpaan.forEach(item => {
-    if (item.nama) {
-      const senaraiNama = item.nama.split(',').map(n => n.trim()).filter(n => n !== '');
-      senaraiNama.forEach(namaMurid => {
-        rekodIndividuMurid.push({
-          tarikh: item.tarikh,
-          tahun: item.tahun,
-          unit: item.unit,
-          perkara: item.perkara,
-          nama: namaMurid
-        });
-      });
-    }
+  // 2. Olah data: 1 Rekod = 1 Sesi Perjumpaan (Bukan 1 Rekod = 1 Murid)
+  senaraiKehadiranInduk = sesiPerjumpaan.map(item => {
+    const senaraiNama = item.nama 
+      ? item.nama.split(',').map(n => n.trim()).filter(n => n !== '') 
+      : [];
+
+    return {
+      tarikh: item.tarikh || '-',
+      tahun: item.tahun || '-',
+      unit: item.unit || '-',
+      perkara: item.perkara || '-',
+      senaraiNama: senaraiNama,
+      jumlahHadir: senaraiNama.length
+    };
   });
 
-  senaraiKehadiranInduk = rekodIndividuMurid;
   isiDropdownKehadiran(senaraiKehadiranInduk);
   tapisKehadiran();
-}
-
-function tukarSubTabAnalisis(namaSubTab) {
-  document.querySelectorAll('.subtab-content').forEach(el => el.classList.add('hidden'));
-  document.querySelectorAll('.btn-subtab').forEach(btn => {
-    btn.classList.remove('border-blue-600', 'text-blue-600');
-    btn.classList.add('border-transparent', 'text-slate-500');
-  });
-
-  if (namaSubTab === 'pecahan') {
-    document.getElementById('subtab-pecahan')?.classList.remove('hidden');
-    const btn = document.getElementById('btnSubtabPecahan');
-    btn?.classList.add('border-blue-600', 'text-blue-600');
-    btn?.classList.remove('border-transparent', 'text-slate-500');
-  } else if (namaSubTab === 'kehadiran') {
-    document.getElementById('subtab-kehadiran')?.classList.remove('hidden');
-    const btn = document.getElementById('btnSubtabKehadiran');
-    btn?.classList.add('border-blue-600', 'text-blue-600');
-    btn?.classList.remove('border-transparent', 'text-slate-500');
-  }
 }
 
 function isiDropdownKehadiran(list) {
@@ -773,8 +755,8 @@ function isiDropdownKehadiran(list) {
   const unitSet = new Set();
 
   list.forEach(item => {
-    if (item.tahun) tahunSet.add(item.tahun);
-    if (item.unit) unitSet.add(item.unit);
+    if (item.tahun && item.tahun !== '-') tahunSet.add(item.tahun);
+    if (item.unit && item.unit !== '-') unitSet.add(item.unit);
   });
 
   if (selectTahun) {
@@ -794,8 +776,11 @@ function tapisKehadiran() {
   const unitDipilih = document.getElementById("filterKehadiranUnit")?.value || "";
 
   const hasil = senaraiKehadiranInduk.filter(item => {
-    const padanCari = (item.nama || "").toLowerCase().includes(inputCari) || 
-                      (item.perkara || "").toLowerCase().includes(inputCari);
+    // Boleh cari mengikut nama murid dalam sesi, perkara, atau unit
+    const padanNamaMurid = item.senaraiNama.some(nama => nama.toLowerCase().includes(inputCari));
+    const padanPerkara = item.perkara.toLowerCase().includes(inputCari);
+    const padanCari = !inputCari || padanNamaMurid || padanPerkara;
+
     const padanTahun = !tahunDipilih || item.tahun === tahunDipilih;
     const padanUnit = !unitDipilih || item.unit === unitDipilih;
 
@@ -810,19 +795,27 @@ function renderJadualKehadiran(list) {
   if (!tbody) return;
 
   if (!list || list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px;">Tiada rekod kehadiran dijumpai.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:15px;">Tiada rekod kehadiran dijumpai.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = list.map(item => `
-    <tr>
-      <td>${item.tarikh || '-'}</td>
-      <td>${item.tahun || '-'}</td>
-      <td><span class="badge-tag">${item.unit || '-'}</span></td>
-      <td>${item.perkara || '-'}</td>
-      <td><strong>${item.nama || '-'}</strong></td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = list.map(item => {
+    // Bina susunan senarai nama murid dalam bentuk badge/tag kecil
+    const paparanNamaHtml = item.senaraiNama.length > 0
+      ? item.senaraiNama.map(nama => `<span class="badge-namamurid" style="display:inline-block; background:#f1f5f9; color:#334155; padding:2px 8px; margin:2px; border-radius:4px; font-size:12px;">${nama}</span>`).join('')
+      : '<span style="color:#94a3b8;">Tiada rekod nama</span>';
+
+    return `
+      <tr>
+        <td>${item.tarikh}</td>
+        <td>${item.tahun}</td>
+        <td><span class="badge-tag">${item.unit}</span></td>
+        <td><strong>${item.perkara}</strong></td>
+        <td style="text-align:center;"><strong style="color:#2563eb;">${item.jumlahHadir}</strong> Orang</td>
+        <td style="max-width:350px;">${paparanNamaHtml}</td>
+      </tr>
+    `;
+  }).join('');
 }
   </script>
 </body>
