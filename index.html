@@ -206,6 +206,19 @@
     </div>
   </div>
 
+  <!-- KAD KE-6: TABURAN AHLI UNIT / KELAB / SUKAN -->
+<div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200" style="display: flex; flex-direction: column; justify-content: space-between; min-width: 220px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+    <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Taburan Ahli</span>
+    <span style="font-size: 10px; background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 10px; font-weight: 600;">Ringkasan</span>
+  </div>
+
+  <!-- Boks Senarai dengan Skrol Dalaman (Tinggi Tetap: 110px) -->
+  <div id="kandunganTaburanAhli" style="max-height: 110px; overflow-y: auto; padding-right: 4px;">
+    <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 20px;">Memuatkan data...</p>
+  </div>
+</div>
+
   <!-- MENU SUB-TAB ANALISIS -->
   <div class="border-b border-slate-200 mb-4 flex flex-wrap gap-2">
     <button onclick="tukarSubTabAnalisis('pecahan')" id="btnSubtabPecahan" class="btn-subtab font-semibold py-2 px-4 border-b-2 border-blue-600 text-blue-600 text-sm">
@@ -555,6 +568,7 @@ function prosesDanPaparMurid(res) {
     isiDropdownMurid(senaraiMuridInduk);
     tapisMurid();
     renderPecahanAnalisis();
+    renderKadTaburanAhli(); // TAMBAH BARIS INI DI SINI
   }
 }
 
@@ -874,8 +888,49 @@ window.tukarSubTabAnalisis = function(namaSubTab) {
     btn?.classList.remove('border-transparent', 'text-slate-500');
   }
 };
+
+    // ==========================================
+// RENDER KAD TABURAN AHLI UNIT / KELAB / SUKAN
+// ==========================================
+function renderKadTaburanAhli() {
+  if (!senaraiMuridInduk || senaraiMuridInduk.length === 0) return;
+
+  const container = document.getElementById("kandunganTaburanAhli");
+  if (!container) return;
+
+  // Kira jumlah murid bagi setiap Unit, Kelab, dan Sukan
+  const kiraanMap = {};
+
+  senaraiMuridInduk.forEach(m => {
+    ['unit', 'kelab', 'sukan'].forEach(kat => {
+      const nama = (m[kat] || "").trim();
+      if (nama) {
+        kiraanMap[nama] = (kiraanMap[nama] || 0) + 1;
+      }
+    });
+  });
+
+  // Susun nama unit mengikut abjad
+  const senaraiSusun = Object.keys(kiraanMap).sort((a, b) => 
+    a.localeCompare(b, 'ms', { sensitivity: 'base' })
+  );
+
+  if (senaraiSusun.length === 0) {
+    container.innerHTML = `<p style="font-size: 12px; color: #94a3b8; text-align: center;">Tiada data unit.</p>`;
+    return;
+  }
+
+  // Paparkan setiap unit dalam 1 baris (Nama kiri, Jumlah kanan)
+  container.innerHTML = senaraiSusun.map(nama => `
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px dashed #f1f5f9; font-size: 12px;">
+      <span style="color: #334155; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px;" title="${nama}">${nama}</span>
+      <span style="background: #eff6ff; color: #2563eb; font-weight: bold; padding: 1px 8px; border-radius: 10px; font-size: 11px;">${kiraanMap[nama]} orang</span>
+    </div>
+  `).join('');
+}
   </script>
-<!-- MODAL SENARAI MURID HADIR -->
+
+       <!-- MODAL SENARAI MURID HADIR -->
 <div id="modalSenaraiHadir" class="modal-backdrop hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999;">
   <div style="background: white; border-radius: 8px; padding: 20px; width: 90%; max-width: 500px; max-height: 80vh; display: flex; flex-direction: column;">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">
