@@ -507,28 +507,79 @@
 </div>
 
   <!-- MODAL 2: PELAPORAN -->
-  <div id="modalPelaporan" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-lg text-slate-800">Modul Pelaporan</h3>
-        <button onclick="closeModal('modalPelaporan')" class="text-slate-400 hover:text-slate-600">✕</button>
+<div id="modalPelaporan" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4 border-b pb-3">
+      <div>
+        <h3 class="font-bold text-lg text-slate-800">Modul Pelaporan Aktiviti</h3>
+        <p class="text-xs text-slate-500">Merekod pelaporan aktiviti dan kehadiran ke sheet [reports]</p>
       </div>
-      <form class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Tajuk Laporan Aktiviti</label>
-          <input type="text" placeholder="Cth: Perjumpaan Mingguan Ke-3" class="w-full border rounded-lg px-3 py-2 text-sm">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Ringkasan Aktiviti</label>
-          <textarea rows="3" class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
-        </div>
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeModal('modalPelaporan')" class="px-4 py-2 border rounded-lg text-xs font-medium">Batal</button>
-          <button type="button" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-medium">Hantar Laporan</button>
-        </div>
-      </form>
+      <button onclick="closeModal('modalPelaporan')" class="text-slate-400 hover:text-slate-600">✕</button>
     </div>
+
+    <form id="formPelaporan" onsubmit="hantarPelaporan(event)" class="space-y-4">
+      
+      <!-- GRID 2 KOLUM: TARIKH & TAHUN -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Tarikh (Date)</label>
+          <input type="date" id="inputPelaporanTarikh" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun (Year)</label>
+          <input type="number" id="inputPelaporanTahun" value="2026" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+      </div>
+
+      <!-- UNIT / KELAB / SUKAN -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Unit / Kelab / Sukan (Unit)</label>
+        <select id="inputPelaporanUnit" onchange="penapisMuridPelaporan()" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <option value="">-- Pilih Unit --</option>
+        </select>
+      </div>
+
+      <!-- TAJUK -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Tajuk Aktiviti (Title)</label>
+        <input type="text" id="inputPelaporanTajuk" placeholder="Cth: Perjumpaan Mingguan Ke-3" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+      </div>
+
+      <!-- HURAIAN / RINGKASAN -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Ringkasan Aktiviti (Description)</label>
+        <textarea id="inputPelaporanHuraian" rows="3" placeholder="Nyatakan aktiviti yang dijalankan..." class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+      </div>
+
+      <!-- PAUTAN GAMBAR -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Pautan Gambar / Dokumentasi (Image URL)</label>
+        <input type="url" id="inputPelaporanGambar" placeholder="https://drive.google.com/... atau URL gambar" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+      </div>
+
+      <!-- SENARAI MURID (CHECKLIST CONTAINING NAMES) -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label class="block text-xs font-semibold text-slate-600">Senarai Murid Terlibat (Names)</label>
+          <div class="flex gap-2">
+            <button type="button" onclick="pilihSemuaMuridPelaporan(true)" class="text-[11px] font-medium text-emerald-600 hover:underline">Pilih Semua</button>
+            <span class="text-slate-300">|</span>
+            <button type="button" onclick="pilihSemuaMuridPelaporan(false)" class="text-[11px] font-medium text-rose-600 hover:underline">Nyahpilih</button>
+          </div>
+        </div>
+        <div id="kontenaPelaporanMurid" class="border rounded-lg p-2.5 max-h-40 overflow-y-auto space-y-1 bg-slate-50 text-xs">
+          <p class="text-slate-400 italic text-center py-2">Sila pilih Unit di atas untuk memaparkan senarai murid.</p>
+        </div>
+      </div>
+
+      <!-- BUTANG TINDAKAN -->
+      <div class="flex justify-end gap-2 pt-2 border-t">
+        <button type="button" onclick="closeModal('modalPelaporan')" class="px-4 py-2 border rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50">Batal</button>
+        <button type="submit" id="btnSimpanPelaporan" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition shadow-sm">Hantar Laporan</button>
+      </div>
+    </form>
   </div>
+</div>
 
   <!-- MODAL 3: MERIT -->
   <div id="modalMerit" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
