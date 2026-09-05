@@ -137,11 +137,11 @@
           </div>
 
           <!-- 5. Pemberian Merit -->
-          <div class="p-5 border border-amber-200 border-l-4 border-l-amber-500 rounded-xl bg-amber-50/60 opacity-80 hover:opacity-100 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
-            <p class="text-xs font-bold text-amber-600 uppercase tracking-wider">Pemberian Merit</p>
-            <h3 class="text-3xl font-extrabold text-amber-700 mt-1">-</h3>
-            <p class="text-xs text-amber-600/80 mt-2 font-medium">Data dari [merits] (Hold)</p>
-          </div>
+        <div class="p-5 border border-amber-200 border-l-4 border-l-amber-500 rounded-xl bg-amber-50/60 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+          <p class="text-xs font-bold text-amber-600 uppercase tracking-wider">Pemberian Merit</p>
+          <h3 id="statTotalMerit" class="text-3xl font-extrabold text-amber-700 mt-1">0</h3>
+          <p class="text-xs text-amber-600/80 mt-2 font-medium">Jumlah Rekod Merit</p>
+        </div>
 
           <!-- 6. Taburan Ahli Unit -->
           <div class="p-4 border border-slate-200 border-l-4 border-l-blue-500 rounded-xl bg-white shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200 flex flex-col justify-between min-w-[220px]">
@@ -170,12 +170,12 @@
           <button onclick="tukarSubTabAnalisis('perancangan')" id="btnSubtabPerancangan" class="btn-subtab font-semibold py-2 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 text-sm">
             Perancangan
           </button>
-          <button disabled class="font-semibold py-2 px-4 text-slate-300 text-sm cursor-not-allowed">
+          <button id="btnSubtabMerit" onclick="tukarSubTabAnalisis('merit')" class="btn-subtab font-semibold py-2 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 text-sm">
             Merit
           </button>
         </div>
 
-        <!-- KANDUNGAN SUB-TAB 1: PECAHAN MURID -->
+<!-- KANDUNGAN SUB-TAB 1: PECAHAN MURID -->
         <div id="subtab-pecahan" class="subtab-content p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div>
@@ -323,6 +323,49 @@
                 <tr>
                   <td colspan="4" class="p-4 text-center text-slate-400">Memuatkan data perancangan...</td>
                 </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- KANDUNGAN SUB-TAB 5: MERIT -->
+        <div id="subtab-merit" class="subtab-content hidden p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+            <div>
+              <h4 class="text-lg font-bold text-slate-800">Rekod Merit Murid</h4>
+              <p class="text-xs text-slate-500">Senarai pencapaian dan pemberian mata merit murid</p>
+            </div>
+            <div class="flex flex-wrap gap-2 w-full md:w-auto">
+              <input 
+                type="text" 
+                id="filterMeritCari" 
+                placeholder="Cari nama murid / aktiviti..." 
+                oninput="tapisMerit()" 
+                class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-64"
+              >
+              <select id="filterMeritUnit" onchange="tapisMerit()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <option value="">Semua Unit/Kelab/Sukan</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Jadual Rekod Merit -->
+          <div class="overflow-x-auto rounded-lg border">
+            <table class="table-kms">
+              <thead>
+                <tr>
+                  <th>TARIKH</th>
+                  <th>TAHUN</th>
+                  <th>NAMA MURID</th>
+                  <th>UNIT</th>
+                  <th>AKTIVITI</th>
+                  <th>PERINGKAT</th>
+                  <th>KEPUTUSAN</th>
+                  <th style="text-align:center;">MATA MERIT</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyMerit">
+                <tr><td colspan="8" style="text-align:center; padding:15px;">Memuatkan data merit...</td></tr>
               </tbody>
             </table>
           </div>
@@ -577,57 +620,59 @@
       }
     }
 
-    // ==========================================
-    // 2. AMBIL DATA DARI GOOGLE APPS SCRIPT / FETCH
-    // ==========================================
-    function muatkanDataKMS() {
-      console.log(">>> Memulakan muatkanDataKMS()...");
+// ==========================================
+// 2. AMBIL DATA DARI GOOGLE APPS SCRIPT / FETCH
+// ==========================================
+function muatkanDataKMS() {
+  console.log(">>> Memulakan muatkanDataKMS()...");
 
-      const loader = document.getElementById("loadingScreen");
-      if (loader) loader.classList.remove("hidden");
+  const loader = document.getElementById("loadingScreen");
+  if (loader) loader.classList.remove("hidden");
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(function(res) {
-            console.log(">>> Respons diterima dari Apps Script:", res);
-            
-            prosesDanPaparUsers(res);
-            prosesDanPaparMurid(res);
-            prosesDanPaparKehadiran(res);
-            prosesDanPaparPelaporan(res);
-            prosesDanPaparPerancangan(res);
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        console.log(">>> Respons diterima dari Apps Script:", res);
+        
+        prosesDanPaparUsers(res);
+        prosesDanPaparMurid(res);
+        prosesDanPaparKehadiran(res);
+        prosesDanPaparPelaporan(res);
+        prosesDanPaparPerancangan(res);
+        prosesDanPaparMerit(res); // Kemaskini data merit
 
-            if (loader) loader.classList.add("hidden");
-          })
-          .withFailureHandler(function(err) {
-            console.error(">>> Ralat google.script.run:", err);
-            if (loader) loader.classList.add("hidden");
-          })
-          .getAllData();
-      } else {
-        fetch(`${WEB_APP_URL}?action=getAllData`)
-          .then(response => response.json())
-          .then(res => {
-            console.log(">>> Respons diterima dari fetch:", res);
-            
-            prosesDanPaparUsers(res);
-            prosesDanPaparMurid(res);
-            prosesDanPaparKehadiran(res);
-            prosesDanPaparPelaporan(res);
-            prosesDanPaparPerancangan(res);
+        if (loader) loader.classList.add("hidden");
+      })
+      .withFailureHandler(function(err) {
+        console.error(">>> Ralat google.script.run:", err);
+        if (loader) loader.classList.add("hidden");
+      })
+      .getAllData();
+  } else {
+    fetch(`${WEB_APP_URL}?action=getAllData`)
+      .then(response => response.json())
+      .then(res => {
+        console.log(">>> Respons diterima dari fetch:", res);
+        
+        prosesDanPaparUsers(res);
+        prosesDanPaparMurid(res);
+        prosesDanPaparKehadiran(res);
+        prosesDanPaparPelaporan(res);
+        prosesDanPaparPerancangan(res);
+        prosesDanPaparMerit(res); // Kemaskini data merit
 
-            if (loader) loader.classList.add("hidden");
-          })
-          .catch(err => {
-            console.error(">>> Ralat fetch:", err);
-            if (loader) loader.classList.add("hidden");
-          });
-      }
-    }
+        if (loader) loader.classList.add("hidden");
+      })
+      .catch(err => {
+        console.error(">>> Ralat fetch:", err);
+        if (loader) loader.classList.add("hidden");
+      });
+  }
+}
 
-    document.addEventListener("DOMContentLoaded", function() {
-      muatkanDataKMS();
-    });
+document.addEventListener("DOMContentLoaded", function() {
+  muatkanDataKMS();
+});
     
     // ==========================================
     // 3. MODUL GURU
@@ -1325,6 +1370,98 @@
     window.prosesDanPaparPerancangan = prosesDanPaparPerancangan;
     window.renderJadualPerancangan = renderJadualPerancangan;
     window.tapisPerancangan = tapisPerancangan;
+
+    function prosesDanPaparMerit(res) {
+  const dataMerit = (res && res.merits) ? res.merits : [];
+  
+  const statEl = document.getElementById("statTotalMerit");
+  if (statEl) {
+    statEl.textContent = dataMerit.length.toLocaleString('ms-MY');
+  }
+}
+
+    // ==========================================
+// 10. MODUL MERIT
+// ==========================================
+let senaraiMeritInduk = [];
+let senaraiMeritTapis = [];
+
+function prosesDanPaparMerit(res) {
+  const dataMerit = (res && res.merits) ? res.merits : [];
+  senaraiMeritInduk = dataMerit;
+  senaraiMeritTapis = [...senaraiMeritInduk];
+
+  // Kemaskini kad statistik
+  const statEl = document.getElementById("statTotalMerit");
+  if (statEl) {
+    statEl.textContent = senaraiMeritInduk.length.toLocaleString('ms-MY');
+  }
+
+  isiDropdownFilterMerit();
+  renderJadualMerit(senaraiMeritTapis);
+}
+
+function renderJadualMerit(data) {
+  const tbody = document.getElementById("tbodyMerit");
+  if (!tbody) return;
+
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px;">Tiada rekod merit dijumpai.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map(item => {
+    const tarikh = typeof formatTarikhKemas === 'function' && item.date ? formatTarikhKemas(item.date) : (item.date || '-');
+    const mataMerit = (item.merit !== undefined && item.merit !== '') ? item.merit : '0';
+
+    return `
+      <tr>
+        <td>${tarikh}</td>
+        <td>${item.year || '-'}</td>
+        <td><strong>${item.nama || '-'}</strong></td>
+        <td><span class="badge-tag">${item.unit || '-'}</span></td>
+        <td>${item.aktiviti || '-'}</td>
+        <td>${item.peringkat || '-'}</td>
+        <td>${item.keputusan || '-'}</td>
+        <td style="text-align:center;">
+          <span class="bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full text-xs border border-amber-200">
+            +${mataMerit}
+          </span>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function tapisMerit() {
+  const cari = (document.getElementById("filterMeritCari")?.value || "").toLowerCase().trim();
+  const unit = document.getElementById("filterMeritUnit")?.value || "";
+
+  senaraiMeritTapis = senaraiMeritInduk.filter(item => {
+    const nama = (item.nama || "").toLowerCase();
+    const aktiviti = (item.aktiviti || "").toLowerCase();
+
+    const padanCari = !cari || nama.includes(cari) || aktiviti.includes(cari);
+    const padanUnit = !unit || item.unit === unit;
+
+    return padanCari && padanUnit;
+  });
+
+  renderJadualMerit(senaraiMeritTapis);
+}
+
+function isiDropdownFilterMerit() {
+  const select = document.getElementById("filterMeritUnit");
+  if (!select) return;
+  const unitSet = new Set(senaraiMeritInduk.map(i => i.unit).filter(Boolean));
+  select.innerHTML = `<option value="">Semua Unit/Kelab/Sukan</option>` + 
+    Array.from(unitSet).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+}
+
+// Pastikan fungsi dipanggil dalam pemprosesan utama muatkanDataKMS
+window.prosesDanPaparMerit = prosesDanPaparMerit;
+window.renderJadualMerit = renderJadualMerit;
+window.tapisMerit = tapisMerit;
   </script>
 </body>
 </html>
