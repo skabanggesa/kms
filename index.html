@@ -1677,8 +1677,8 @@ function kiraMarkahMeritAutomatik() {
     return;
   }
 
-  // Matriks Markah Asas Peringkat (Penglibatan & Johan)
-  const markahAsasMap = {
+  // 1. Markah Asas Penglibatan Mengikut Peringkat
+  const markahPeringkatMap = {
     "Sekolah": 8,
     "Daerah": 11,
     "Bahagian": 12,
@@ -1687,25 +1687,25 @@ function kiraMarkahMeritAutomatik() {
     "Antarabangsa": 20
   };
 
-  const markahAsas = markahAsasMap[peringkat] || 0;
-  let markahAkhir = 0;
+  // 2. Matriks Markah Pencapaian Tambahan (Mengikut Peringkat & Kedudukan)
+  const markahPencapaianMap = {
+    "Antarabangsa": { "1": 20, "2": 19, "3": 18, "4": 17, "5": 16, "Penyertaan": 0 },
+    "Kebangsaan":   { "1": 17, "2": 16, "3": 15, "4": 14, "5": 13, "Penyertaan": 0 },
+    "Negeri":       { "1": 14, "2": 13, "3": 12, "4": 11, "5": 10, "Penyertaan": 0 },
+    "Bahagian":     { "1": 12, "2": 11, "3": 10, "4": 9,  "5": 8,  "Penyertaan": 0 },
+    "Daerah":       { "1": 11, "2": 10, "3": 9,  "4": 8,  "5": 7,  "Penyertaan": 0 },
+    "Sekolah":      { "1": 8,  "2": 7,  "3": 6,  "4": 5,  "5": 4,  "Penyertaan": 0 }
+  };
 
-  if (keputusan === "Penyertaan") {
-    // Penyertaan sahaja menerima markah kelayakan penglibatan penuh
-    markahAkhir = markahAsas;
-  } else {
-    const kedudukan = parseInt(keputusan);
-    if (kedudukan >= 1 && kedudukan <= 5) {
-      // Penurunan 1 markah bagi setiap tangga kedudukan (1 hingga 5)
-      markahAkhir = markahAsas - (kedudukan - 1);
-    } else {
-      markahAkhir = markahAsas;
-    }
-  }
+  const markahPenglibatan = markahPeringkatMap[peringkat] || 0;
+  const markahPencapaian = markahPencapaianMap[peringkat]?.[keputusan] || 0;
 
-  inputMata.value = markahAkhir;
+  // Penjumlahan Markah Penglibatan + Markah Pencapaian
+  const jumlahMerit = markahPenglibatan + markahPencapaian;
+
+  inputMata.value = jumlahMerit;
 }
-
+    
 // B. Paparkan Pilihan Unit/Kelab/Sukan Dinamik Mengikut Murid
 function kemaskiniPilihanUnitMerit() {
   const selectNama = document.getElementById("selectMeritNama");
