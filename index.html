@@ -678,6 +678,7 @@ function muatkanDataKMS() {
         prosesDanPaparPelaporan(res);
         prosesDanPaparPerancangan(res);
         prosesDanPaparMerit(res); // Kemaskini data merit
+        isiDropdownUnitPerancangan(); // untuk dropdown unit modal perancangan
 
         if (loader) loader.classList.add("hidden");
       })
@@ -1499,22 +1500,46 @@ function isiDropdownUnitPerancangan() {
   const selectUnit = document.getElementById("inputPerancanganUnit");
   if (!selectUnit) return;
 
-  // Mengumpul unit berasaskan data pelajar yang dimuatkan
-  const dataPelajar = window.senaraiPelajarInduk || []; 
+  // 1. Ambil data pelajar daripada pembolehubah global yang wujud
+  const dataPelajar = window.senaraiPelajarInduk || 
+                      window.senaraiPelajar || 
+                      window.pelajar || 
+                      window.students || 
+                      [];
+
+  // Jika data belum selesai dimuatkan dari Google Sheet
+  if (!dataPelajar || dataPelajar.length === 0) {
+    selectUnit.innerHTML = `<option value="">-- Memuatkan Unit... --</option>`;
+    return;
+  }
+
   const setUnit = new Set();
 
+  // 2. Semak setiap rekod pelajar bagi lajur UNIT, KELAB, dan SUKAN (tidak kira huruf besar/kecil)
   dataPelajar.forEach(p => {
-    if (p.unit) setUnit.add(p.unit);
-    if (p.kelab) setUnit.add(p.kelab);
-    if (p.sukan) setUnit.add(p.sukan);
+    Object.keys(p).forEach(kunci => {
+      const kunciLower = kunci.trim().toLowerCase();
+      if (['unit', 'kelab', 'sukan'].includes(kunciLower)) {
+        const nilai = p[kunci];
+        if (nilai && typeof nilai === 'string' && nilai.trim() !== '' && nilai.trim() !== '-') {
+          setUnit.add(nilai.trim());
+        }
+      }
+    });
   });
 
-  const senaraiUnitSorted = Array.from(setUnit).filter(Boolean).sort();
+  const senaraiUnitSorted = Array.from(setUnit).sort();
 
+  // 3. Jika tiada unit dijumpai
+  if (senaraiUnitSorted.length === 0) {
+    selectUnit.innerHTML = `<option value="">-- Tiada Unit Dijumpai --</option>`;
+    return;
+  }
+
+  // 4. Masukkan senarai unit ke dalam dropdown
   selectUnit.innerHTML = `<option value="">-- Pilih Unit / Kelab / Sukan --</option>` +
     senaraiUnitSorted.map(u => `<option value="${u}">${u}</option>`).join('');
 }
-
 // 2. Fungsi Hantar Data Borang Perancangan
 function hantarPerancangan(event) {
   event.preventDefault();
