@@ -1507,10 +1507,10 @@ function isiDropdownUnitPerancangan() {
   const selectUnit = document.getElementById("inputPerancanganUnit");
   if (!selectUnit) return;
 
-  // 1. Ambil data pelajar daripada pembolehubah global yang wujud
-  const dataPelajar = window.senaraiPelajarInduk || 
-                      window.senaraiPelajar || 
-                      window.pelajar || 
+  // 1. Ambil data daripada pembolehubah global (ditambah window.senaraiMuridInduk)
+  const dataPelajar = window.senaraiMuridInduk || 
+                      (typeof senaraiMuridInduk !== 'undefined' ? senaraiMuridInduk : null) ||
+                      window.senaraiPelajarInduk || 
                       window.students || 
                       [];
 
@@ -1547,6 +1547,7 @@ function isiDropdownUnitPerancangan() {
   selectUnit.innerHTML = `<option value="">-- Pilih Unit / Kelab / Sukan --</option>` +
     senaraiUnitSorted.map(u => `<option value="${u}">${u}</option>`).join('');
 }
+    
 // 2. Fungsi Hantar Data Borang Perancangan
 function hantarPerancangan(event) {
   event.preventDefault();
