@@ -86,17 +86,17 @@
 <!-- 2. SUSUNAN TAB UTAMA BAHARU -->
 <div class="flex border-b border-slate-200 gap-2 mb-6">
   <!-- TAB 1: ANALISIS (KIRI SEKALI & AKTIF SECARA DEFAULT) -->
-  <button id="btnTabAnalisis" onclick="tukarTabUtama('analisis')" class="btn-tab px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600">
+  <button id="btnTabAnalisis" onclick="tukarTabUtama('analisis')" class="btn-tab-utama px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600">
     Analisis
   </button>
   
   <!-- TAB 2: SENARAI GURU -->
-  <button id="btnTabGuru" onclick="tukarTabUtama('guru')" class="btn-tab px-4 py-2 text-sm font-medium text-slate-500 border-b-2 border-transparent">
+  <button id="btnTabGuru" onclick="tukarTabUtama('guru')" class="btn-tab-utama px-4 py-2 text-sm font-medium text-slate-500 border-b-2 border-transparent">
     Senarai Guru
   </button>
   
   <!-- TAB 3: SENARAI MURID -->
-  <button id="btnTabMurid" onclick="tukarTabUtama('murid')" class="btn-tab px-4 py-2 text-sm font-medium text-slate-500 border-b-2 border-transparent">
+  <button id="btnTabMurid" onclick="tukarTabUtama('murid')" class="btn-tab-utama px-4 py-2 text-sm font-medium text-slate-500 border-b-2 border-transparent">
     Senarai Murid
   </button>
 </div>
@@ -1219,28 +1219,34 @@ window.tukarSubTabAnalisis = function(namaSubTab) {
     const btn = document.getElementById('btnSubtabPecahan');
     btn?.classList.add('border-blue-600', 'text-blue-600');
     btn?.classList.remove('border-transparent', 'text-slate-500');
-    renderPecahanAnalisis();
+    if (typeof renderPecahanAnalisis === 'function') renderPecahanAnalisis();
 
   } else if (namaSubTab === 'kehadiran') {
     document.getElementById('subtab-kehadiran')?.classList.remove('hidden');
     const btn = document.getElementById('btnSubtabKehadiran');
     btn?.classList.add('border-blue-600', 'text-blue-600');
     btn?.classList.remove('border-transparent', 'text-slate-500');
-    renderJadualKehadiran(senaraiKehadiranTapis);
+    if (typeof renderJadualKehadiran === 'function' && typeof senaraiKehadiranTapis !== 'undefined') {
+      renderJadualKehadiran(senaraiKehadiranTapis);
+    }
 
   } else if (namaSubTab === 'pelaporan') {
     document.getElementById('subtab-pelaporan')?.classList.remove('hidden');
     const btn = document.getElementById('btnSubtabPelaporan');
     btn?.classList.add('border-blue-600', 'text-blue-600');
     btn?.classList.remove('border-transparent', 'text-slate-500');
-    renderJadualPelaporan(senaraiPelaporanTapis);
+    if (typeof renderJadualPelaporan === 'function' && typeof senaraiPelaporanTapis !== 'undefined') {
+      renderJadualPelaporan(senaraiPelaporanTapis);
+    }
 
   } else if (namaSubTab === 'perancangan') {
     document.getElementById('subtab-perancangan')?.classList.remove('hidden');
     const btn = document.getElementById('btnSubtabPerancangan');
     btn?.classList.add('border-blue-600', 'text-blue-600');
     btn?.classList.remove('border-transparent', 'text-slate-500');
-    renderJadualPerancangan(senaraiPerancanganTapis);
+    if (typeof renderJadualPerancangan === 'function' && typeof senaraiPerancanganTapis !== 'undefined') {
+      renderJadualPerancangan(senaraiPerancanganTapis);
+    }
   }
 };
     
