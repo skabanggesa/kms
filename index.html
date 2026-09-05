@@ -782,23 +782,29 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // ==========================================
-    // 4. MODUL MURID & ANALISIS PECAHAN
-    // ==========================================
-    function prosesDanPaparMurid(res) {
-      if (!res) return;
+// 4. MODUL MURID & ANALISIS PECAHAN
+// ==========================================
+function prosesDanPaparMurid(res) {
+  if (!res) return;
 
-      window.allData = res;
-      const dataMurid = res.pelajar || res.students || [];
+  window.allData = res;
+  const dataMurid = res.pelajar || res.students || [];
 
-      if (dataMurid.length > 0) {
-        senaraiMuridInduk = dataMurid;
-        isiDropdownMurid(senaraiMuridInduk);
-        tapisMurid();
-        renderPecahanAnalisis();
-        renderKadTaburanAhli();
-      }
+  if (dataMurid.length > 0) {
+    window.senaraiMuridInduk = dataMurid;
+    senaraiMuridInduk = dataMurid;
+
+    isiDropdownMurid(senaraiMuridInduk);
+    tapisMurid();
+    renderPecahanAnalisis();
+    renderKadTaburanAhli();
+
+    // Panggil automatik pengisian dropdown unit bila data murid siap diproses
+    if (typeof isiDropdownUnitPerancangan === 'function') {
+      isiDropdownUnitPerancangan();
     }
-
+  }
+}
     function isiDropdownMurid(muridList) {
       const selectKategori = document.getElementById("filterMuridKategori");
       const selectKelas = document.getElementById("filterMuridKelas");
