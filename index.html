@@ -551,10 +551,11 @@
         <textarea id="inputPelaporanHuraian" rows="3" placeholder="Nyatakan aktiviti yang dijalankan..." class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
       </div>
 
-      <!-- PAUTAN GAMBAR -->
+      <!-- MUAT NAIK GAMBAR -->
       <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Pautan Gambar / Dokumentasi (Image URL)</label>
-        <input type="url" id="inputPelaporanGambar" placeholder="https://drive.google.com/... atau URL gambar" class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Muat Naik Gambar / Dokumentasi (Image)</label>
+        <input type="file" id="inputPelaporanGambar" accept="image/*" class="w-full border rounded-lg px-3 py-1.5 text-sm file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <p class="text-[10px] text-slate-400 mt-0.5">*Pilih gambar dari peranti (JPG, PNG, GIF)</p>
       </div>
 
       <!-- SENARAI MURID (CHECKLIST CONTAINING NAMES) -->
@@ -703,13 +704,19 @@ function muatkanDataKMS() {
       .withSuccessHandler(function(res) {
         console.log(">>> Respons diterima dari Apps Script:", res);
         
+        // Simpan data murid ke pembolehubah global
+        window.senaraiMuridInduk = res.pelajar || res.students || [];
+
         prosesDanPaparUsers(res);
         prosesDanPaparMurid(res);
         prosesDanPaparKehadiran(res);
         prosesDanPaparPelaporan(res);
         prosesDanPaparPerancangan(res);
-        prosesDanPaparMerit(res); // Kemaskini data merit
-        isiDropdownUnitPerancangan(); // untuk dropdown unit modal perancangan
+        prosesDanPaparMerit(res);
+
+        // Isi kedua-dua dropdown unit modal
+        isiDropdownUnitPerancangan();
+        isiDropdownUnitPelaporan();
 
         if (loader) loader.classList.add("hidden");
       })
@@ -724,13 +731,19 @@ function muatkanDataKMS() {
       .then(res => {
         console.log(">>> Respons diterima dari fetch:", res);
         
+        // Simpan data murid ke pembolehubah global
+        window.senaraiMuridInduk = res.pelajar || res.students || [];
+
         prosesDanPaparUsers(res);
         prosesDanPaparMurid(res);
         prosesDanPaparKehadiran(res);
         prosesDanPaparPelaporan(res);
         prosesDanPaparPerancangan(res);
-        prosesDanPaparMerit(res); // Kemaskini data merit
-        isiDropdownUnitPerancangan(); // untuk dropdown unit modal perancangan
+        prosesDanPaparMerit(res);
+
+        // Isi kedua-dua dropdown unit modal
+        isiDropdownUnitPerancangan();
+        isiDropdownUnitPelaporan();
 
         if (loader) loader.classList.add("hidden");
       })
@@ -740,10 +753,6 @@ function muatkanDataKMS() {
       });
   }
 }
-
-document.addEventListener("DOMContentLoaded", function() {
-  muatkanDataKMS();
-});
     
     // ==========================================
     // 3. MODUL GURU
@@ -1680,8 +1689,203 @@ window.openModal = function(idModal) {
   
   if (idModal === 'modalPerancangan') {
     isiDropdownUnitPerancangan();
+  } else if (idModal === 'modalPelaporan') {
+    isiDropdownUnitPelaporan();
   }
 };
+
+    // ==========================================
+// MODUL PELAPORAN: DROPDOWN, PENAPIS MURID & BASE64
+// ==========================================
+
+// 1. Fungsi Menukar Fail Gambar ke Format Base64
+function convertFileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) return resolve({ base64: "", mime: "", name: "" });
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve({
+        base64: reader.result,
+        mime: file.type,
+        name: file.name
+      });
+    };
+    reader.onerror = error => reject(error);
+    reader.readAsDataURL(file);
+  });
+}
+
+// 2. Isi Dropdown Unit Pelaporan
+function isiDropdownUnitPelaporan() {
+  const selectUnit = document.getElementById("inputPelaporanUnit");
+  if (!selectUnit) return;
+
+  const dataPelajar = window.senaraiMuridInduk || window.senaraiPelajarInduk || [];
+  if (!dataPelajar || dataPelajar.length === 0) {
+    selectUnit.innerHTML = `<option value="">-- Memuatkan Unit... --</option>`;
+    return;
+  }
+
+  const setUnit = new Set();
+  dataPelajar.forEach(p => {
+    Object.keys(p).forEach(kunci => {
+      const kunciLower = kunci.trim().toLowerCase();
+      if (['unit', 'kelab', 'sukan'].includes(kunciLower)) {
+        const nilai = p[kunci];
+        if (nilai && typeof nilai === 'string' && nilai.trim() !== '' && nilai.trim() !== '-') {
+          setUnit.add(nilai.trim());
+        }
+      }
+    });
+  });
+
+  const senaraiUnitSorted = Array.from(setUnit).sort();
+  selectUnit.innerHTML = `<option value="">-- Pilih Unit / Kelab / Sukan --</option>` +
+    senaraiUnitSorted.map(u => `<option value="${u}">${u}</option>`).join('');
+}
+
+// 3. Penapis Senarai Murid Mengikut Unit Terpilih
+function penapisMuridPelaporan() {
+  const unitTerpilih = document.getElementById("inputPelaporanUnit")?.value;
+  const kontena = document.getElementById("kontenaPelaporanMurid");
+  if (!kontena) return;
+
+  if (!unitTerpilih) {
+    kontena.innerHTML = `<p class="text-slate-400 italic text-center py-2">Sila pilih Unit di atas untuk memaparkan senarai murid.</p>`;
+    return;
+  }
+
+  const dataPelajar = window.senaraiMuridInduk || window.senaraiPelajarInduk || [];
+  
+  // Tapis murid yang terikat dengan unit/kelab/sukan terpilih
+  const muridTerlibat = dataPelajar.filter(p => {
+    return Object.keys(p).some(kunci => {
+      const kunciLower = kunci.trim().toLowerCase();
+      if (['unit', 'kelab', 'sukan'].includes(kunciLower)) {
+        return p[kunci] && p[kunci].toString().trim() === unitTerpilih;
+      }
+      return false;
+    });
+  });
+
+  if (muridTerlibat.length === 0) {
+    kontena.innerHTML = `<p class="text-slate-400 italic text-center py-2">Tiada murid dijumpai di bawah unit "${unitTerpilih}".</p>`;
+    return;
+  }
+
+  kontena.innerHTML = muridTerlibat.map((m, idx) => {
+    const nama = m.NAMA || m.nama || m.STUDENT_NAME || m.student_name || `Murid ${idx + 1}`;
+    return `
+      <label class="flex items-center gap-2 p-1.5 hover:bg-slate-100 rounded cursor-pointer transition">
+        <input type="checkbox" value="${nama}" class="cb-murid-pelaporan rounded text-emerald-600 focus:ring-emerald-500">
+        <span class="text-slate-700 text-xs font-medium">${nama}</span>
+      </label>
+    `;
+  }).join('');
+}
+
+// 4. Pilih / Nyahpilih Semua Murid
+function pilihSemuaMuridPelaporan(status) {
+  const checkboxes = document.querySelectorAll('.cb-murid-pelaporan');
+  checkboxes.forEach(cb => cb.checked = status);
+}
+
+// 5. Pengendali Penghantaran Borang Pelaporan
+async function hantarPelaporan(event) {
+  event.preventDefault();
+
+  const btn = document.getElementById("btnSimpanPelaporan");
+  const originalText = btn.textContent;
+
+  const fileInput = document.getElementById("inputPelaporanGambar");
+  const file = fileInput?.files[0] || null;
+
+  // Himpunkan nama-nama murid yang ditanda
+  const checkboxes = document.querySelectorAll('.cb-murid-pelaporan:checked');
+  const senaraiNama = Array.from(checkboxes).map(cb => cb.value).join(', ');
+
+  btn.disabled = true;
+  btn.textContent = "Memproses Gambar...";
+
+  try {
+    let imageData = { base64: "", mime: "", name: "" };
+    if (file) {
+      imageData = await convertFileToBase64(file);
+    }
+
+    const payload = {
+      date: document.getElementById("inputPelaporanTarikh")?.value || "",
+      year: document.getElementById("inputPelaporanTahun")?.value || "",
+      unit: document.getElementById("inputPelaporanUnit")?.value || "",
+      title: document.getElementById("inputPelaporanTajuk")?.value || "",
+      description: document.getElementById("inputPelaporanHuraian")?.value || "",
+      imageBase64: imageData.base64,
+      imageMime: imageData.mime,
+      imageName: imageData.name,
+      names: senaraiNama
+    };
+
+    if (!payload.date || !payload.unit || !payload.title) {
+      alert("Sila lengkapkan tarikh, unit, dan tajuk aktiviti.");
+      btn.disabled = false;
+      btn.textContent = originalText;
+      return;
+    }
+
+    btn.textContent = "Menyimpan Data...";
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.textContent = originalText;
+          if (res.status === "success") {
+            alert(res.message);
+            document.getElementById("formPelaporan").reset();
+            document.getElementById("kontenaPelaporanMurid").innerHTML = `<p class="text-slate-400 italic text-center py-2">Sila pilih Unit di atas untuk memaparkan senarai murid.</p>`;
+            closeModal('modalPelaporan');
+            muatkanDataKMS();
+          } else {
+            alert("Gagal menyimpan: " + res.message);
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.textContent = originalText;
+          alert("Ralat sistem: " + err);
+        })
+        .simpanPelaporanData(payload);
+    } else {
+      fetch(WEB_APP_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "simpanPelaporan", data: payload })
+      })
+      .then(res => res.json())
+      .then(res => {
+        btn.disabled = false;
+        btn.textContent = originalText;
+        if (res.status === "success") {
+          alert(res.message);
+          document.getElementById("formPelaporan").reset();
+          document.getElementById("kontenaPelaporanMurid").innerHTML = `<p class="text-slate-400 italic text-center py-2">Sila pilih Unit di atas untuk memaparkan senarai murid.</p>`;
+          closeModal('modalPelaporan');
+          muatkanDataKMS();
+        } else {
+          alert("Gagal menyimpan: " + res.message);
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.textContent = originalText;
+        alert("Ralat Rangkaian: " + err);
+      });
+    }
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = originalText;
+    alert("Ralat memproses gambar: " + err.message);
+  }
+}
   </script>
 </body>
 </html>
