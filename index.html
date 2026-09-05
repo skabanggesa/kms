@@ -1172,117 +1172,130 @@
     };
     
     // ==========================================
-    // 7. KAWALAN SUB-TAB ANALISIS
-    // ==========================================
-    window.tukarSubTabAnalisis = function(namaSubTab) {
-      document.querySelectorAll('.subtab-content').forEach(el => el.classList.add('hidden'));
+// 7. KAWALAN SUB-TAB ANALISIS
+// ==========================================
+window.tukarSubTabAnalisis = function(namaSubTab) {
+  document.querySelectorAll('.subtab-content').forEach(el => el.classList.add('hidden'));
 
-      document.querySelectorAll('.btn-subtab').forEach(btn => {
-        btn.classList.remove('border-blue-600', 'text-blue-600');
-        btn.classList.add('border-transparent', 'text-slate-500');
-      });
+  document.querySelectorAll('.btn-subtab').forEach(btn => {
+    btn.classList.remove('border-blue-600', 'text-blue-600');
+    btn.classList.add('border-transparent', 'text-slate-500');
+  });
 
-      if (namaSubTab === 'pecahan') {
-        document.getElementById('subtab-pecahan')?.classList.remove('hidden');
-        const btn = document.getElementById('btnSubtabPecahan');
-        btn?.classList.add('border-blue-600', 'text-blue-600');
-        btn?.classList.remove('border-transparent', 'text-slate-500');
-        renderPecahanAnalisis();
+  if (namaSubTab === 'pecahan') {
+    document.getElementById('subtab-pecahan')?.classList.remove('hidden');
+    const btn = document.getElementById('btnSubtabPecahan');
+    btn?.classList.add('border-blue-600', 'text-blue-600');
+    btn?.classList.remove('border-transparent', 'text-slate-500');
+    renderPecahanAnalisis();
 
-      } else if (namaSubTab === 'kehadiran') {
-        document.getElementById('subtab-kehadiran')?.classList.remove('hidden');
-        const btn = document.getElementById('btnSubtabKehadiran');
-        btn?.classList.add('border-blue-600', 'text-blue-600');
-        btn?.classList.remove('border-transparent', 'text-slate-500');
-        renderJadualKehadiran(senaraiKehadiranTapis);
+  } else if (namaSubTab === 'kehadiran') {
+    document.getElementById('subtab-kehadiran')?.classList.remove('hidden');
+    const btn = document.getElementById('btnSubtabKehadiran');
+    btn?.classList.add('border-blue-600', 'text-blue-600');
+    btn?.classList.remove('border-transparent', 'text-slate-500');
+    renderJadualKehadiran(senaraiKehadiranTapis);
 
-      } else if (namaSubTab === 'pelaporan') {
-        document.getElementById('subtab-pelaporan')?.classList.remove('hidden');
-        const btn = document.getElementById('btnSubtabPelaporan');
-        btn?.classList.add('border-blue-600', 'text-blue-600');
-        btn?.classList.remove('border-transparent', 'text-slate-500');
-        renderJadualPelaporan(senaraiPelaporanTapis);
-      }
-    };
+  } else if (namaSubTab === 'pelaporan') {
+    document.getElementById('subtab-pelaporan')?.classList.remove('hidden');
+    const btn = document.getElementById('btnSubtabPelaporan');
+    btn?.classList.add('border-blue-600', 'text-blue-600');
+    btn?.classList.remove('border-transparent', 'text-slate-500');
+    renderJadualPelaporan(senaraiPelaporanTapis);
 
-    // ==========================================
-    // 7. MODUL PERANCANGAN (SHEET ANNUAL)
-    // ==========================================
-    let senaraiPerancanganInduk = [];
-    let senaraiPerancanganTapis = [];
+  } else if (namaSubTab === 'perancangan') {
+    document.getElementById('subtab-perancangan')?.classList.remove('hidden');
+    const btn = document.getElementById('btnSubtabPerancangan');
+    btn?.classList.add('border-blue-600', 'text-blue-600');
+    btn?.classList.remove('border-transparent', 'text-slate-500');
+    renderJadualPerancangan(senaraiPerancanganTapis);
+  }
+};
+    
+// ==========================================
+// 7. MODUL PERANCANGAN (SHEET ANNUAL)
+// ==========================================
+let senaraiPerancanganInduk = [];
+let senaraiPerancanganTapis = [];
 
-    // Fungsi dipanggil semasa data dari Google Sheets dimuatkan
-    function prosesDanPaparPerancangan(res) {
-      const dataAnnual = res.annual || res.perancangan || [];
-      senaraiPerancanganInduk = dataAnnual;
-      senaraiPerancanganTapis = [...senaraiPerancanganInduk];
+function prosesDanPaparPerancangan(res) {
+  // Ambil data dari sheet annual/perancangan
+  const dataAnnual = (res && (res.annual || res.perancangan)) ? (res.annual || res.perancangan) : [];
+  senaraiPerancanganInduk = dataAnnual;
+  senaraiPerancanganTapis = [...senaraiPerancanganInduk];
 
-      // 1. Kemaskini Jumlah Kad Perancangan
-      const statEl = document.getElementById("statTotalPerancangan");
-      if (statEl) statEl.textContent = senaraiPerancanganInduk.length;
+  // 1. Kemaskini Kad Stat
+  const statEl = document.getElementById("statTotalPerancangan");
+  if (statEl) statEl.textContent = senaraiPerancanganInduk.length;
 
-      // 2. Isi pilihan dropdown filter
-      isiDropdownFilterPerancangan();
+  // 2. Isi pilihan dropdown filter
+  isiDropdownFilterPerancangan();
 
-      // 3. Paparkan data dalam jadual
-      renderJadualPerancangan(senaraiPerancanganTapis);
-    }
+  // 3. Paparkan data dalam jadual
+  renderJadualPerancangan(senaraiPerancanganTapis);
+}
 
-    function renderJadualPerancangan(data) {
-      const tbody = document.getElementById("tbodyPerancangan") || document.getElementById("jadualPerancanganBody");
-      if (!tbody) return;
+function renderJadualPerancangan(data) {
+  const tbody = document.getElementById("tbodyPerancangan") || document.getElementById("jadualPerancanganBody");
+  if (!tbody) return;
 
-      if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Tiada rekod perancangan dijumpai.</td></tr>`;
-        return;
-      }
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Tiada rekod perancangan dijumpai.</td></tr>`;
+    return;
+  }
 
-      tbody.innerHTML = data.map(item => {
-        const tarikhPaparan = formatTarikhKemas(item.date || item.tarikh);
-        const unitPaparan = item.unit || '-';
-        const aktivitiPaparan = item.activity || item.aktiviti || item.title || item.tajuk || '-';
-        const sasaranPaparan = item.target || item.sasaran || '-';
-        const statusPaparan = item.status || item.catatan || 'Dalam Perancangan';
+  tbody.innerHTML = data.map(item => {
+    const rawTarikh = item.date || item.tarikh || '';
+    const tarikhPaparan = typeof formatTarikhKemas === 'function' && rawTarikh ? formatTarikhKemas(rawTarikh) : (rawTarikh || '-');
+    const unitPaparan = item.unit || '-';
+    const aktivitiPaparan = item.activity || item.aktiviti || item.title || item.tajuk || '-';
+    const sasaranPaparan = item.target || item.sasaran || '-';
+    const statusPaparan = item.status || item.catatan || 'Dalam Perancangan';
 
-        return `
-          <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-            <td class="p-3 font-medium text-slate-700">${tarikhPaparan}</td>
-            <td class="p-3 text-slate-600"><span class="badge-tag">${unitPaparan}</span></td>
-            <td class="p-3 font-semibold text-slate-800">${aktivitiPaparan}</td>
-            <td class="p-3 text-slate-600">${sasaranPaparan}</td>
-            <td class="p-3 text-center">
-              <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                ${statusPaparan}
-              </span>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
+    return `
+      <tr class="border-b border-slate-100 hover:bg-slate-50 transition text-sm">
+        <td class="p-3 font-medium text-slate-700">${tarikhPaparan}</td>
+        <td class="p-3 text-slate-600"><span class="badge-tag">${unitPaparan}</span></td>
+        <td class="p-3 font-semibold text-slate-800">${aktivitiPaparan}</td>
+        <td class="p-3 text-slate-600">${sasaranPaparan}</td>
+        <td class="p-3 text-center">
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+            ${statusPaparan}
+          </span>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
 
-    function tapisPerancangan() {
-      const cari = (document.getElementById("filterPerancanganCari")?.value || "").toLowerCase().trim();
-      const unit = document.getElementById("filterPerancanganUnit")?.value || "";
+function tapisPerancangan() {
+  const cari = (document.getElementById("filterPerancanganCari")?.value || "").toLowerCase().trim();
+  const unit = document.getElementById("filterPerancanganUnit")?.value || "";
 
-      senaraiPerancanganTapis = senaraiPerancanganInduk.filter(item => {
-        const aktiviti = (item.activity || item.aktiviti || item.title || item.tajuk || "").toLowerCase();
-        const itemUnit = item.unit || "";
-        
-        const padanCari = !cari || aktiviti.includes(cari);
-        const padanUnit = !unit || itemUnit === unit;
-        return padanCari && padanUnit;
-      });
+  senaraiPerancanganTapis = senaraiPerancanganInduk.filter(item => {
+    const aktiviti = (item.activity || item.aktiviti || item.title || item.tajuk || "").toLowerCase();
+    const itemUnit = item.unit || "";
+    
+    const padanCari = !cari || aktiviti.includes(cari);
+    const padanUnit = !unit || itemUnit === unit;
+    return padanCari && padanUnit;
+  });
 
-      renderJadualPerancangan(senaraiPerancanganTapis);
-    }
+  renderJadualPerancangan(senaraiPerancanganTapis);
+}
 
-    function isiDropdownFilterPerancangan() {
-      const select = document.getElementById("filterPerancanganUnit");
-      if (!select) return;
-      const unitSet = new Set(senaraiPerancanganInduk.map(i => i.unit).filter(Boolean));
-      select.innerHTML = `<option value="">Semua Unit/Kelab/Sukan</option>` + 
-        Array.from(unitSet).sort().map(u => `<option value="${u}">${u}</option>`).join('');
-    }
+function isiDropdownFilterPerancangan() {
+  const select = document.getElementById("filterPerancanganUnit");
+  if (!select) return;
+  const unitSet = new Set(senaraiPerancanganInduk.map(i => i.unit).filter(Boolean));
+  select.innerHTML = `<option value="">Semua Unit/Kelab/Sukan</option>` + 
+    Array.from(unitSet).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+}
+
+// Mendaftarkan fungsi ke tingkat window
+window.prosesDanPaparPerancangan = prosesDanPaparPerancangan;
+window.renderJadualPerancangan = renderJadualPerancangan;
+window.tapisPerancangan = tapisPerancangan;
   </script>
 </body>
 </html>
