@@ -758,9 +758,9 @@ function tapisGuru() {
     const peranan = (guru.peranan || "").toLowerCase().trim();
 
     // Sembunyikan jika peranan Super Admin ATAU email sekolah-8368@moe-dl.edu.my
-    if (peranan === "super admin" || email === "sekolah-8368@moe-dl.edu.my") {
-      return false;
-    }
+    if (peranan === "super admin" || email === "sekolah-8368@moe-dl.edu.my" || email.includes("yba6103")) {
+  return false;
+}
 
     const padanNama = (guru.nama || "").toLowerCase().includes(inputNama);
     const padanKategori = !kategoriDipilih || 
