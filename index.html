@@ -658,6 +658,7 @@ function muatkanDataKMS() {
         prosesDanPaparPelaporan(res);
         prosesDanPaparPerancangan(res);
         prosesDanPaparMerit(res); // Kemaskini data merit
+        isiDropdownUnitPerancangan(); // untuk dropdown unit modal perancangan
 
         if (loader) loader.classList.add("hidden");
       })
