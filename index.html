@@ -726,79 +726,82 @@
 
     // 3. MODUL GURU
     function prosesDanPaparUsers(res) {
-      if (res && res.users) {
-        senaraiGuruInduk = res.users;
-        isiDropdownKategori(senaraiGuruInduk);
-        tapisGuru();
-      }
+  if (res && res.users) {
+    senaraiGuruInduk = res.users;
+    isiDropdownKategori(senaraiGuruInduk);
+    tapisGuru();
+  }
+}
+
+function isiDropdownKategori(users) {
+  const select = document.getElementById("filterGuruUnit");
+  if (!select) return;
+
+  const nilaiUnik = new Set();
+  users.forEach(guru => {
+    if (guru.unit && guru.unit.trim() !== '') nilaiUnik.add(guru.unit.trim());
+    if (guru.kelab && guru.kelab.trim() !== '') nilaiUnik.add(guru.kelab.trim());
+    if (guru.sukan && guru.sukan.trim() !== '') nilaiUnik.add(guru.sukan.trim());
+  });
+
+  const senaraiSusun = Array.from(nilaiUnik).sort();
+  select.innerHTML = `<option value="">Semua Unit / Kelab / Sukan</option>` + 
+    senaraiSusun.map(kat => `<option value="${kat}">${kat}</option>`).join('');
+}
+
+function tapisGuru() {
+  const inputNama = (document.getElementById("filterGuruNama")?.value || "").toLowerCase().trim();
+  const kategoriDipilih = document.getElementById("filterGuruUnit")?.value || "";
+
+  const hasilTapis = senaraiGuruInduk.filter(guru => {
+    const email = (guru.email || "").toLowerCase().trim();
+    const peranan = (guru.peranan || "").toLowerCase().trim();
+
+    // Sembunyikan jika peranan Super Admin ATAU email sekolah-8368@moe-dl.edu.my
+    if (peranan === "super admin" || email === "sekolah-8368@moe-dl.edu.my") {
+      return false;
     }
 
-    function isiDropdownKategori(users) {
-      const select = document.getElementById("filterGuruUnit");
-      if (!select) return;
+    const padanNama = (guru.nama || "").toLowerCase().includes(inputNama);
+    const padanKategori = !kategoriDipilih || 
+      guru.unit === kategoriDipilih || 
+      guru.kelab === kategoriDipilih || 
+      guru.sukan === kategoriDipilih;
 
-      const nilaiUnik = new Set();
-      users.forEach(guru => {
-        if (guru.unit && guru.unit.trim() !== '') nilaiUnik.add(guru.unit.trim());
-        if (guru.kelab && guru.kelab.trim() !== '') nilaiUnik.add(guru.kelab.trim());
-        if (guru.sukan && guru.sukan.trim() !== '') nilaiUnik.add(guru.sukan.trim());
-      });
+    return padanNama && padanKategori;
+  });
 
-      const senaraiSusun = Array.from(nilaiUnik).sort();
-      select.innerHTML = `<option value="">Semua Unit / Kelab / Sukan</option>` + 
-        senaraiSusun.map(kat => `<option value="${kat}">${kat}</option>`).join('');
-    }
+  hasilTapis.sort((a, b) => {
+    const perananA = (a.peranan || "").toLowerCase().trim();
+    const perananB = (b.peranan || "").toLowerCase().trim();
+    if (perananA === "penyelia" && perananB !== "penyelia") return -1;
+    if (perananA !== "penyelia" && perananB === "penyelia") return 1;
+    return (a.nama || "").localeCompare(b.nama || "", 'ms', { sensitivity: 'base' });
+  });
 
-    function tapisGuru() {
-      const inputNama = (document.getElementById("filterGuruNama")?.value || "").toLowerCase().trim();
-      const kategoriDipilih = document.getElementById("filterGuruUnit")?.value || "";
+  renderPengurusanGuru(hasilTapis);
+}
 
-      const hasilTapis = senaraiGuruInduk.filter(guru => {
-        const email = (guru.email || "").toLowerCase().trim();
-        const peranan = (guru.peranan || "").toLowerCase().trim();
+function renderPengurusanGuru(usersList) {
+  const tbody = document.getElementById("tbodyPengurusanGuru");
+  if (!tbody) return;
 
-        if (peranan === "super admin" && email.includes("yba6103")) return false;
+  if (!usersList || usersList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:15px;">Tiada data guru dijumpai.</td></tr>`;
+    return;
+  }
 
-        const padanNama = (guru.nama || "").toLowerCase().includes(inputNama);
-        const padanKategori = !kategoriDipilih || 
-          guru.unit === kategoriDipilih || 
-          guru.kelab === kategoriDipilih || 
-          guru.sukan === kategoriDipilih;
-
-        return padanNama && padanKategori;
-      });
-
-      hasilTapis.sort((a, b) => {
-        const perananA = (a.peranan || "").toLowerCase().trim();
-        const perananB = (b.peranan || "").toLowerCase().trim();
-        if (perananA === "penyelia" && perananB !== "penyelia") return -1;
-        if (perananA !== "penyelia" && perananB === "penyelia") return 1;
-        return (a.nama || "").localeCompare(b.nama || "", 'ms', { sensitivity: 'base' });
-      });
-
-      renderPengurusanGuru(hasilTapis);
-    }
-
-    function renderPengurusanGuru(usersList) {
-      const tbody = document.getElementById("tbodyPengurusanGuru");
-      if (!tbody) return;
-
-      if (!usersList || usersList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:15px;">Tiada data guru dijumpai.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = usersList.map(user => `
-        <tr>
-          <td><strong>${user.nama || '-'}</strong></td>
-          <td>${user.email || '-'}</td>
-          <td><span class="badge-tag">${user.unit || '-'}</span></td>
-          <td><span class="badge-tag">${user.kelab || '-'}</span></td>
-          <td><span class="badge-tag">${user.sukan || '-'}</span></td>
-          <td>${user.peranan || '-'}</td>
-        </tr>
-      `).join('');
-    }
+  tbody.innerHTML = usersList.map(user => `
+    <tr>
+      <td><strong>${user.nama || '-'}</strong></td>
+      <td>${user.email || '-'}</td>
+      <td><span class="badge-tag">${user.unit || '-'}</span></td>
+      <td><span class="badge-tag">${user.kelab || '-'}</span></td>
+      <td><span class="badge-tag">${user.sukan || '-'}</span></td>
+      <td>${user.peranan || '-'}</td>
+    </tr>
+  `).join('');
+}
 
     // 4. MODUL MURID & ANALISIS PECAHAN
     function prosesDanPaparMurid(res) {
