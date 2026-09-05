@@ -361,22 +361,19 @@
             </div>
           </div>
 
-          <!-- KANDUNGAN SUB-TAB 4: PERANCANGAN TAHUNAN -->
+         <!-- KANDUNGAN SUB-TAB 4: PERANCANGAN TAHUNAN -->
 <div id="subtab-perancangan" class="subtab-content hidden p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
-  
-  <!-- Tajuk & Penerangan -->
   <div class="mb-4">
     <h4 class="text-lg font-bold text-slate-800">Perancangan Tahunan Aktiviti</h4>
     <p class="text-xs text-slate-500">Senarai perancangan dan takwim aktiviti kokurikulum</p>
   </div>
 
-  <!-- Input Carian & Filter -->
   <div class="flex flex-col md:flex-row gap-3 mb-4">
     <input 
       type="text" 
       id="filterPerancanganCari" 
       oninput="tapisPerancangan()" 
-      placeholder="Cari aktiviti / perancangan..." 
+      placeholder="Cari tajuk / perancangan..." 
       class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-purple-500"
     />
     <select 
@@ -388,21 +385,19 @@
     </select>
   </div>
 
-  <!-- Jadual Perancangan -->
   <div class="w-full overflow-x-auto rounded-lg border border-slate-200">
     <table class="w-full text-left border-collapse table-auto">
       <thead>
         <tr class="border-b border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold uppercase tracking-wider">
-          <th class="p-3 w-[15%]">TARIKH</th>
-          <th class="p-3 w-[20%]">UNIT</th>
-          <th class="p-3 w-[35%]">AKTIVITI / PERANCANGAN</th>
-          <th class="p-3 w-[15%]">SASARAN</th>
-          <th class="p-3 w-[15%] text-center">STATUS</th>
+          <th class="p-3 w-[20%]">TARIKH (DATE)</th>
+          <th class="p-3 w-[15%]">TAHUN (YEAR)</th>
+          <th class="p-3 w-[25%]">UNIT</th>
+          <th class="p-3 w-[40%]">TAJUK / AKTIVITI (TITLE)</th>
         </tr>
       </thead>
       <tbody id="tbodyPerancangan" class="divide-y divide-slate-100">
         <tr>
-          <td colspan="5" class="p-4 text-center text-slate-400">Memuatkan data perancangan...</td>
+          <td colspan="4" class="p-4 text-center text-slate-400">Memuatkan data perancangan...</td>
         </tr>
       </tbody>
     </table>
@@ -1243,32 +1238,27 @@ function renderJadualPerancangan(data) {
   if (!tbody) return;
 
   if (!data || data.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Tiada rekod perancangan dijumpai.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Tiada rekod perancangan dijumpai.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = data.map(item => {
-    // Padanan kunci mengikut header: date | year | unit | title
-    const tarikh = typeof formatTarikhKemas === 'function' ? formatTarikhKemas(item.date) : (item.date || '-');
+    const tarikh = typeof formatTarikhKemas === 'function' && item.date ? formatTarikhKemas(item.date) : (item.date || '-');
+    const tahun = item.year ? `Tahun ${item.year}` : '-';
     const unit = item.unit || '-';
     const tajuk = item.title || '-';
-    const tahun = item.year ? `Tahun ${item.year}` : '-';
 
     return `
       <tr class="border-b border-slate-100 hover:bg-slate-50 transition text-sm">
         <td class="p-3 font-medium text-slate-700">${tarikh}</td>
+        <td class="p-3 text-slate-600">${tahun}</td>
         <td class="p-3 text-slate-600"><span class="badge-tag">${unit}</span></td>
         <td class="p-3 font-semibold text-slate-800">${tajuk}</td>
-        <td class="p-3 text-slate-600">${tahun}</td>
-        <td class="p-3 text-center">
-          <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-            Aktif
-          </span>
-        </td>
       </tr>
     `;
   }).join('');
 }
+    
 function tapisPerancangan() {
   const cari = (document.getElementById("filterPerancanganCari")?.value || "").toLowerCase().trim();
   const unit = document.getElementById("filterPerancanganUnit")?.value || "";
