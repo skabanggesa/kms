@@ -1249,6 +1249,40 @@ window.tukarSubTabAnalisis = function(namaSubTab) {
     }
   }
 };
+
+    // ==========================================
+// KAWALAN TAB UTAMA (GLOBAL SCOPE)
+// ==========================================
+window.tukarTabUtama = function(namaTab) {
+  // 1. Sembunyikan semua kontena tab utama
+  document.querySelectorAll('.tab-utama-content').forEach(el => el.classList.add('hidden'));
+
+  // 2. Reset gaya semua butang tab utama
+  document.querySelectorAll('.btn-tab-utama').forEach(btn => {
+    btn.classList.remove('border-blue-600', 'text-blue-600', 'font-bold');
+    btn.classList.add('border-transparent', 'text-slate-500', 'font-medium');
+  });
+
+  // 3. Tunjukkan tab utama yang dipilih
+  if (namaTab === 'analisis') {
+    document.getElementById('tab-analisis')?.classList.remove('hidden');
+    const btn = document.getElementById('btnTabAnalisis');
+    btn?.classList.add('border-blue-600', 'text-blue-600', 'font-bold');
+    btn?.classList.remove('border-transparent', 'text-slate-500', 'font-medium');
+
+  } else if (namaTab === 'guru') {
+    document.getElementById('tab-guru')?.classList.remove('hidden');
+    const btn = document.getElementById('btnTabGuru');
+    btn?.classList.add('border-blue-600', 'text-blue-600', 'font-bold');
+    btn?.classList.remove('border-transparent', 'text-slate-500', 'font-medium');
+
+  } else if (namaTab === 'murid') {
+    document.getElementById('tab-murid')?.classList.remove('hidden');
+    const btn = document.getElementById('btnTabMurid');
+    btn?.classList.add('border-blue-600', 'text-blue-600', 'font-bold');
+    btn?.classList.remove('border-transparent', 'text-slate-500', 'font-medium');
+  }
+};
     
 // ==========================================
 // 7. MODUL PERANCANGAN (SHEET ANNUAL)
