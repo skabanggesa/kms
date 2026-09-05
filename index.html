@@ -721,6 +721,7 @@
 
       isiDropdownUnitPerancangan();
       isiDropdownUnitPelaporan();
+      isiDropdownNamaMerit();
     }
 
     // 3. MODUL GURU
@@ -1663,6 +1664,156 @@ function dapatkanUrlGambar(imageSrc) {
   }
 
   return str;
+}
+
+    // A. Logik Pengiraan Markah Merit Automatik
+function kiraMarkahMeritAutomatik() {
+  const peringkat = document.getElementById("selectMeritPeringkat")?.value;
+  const keputusan = document.getElementById("selectMeritKeputusan")?.value;
+  const inputMata = document.getElementById("inputMeritMata");
+
+  if (!peringkat || !keputusan || !inputMata) {
+    if (inputMata) inputMata.value = "";
+    return;
+  }
+
+  // Matriks Markah Asas Peringkat (Penglibatan & Johan)
+  const markahAsasMap = {
+    "Sekolah": 8,
+    "Daerah": 11,
+    "Bahagian": 12,
+    "Negeri": 14,
+    "Kebangsaan": 17,
+    "Antarabangsa": 20
+  };
+
+  const markahAsas = markahAsasMap[peringkat] || 0;
+  let markahAkhir = 0;
+
+  if (keputusan === "Penyertaan") {
+    // Penyertaan sahaja menerima markah kelayakan penglibatan penuh
+    markahAkhir = markahAsas;
+  } else {
+    const kedudukan = parseInt(keputusan);
+    if (kedudukan >= 1 && kedudukan <= 5) {
+      // Penurunan 1 markah bagi setiap tangga kedudukan (1 hingga 5)
+      markahAkhir = markahAsas - (kedudukan - 1);
+    } else {
+      markahAkhir = markahAsas;
+    }
+  }
+
+  inputMata.value = markahAkhir;
+}
+
+// B. Paparkan Pilihan Unit/Kelab/Sukan Dinamik Mengikut Murid
+function kemaskiniPilihanUnitMerit() {
+  const selectNama = document.getElementById("selectMeritNama");
+  const selectUnit = document.getElementById("selectMeritUnit");
+  const namaDipilih = selectNama?.value;
+
+  selectUnit.innerHTML = '<option value="">-- Pilih Unit / Kelab / Sukan --</option>';
+
+  if (!namaDipilih) {
+    selectUnit.disabled = true;
+    return;
+  }
+
+  // Menggunakan window.senaraiMuridInduk
+  const senarai = window.senaraiMuridInduk || [];
+  const murid = senarai.find(m => (m.nama || m.name || m.NAMA) === namaDipilih);
+
+  if (murid) {
+    const pilihanUnit = [];
+    if (murid.unit || murid.unitBeruniform || murid.BERUNIFORM) pilihanUnit.push(murid.unit || murid.unitBeruniform || murid.BERUNIFORM);
+    if (murid.kelab || murid.kelabPersatuan || murid.KELAB) pilihanUnit.push(murid.kelab || murid.kelabPersatuan || murid.KELAB);
+    if (murid.sukan || murid.sukanPermainan || murid.SUKAN) pilihanUnit.push(murid.sukan || murid.sukanPermainan || murid.SUKAN);
+
+    const pilihanUnik = [...new Set(pilihanUnit)].filter(Boolean);
+
+    pilihanUnik.forEach(unitName => {
+      const opt = document.createElement("option");
+      opt.value = unitName;
+      opt.textContent = unitName;
+      selectUnit.appendChild(opt);
+    });
+
+    selectUnit.disabled = false;
+  } else {
+    selectUnit.disabled = false;
+  }
+}
+
+// C. Penghantaran Data Borang Merit ke Backend
+async function hantarMeritEvent(e) {
+  e.preventDefault();
+
+  const btn = document.getElementById("btnSimpanMerit");
+  const originalText = btn ? btn.textContent : "Tambah Rekod Merit";
+
+  const payload = {
+    date: document.getElementById("inputMeritTarikh")?.value || "",
+    year: document.getElementById("inputMeritTahun")?.value || "",
+    name: document.getElementById("selectMeritNama")?.value || "",
+    unit: document.getElementById("selectMeritUnit")?.value || "",
+    activity: document.getElementById("inputMeritAktiviti")?.value || "",
+    peringkat: document.getElementById("selectMeritPeringkat")?.value || "",
+    keputusan: document.getElementById("selectMeritKeputusan")?.value || "",
+    merit: document.getElementById("inputMeritMata")?.value || 0
+  };
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Menyimpan...";
+  }
+
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+        if (res && (res.status === "success" || res.success)) {
+          alert(res.message || "Rekod merit berjaya disimpan!");
+          document.getElementById("formMerit").reset();
+          document.getElementById("selectMeritUnit").disabled = true;
+          if (typeof closeModal === "function") closeModal("modalMerit");
+          if (typeof muatkanDataKMS === "function") muatkanDataKMS();
+        } else {
+          alert("Gagal menyimpan: " + (res ? res.message : "Ralat sistem."));
+        }
+      })
+      .withFailureHandler(function(err) {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+        alert("Ralat sambungan: " + err.message);
+      })
+      .simpanMeritData(payload);
+  }
+}
+
+    function isiDropdownNamaMerit() {
+  const select = document.getElementById("selectMeritNama");
+  if (!select) return;
+
+  select.innerHTML = '<option value="">-- Pilih Murid --</option>';
+  const senarai = window.senaraiMuridInduk || [];
+
+  // Susun nama murid mengikut abjad
+  senarai.sort((a, b) => (a.nama || a.name || "").localeCompare(b.nama || b.name || ""));
+
+  senarai.forEach(m => {
+    const nama = m.nama || m.name || m.NAMA;
+    if (nama) {
+      const opt = document.createElement("option");
+      opt.value = nama;
+      opt.textContent = nama;
+      select.appendChild(opt);
+    }
+  });
 }
   </script>
 </body>
