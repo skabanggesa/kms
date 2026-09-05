@@ -74,20 +74,33 @@
       </div>
     </header>
 
-    <!-- Navigasi Tab -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6 overflow-hidden">
-      <div class="flex border-b border-slate-200 bg-slate-50">
-        <button onclick="switchTab('pengurusan-guru')" id="tab-btn-pengurusan-guru" class="tab-btn py-3 px-6 text-sm font-semibold border-b-2 border-blue-600 text-blue-600 bg-white">
-          Senarai Guru
-        </button>
-        <button onclick="switchTab('senarai-murid')" id="tab-btn-senarai-murid" class="tab-btn py-3 px-6 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700">
-          Senarai Murid
-        </button>
-        <button onclick="switchTab('analisis')" id="tab-btn-analisis" class="tab-btn py-3 px-6 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700">
-          Analisis
-        </button>
-      </div>
+    <!-- 1. SKRIN PEMUATAN (LOADING SCREEN OVERLAY) -->
+<div id="loadingScreen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center transition-opacity">
+  <div class="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-3">
+    <!-- Spinner Animasi -->
+    <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+    <p class="text-sm font-semibold text-slate-700">Memuatkan data sistem KMS Digital...</p>
+  </div>
+</div>
 
+<!-- 2. SUSUNAN TAB UTAMA BAHARU -->
+<div class="flex border-b border-slate-200 gap-2 mb-6">
+  <!-- TAB 1: ANALISIS (KIRI SEKALI & AKTIF SECARA DEFAULT) -->
+  <button id="btnTabAnalisis" onclick="tukarTabUtama('analisis')" class="btn-tab px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600">
+    Analisis
+  </button>
+  
+  <!-- TAB 2: SENARAI GURU -->
+  <button id="btnTabGuru" onclick="tukarTabUtama('guru')" class="btn-tab px-4 py-2 text-sm font-medium text-slate-500 border-b-2 border-transparent">
+    Senarai Guru
+  </button>
+  
+  <!-- TAB 3: SENARAI MURID -->
+  <button id="btnTabMurid" onclick="tukarTabUtama('murid')" class="btn-tab px-4 py-2 text-sm font-medium text-slate-500 border-b-2 border-transparent">
+    Senarai Murid
+  </button>
+</div>
+    
       <div class="p-6">
         <!-- TAB 1: PENGURUSAN GURU -->
         <div id="tab-pengurusan-guru" class="tab-content">
@@ -583,42 +596,65 @@
     // ==========================================
     // 2. AMBIL DATA DARI GOOGLE APPS SCRIPT / FETCH
     // ==========================================
-    function muatkanDataKMS() {
-      console.log(">>> Memulakan muatkanDataKMS()...");
+    // ==========================================
+// 2. AMBIL DATA DARI GOOGLE APPS SCRIPT / FETCH
+// ==========================================
+function muatkanDataKMS() {
+  console.log(">>> Memulakan muatkanDataKMS()...");
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(function(res) {
-            console.log(">>> Respons diterima dari Apps Script:", res);
-            prosesDanPaparUsers(res);
-            prosesDanPaparMurid(res);
-            prosesDanPaparKehadiran(res);
-            prosesDanPaparPelaporan(res);
-            prosesDanPaparPerancangan(res);
-          })
-          .withFailureHandler(function(err) {
-            console.error(">>> Ralat google.script.run:", err);
-          })
-          .getAllData();
-      } else {
-        fetch(`${WEB_APP_URL}?action=getAllData`)
-          .then(response => response.json())
-          .then(res => {
-            console.log(">>> Respons diterima dari fetch:", res);
-            prosesDanPaparUsers(res);
-            prosesDanPaparMurid(res);
-            prosesDanPaparKehadiran(res);
-            prosesDanPaparPelaporan(res); // DIBETULKAN: Dipanggil semula di sini
-            prosesDanPaparPerancangan(res);
-          })
-          .catch(err => console.error(">>> Ralat fetch:", err));
-      }
-    }
+  // Tunjukkan Skrin Pemuatan (Loading Screen)
+  const loader = document.getElementById("loadingScreen");
+  if (loader) loader.classList.remove("hidden");
 
-    document.addEventListener("DOMContentLoaded", function() {
-      muatkanDataKMS();
-    });
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        console.log(">>> Respons diterima dari Apps Script:", res);
+        
+        // Memproses semua modul data
+        prosesDanPaparUsers(res);
+        prosesDanPaparMurid(res);
+        prosesDanPaparKehadiran(res);
+        prosesDanPaparPelaporan(res);
+        prosesDanPaparPerancangan(res);
 
+        // Sembunyikan Skrin Pemuatan
+        if (loader) loader.classList.add("hidden");
+      })
+      .withFailureHandler(function(err) {
+        console.error(">>> Ralat google.script.run:", err);
+        // Sembunyikan Skrin Pemuatan sekiranya ralat
+        if (loader) loader.classList.add("hidden");
+      })
+      .getAllData();
+  } else {
+    fetch(`${WEB_APP_URL}?action=getAllData`)
+      .then(response => response.json())
+      .then(res => {
+        console.log(">>> Respons diterima dari fetch:", res);
+        
+        // Memproses semua modul data
+        prosesDanPaparUsers(res);
+        prosesDanPaparMurid(res);
+        prosesDanPaparKehadiran(res);
+        prosesDanPaparPelaporan(res);
+        prosesDanPaparPerancangan(res);
+
+        // Sembunyikan Skrin Pemuatan
+        if (loader) loader.classList.add("hidden");
+      })
+      .catch(err => {
+        console.error(">>> Ralat fetch:", err);
+        // Sembunyikan Skrin Pemuatan sekiranya ralat
+        if (loader) loader.classList.add("hidden");
+      });
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  muatkanDataKMS();
+});
+    
     // ==========================================
     // 3. MODUL GURU
     // ==========================================
