@@ -85,17 +85,12 @@
 
     <!-- 2. SUSUNAN TAB UTAMA BAHARU -->
     <div class="flex border-b border-slate-200 gap-2 mb-6">
-      <!-- TAB 1: ANALISIS (KIRI SEKALI & AKTIF SECARA DEFAULT) -->
       <button id="btnTabAnalisis" onclick="tukarTabUtama('analisis')" class="btn-tab-utama px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600">
         Analisis
       </button>
-      
-      <!-- TAB 2: SENARAI GURU -->
       <button id="btnTabGuru" onclick="tukarTabUtama('guru')" class="btn-tab-utama px-4 py-2 text-sm font-medium text-slate-500 border-b-2 border-transparent">
         Senarai Guru
       </button>
-      
-      <!-- TAB 3: SENARAI MURID -->
       <button id="btnTabMurid" onclick="tukarTabUtama('murid')" class="btn-tab-utama px-4 py-2 text-sm font-medium text-slate-500 border-b-2 border-transparent">
         Senarai Murid
       </button>
@@ -103,47 +98,39 @@
     
     <div class="p-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
       
-      <!-- TAB 1: ANALISIS (LALAI DIPAPARKAN) -->
+      <!-- TAB 1: ANALISIS -->
       <div id="tab-analisis" class="tab-utama-content tab-content">
-        <!-- Kad Ringkasan (Summary Cards Grid) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          
-          <!-- 1. Total Overall -->
           <div class="p-5 border border-indigo-200 border-l-4 border-l-indigo-500 rounded-xl bg-indigo-50/60 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
             <p class="text-xs font-bold text-indigo-500 uppercase tracking-wider">Total Overall</p>
             <h3 id="statTotalOverall" class="text-3xl font-extrabold text-indigo-700 mt-1">0</h3>
             <p class="text-xs text-indigo-600/80 mt-2 font-medium">Jumlah Murid Berdaftar</p>
           </div>
 
-          <!-- 2. Kehadiran -->
           <div class="p-5 border border-emerald-200 border-l-4 border-l-emerald-500 rounded-xl bg-emerald-50/60 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
             <p class="text-xs font-bold text-emerald-500 uppercase tracking-wider">Kehadiran</p>
             <h3 id="statTotalKehadiran" class="text-3xl font-extrabold text-emerald-700 mt-1">0</h3>
             <p class="text-xs text-emerald-600/80 mt-2 font-medium">Jumlah Rekod Kehadiran</p>
           </div>
 
-          <!-- 3. Pelaporan Aktif -->
           <div class="p-5 border border-cyan-200 border-l-4 border-l-cyan-500 rounded-xl bg-cyan-50/60 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
             <p class="text-xs font-bold text-cyan-600 uppercase tracking-wider">Pelaporan Aktif</p>
             <h3 id="statTotalPelaporan" class="text-3xl font-extrabold text-cyan-700 mt-1">0</h3>
             <p class="text-xs text-cyan-600/80 mt-2 font-medium">Jumlah Rekod Pelaporan</p>
           </div>
 
-          <!-- 4. Perancangan Tahunan -->
           <div class="p-5 border border-purple-200 border-l-4 border-l-purple-500 rounded-xl bg-purple-50/60 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
             <p class="text-xs font-bold text-purple-600 uppercase tracking-wider">Perancangan Tahunan</p>
             <h3 id="statTotalPerancangan" class="text-3xl font-extrabold text-purple-700 mt-1">0</h3>
             <p class="text-xs text-purple-600/80 mt-2 font-medium">Jumlah Rekod Perancangan</p>
           </div>
 
-          <!-- 5. Pemberian Merit -->
-        <div class="p-5 border border-amber-200 border-l-4 border-l-amber-500 rounded-xl bg-amber-50/60 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
-          <p class="text-xs font-bold text-amber-600 uppercase tracking-wider">Pemberian Merit</p>
-          <h3 id="statTotalMerit" class="text-3xl font-extrabold text-amber-700 mt-1">0</h3>
-          <p class="text-xs text-amber-600/80 mt-2 font-medium">Jumlah Rekod Merit</p>
-        </div>
+          <div class="p-5 border border-amber-200 border-l-4 border-l-amber-500 rounded-xl bg-amber-50/60 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+            <p class="text-xs font-bold text-amber-600 uppercase tracking-wider">Pemberian Merit</p>
+            <h3 id="statTotalMerit" class="text-3xl font-extrabold text-amber-700 mt-1">0</h3>
+            <p class="text-xs text-amber-600/80 mt-2 font-medium">Jumlah Rekod Merit</p>
+          </div>
 
-          <!-- 6. Taburan Ahli Unit -->
           <div class="p-4 border border-slate-200 border-l-4 border-l-blue-500 rounded-xl bg-white shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200 flex flex-col justify-between min-w-[220px]">
             <div class="flex justify-between items-center mb-2 pb-1.5 border-b border-slate-100">
               <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Taburan Ahli</span>
@@ -153,7 +140,6 @@
               <p class="text-xs text-slate-400 text-center mt-4">Memuatkan data...</p>
             </div>
           </div>
-
         </div>
 
         <!-- MENU SUB-TAB ANALISIS -->
@@ -175,18 +161,14 @@
           </button>
         </div>
 
-<!-- KANDUNGAN SUB-TAB 1: PECAHAN MURID -->
+        <!-- KANDUNGAN SUB-TAB 1: PECAHAN MURID -->
         <div id="subtab-pecahan" class="subtab-content p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div>
               <h4 class="text-lg font-bold text-slate-800">Analisis Pecahan Murid</h4>
               <p class="text-xs text-slate-500">Pecahan bilangan murid mengikut jantina</p>
             </div>
-            <select 
-              id="selectAnalisisKategori" 
-              onchange="renderPecahanAnalisis()" 
-              class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
-            >
+            <select id="selectAnalisisKategori" onchange="renderPecahanAnalisis()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
               <option value="unit">Unit Beruniform</option>
               <option value="kelab">Kelab & Persatuan</option>
               <option value="sukan">Sukan & Permainan</option>
@@ -203,9 +185,7 @@
                   <th style="text-align: center;">JUMLAH</th>
                 </tr>
               </thead>
-              <tbody id="tbodyPecahanAnalisis">
-                <!-- Data pecahan dipanggil oleh JS -->
-              </tbody>
+              <tbody id="tbodyPecahanAnalisis"></tbody>
             </table>
           </div>
         </div>
@@ -218,13 +198,7 @@
               <p class="text-xs text-slate-500">Senarai penuh rekod kehadiran murid</p>
             </div>
             <div class="flex flex-wrap gap-2 w-full md:w-auto">
-              <input 
-                type="text" 
-                id="filterKehadiranCari" 
-                placeholder="Cari nama / perkara..." 
-                oninput="tapisKehadiran()" 
-                class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-48"
-              >
+              <input type="text" id="filterKehadiranCari" placeholder="Cari nama / perkara..." oninput="tapisKehadiran()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-48">
               <select id="filterKehadiranTahun" onchange="tapisKehadiran()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">Semua Tahun</option>
               </select>
@@ -234,7 +208,6 @@
             </div>
           </div>
 
-          <!-- Jadual Rekod Kehadiran -->
           <div class="overflow-x-auto rounded-lg border">
             <table class="table-kms">
               <thead>
@@ -246,9 +219,7 @@
                   <th style="text-align:center;">Kehadiran</th>
                 </tr>
               </thead>
-              <tbody id="tbodyKehadiran">
-                <!-- Data Kehadiran dipanggil oleh JS -->
-              </tbody>
+              <tbody id="tbodyKehadiran"></tbody>
             </table>
           </div>
         </div>
@@ -293,18 +264,8 @@
           </div>
 
           <div class="flex flex-col md:flex-row gap-3 mb-4">
-            <input 
-              type="text" 
-              id="filterPerancanganCari" 
-              oninput="tapisPerancangan()" 
-              placeholder="Cari tajuk / perancangan..." 
-              class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
-            <select 
-              id="filterPerancanganUnit" 
-              onchange="tapisPerancangan()" 
-              class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
+            <input type="text" id="filterPerancanganCari" oninput="tapisPerancangan()" placeholder="Cari tajuk / perancangan..." class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+            <select id="filterPerancanganUnit" onchange="tapisPerancangan()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-purple-500">
               <option value="">Semua Unit/Kelab/Sukan</option>
             </select>
           </div>
@@ -320,9 +281,7 @@
                 </tr>
               </thead>
               <tbody id="tbodyPerancangan" class="divide-y divide-slate-100">
-                <tr>
-                  <td colspan="4" class="p-4 text-center text-slate-400">Memuatkan data perancangan...</td>
-                </tr>
+                <tr><td colspan="4" class="p-4 text-center text-slate-400">Memuatkan data perancangan...</td></tr>
               </tbody>
             </table>
           </div>
@@ -336,20 +295,13 @@
               <p class="text-xs text-slate-500">Senarai pencapaian dan pemberian mata merit murid</p>
             </div>
             <div class="flex flex-wrap gap-2 w-full md:w-auto">
-              <input 
-                type="text" 
-                id="filterMeritCari" 
-                placeholder="Cari nama murid / aktiviti..." 
-                oninput="tapisMerit()" 
-                class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-64"
-              >
+              <input type="text" id="filterMeritCari" placeholder="Cari nama murid / aktiviti..." oninput="tapisMerit()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-64">
               <select id="filterMeritUnit" onchange="tapisMerit()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
                 <option value="">Semua Unit/Kelab/Sukan</option>
               </select>
             </div>
           </div>
 
-          <!-- Jadual Rekod Merit -->
           <div class="overflow-x-auto rounded-lg border">
             <table class="table-kms">
               <thead>
@@ -370,30 +322,19 @@
             </table>
           </div>
         </div>
-      </div> <!-- PENUTUP TAB ANALISIS -->
+      </div>
 
       <!-- TAB 2: PENGURUSAN GURU -->
       <div id="tab-guru" class="tab-utama-content tab-content hidden">
         <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
           <div class="flex flex-1 gap-2">
-            <input 
-              type="text" 
-              id="filterGuruNama" 
-              placeholder="Cari nama guru..." 
-              oninput="tapisGuru()" 
-              class="w-full md:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-            <select 
-              id="filterGuruUnit" 
-              onchange="tapisGuru()" 
-              class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+            <input type="text" id="filterGuruNama" placeholder="Cari nama guru..." oninput="tapisGuru()" class="w-full md:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select id="filterGuruUnit" onchange="tapisGuru()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Semua Unit / Kelab / Sukan</option>
             </select>
           </div>
         </div>
 
-        <!-- Jadual Guru -->
         <div class="overflow-x-auto rounded-lg border">
           <table class="table-kms">
             <thead>
@@ -406,9 +347,7 @@
                 <th>PERANAN</th>
               </tr>
             </thead>
-            <tbody id="tbodyPengurusanGuru">
-              <!-- Baris data guru dimuatkan oleh JS -->
-            </tbody>
+            <tbody id="tbodyPengurusanGuru"></tbody>
           </table>
         </div>
       </div>
@@ -417,31 +356,16 @@
       <div id="tab-murid" class="tab-utama-content tab-content hidden">
         <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
           <div class="flex flex-wrap flex-1 gap-2">
-            <input 
-              type="text" 
-              id="filterMuridCari" 
-              placeholder="Cari nama murid / ID..." 
-              oninput="tapisMurid()" 
-              class="w-full md:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-            <select 
-              id="filterMuridKategori" 
-              onchange="tapisMurid()" 
-              class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+            <input type="text" id="filterMuridCari" placeholder="Cari nama murid / ID..." oninput="tapisMurid()" class="w-full md:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select id="filterMuridKategori" onchange="tapisMurid()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Semua Unit / Kelab / Sukan</option>
             </select>
-            <select 
-              id="filterMuridKelas" 
-              onchange="tapisMurid()" 
-              class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+            <select id="filterMuridKelas" onchange="tapisMurid()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Semua Tingkatan/Kelas</option>
             </select>
           </div>
         </div>
 
-        <!-- Jadual Senarai Murid -->
         <div class="w-full overflow-x-auto rounded-lg border border-slate-200">
           <table class="w-full text-left border-collapse table-auto">
             <thead>
@@ -454,9 +378,7 @@
                 <th class="p-3 w-[13.5%]">SUKAN</th>
               </tr>
             </thead>
-            <tbody id="tbodySenaraiMurid" class="divide-y divide-slate-100">
-              <!-- Data render melalui JS di sini -->
-            </tbody>
+            <tbody id="tbodySenaraiMurid" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
       </div>
@@ -465,122 +387,114 @@
   </div>
 
   <!-- MODAL 1: PERANCANGAN TAHUNAN -->
-<div id="modalPerancangan" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-  <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-    <div class="flex justify-between items-center mb-4">
-      <div>
-        <h3 class="font-bold text-lg text-slate-800">Tambah Perancangan Tahunan</h3>
-        <p class="text-xs text-slate-500">Merekod takwim aktiviti baharu ke sheet [annual]</p>
-      </div>
-      <button onclick="closeModal('modalPerancangan')" class="text-slate-400 hover:text-slate-600">✕</button>
-    </div>
-
-    <form id="formPerancangan" onsubmit="hantarPerancangan(event)" class="space-y-4">
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Tarikh (Date)</label>
-        <input type="date" id="inputPerancanganTarikh" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+  <div id="modalPerancangan" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <h3 class="font-bold text-lg text-slate-800">Tambah Perancangan Tahunan</h3>
+          <p class="text-xs text-slate-500">Merekod takwim aktiviti baharu ke sheet [annual]</p>
+        </div>
+        <button onclick="closeModal('modalPerancangan')" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
 
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun (Year)</label>
-        <input type="number" id="inputPerancanganTahun" value="2026" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-      </div>
-
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Unit / Kelab / Sukan</label>
-        <select id="inputPerancanganUnit" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-          <option value="">-- Pilih Unit --</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Tajuk / Aktiviti (Title)</label>
-        <textarea id="inputPerancanganTajuk" rows="3" required placeholder="Masukkan perancangan aktiviti..." class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
-      </div>
-
-      <div class="flex justify-end gap-2 pt-2">
-        <button type="button" onclick="closeModal('modalPerancangan')" class="px-4 py-2 border rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50">Batal</button>
-        <button type="submit" id="btnSimpanPerancangan" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium transition">Simpan Perancangan</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-  <!-- MODAL 2: PELAPORAN -->
-<div id="modalPelaporan" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-  <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-    <div class="flex justify-between items-center mb-4 border-b pb-3">
-      <div>
-        <h3 class="font-bold text-lg text-slate-800">Modul Pelaporan Aktiviti</h3>
-        <p class="text-xs text-slate-500">Merekod pelaporan aktiviti dan kehadiran ke sheet [reports]</p>
-      </div>
-      <button onclick="closeModal('modalPelaporan')" class="text-slate-400 hover:text-slate-600">✕</button>
-    </div>
-
-    <form id="formPelaporan" onsubmit="hantarPelaporan(event)" class="space-y-4">
-      
-      <!-- GRID 2 KOLUM: TARIKH & TAHUN -->
-      <div class="grid grid-cols-2 gap-3">
+      <form id="formPerancangan" onsubmit="hantarPerancangan(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Tarikh (Date)</label>
-          <input type="date" id="inputPelaporanTarikh" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <input type="date" id="inputPerancanganTarikh" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
         </div>
+
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun (Year)</label>
-          <input type="number" id="inputPelaporanTahun" value="2026" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <input type="number" id="inputPerancanganTahun" value="2026" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
         </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Unit / Kelab / Sukan</label>
+          <select id="inputPerancanganUnit" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <option value="">-- Pilih Unit --</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Tajuk / Aktiviti (Title)</label>
+          <textarea id="inputPerancanganTajuk" rows="3" required placeholder="Masukkan perancangan aktiviti..." class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeModal('modalPerancangan')" class="px-4 py-2 border rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50">Batal</button>
+          <button type="submit" id="btnSimpanPerancangan" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium transition">Simpan Perancangan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: PELAPORAN -->
+  <div id="modalPelaporan" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 border-b pb-3">
+        <div>
+          <h3 class="font-bold text-lg text-slate-800">Modul Pelaporan Aktiviti</h3>
+          <p class="text-xs text-slate-500">Merekod pelaporan aktiviti dan kehadiran ke sheet [reports]</p>
+        </div>
+        <button onclick="closeModal('modalPelaporan')" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
 
-      <!-- UNIT / KELAB / SUKAN -->
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Unit / Kelab / Sukan (Unit)</label>
-        <select id="inputPelaporanUnit" onchange="penapisMuridPelaporan()" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-          <option value="">-- Pilih Unit --</option>
-        </select>
-      </div>
-
-      <!-- TAJUK -->
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Tajuk Aktiviti (Title)</label>
-        <input type="text" id="inputPelaporanTajuk" placeholder="Cth: Perjumpaan Mingguan Ke-3" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-      </div>
-
-      <!-- HURAIAN / RINGKASAN -->
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Ringkasan Aktiviti (Description)</label>
-        <textarea id="inputPelaporanHuraian" rows="3" placeholder="Nyatakan aktiviti yang dijalankan..." class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
-      </div>
-
-      <!-- MUAT NAIK GAMBAR -->
-      <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Muat Naik Gambar / Dokumentasi (Image)</label>
-        <input type="file" id="inputPelaporanGambar" accept="image/*" class="w-full border rounded-lg px-3 py-1.5 text-sm file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-        <p class="text-[10px] text-slate-400 mt-0.5">*Pilih gambar dari peranti (JPG, PNG, GIF)</p>
-      </div>
-
-      <!-- SENARAI MURID (CHECKLIST CONTAINING NAMES) -->
-      <div>
-        <div class="flex justify-between items-center mb-1">
-          <label class="block text-xs font-semibold text-slate-600">Senarai Murid Terlibat (Names)</label>
-          <div class="flex gap-2">
-            <button type="button" onclick="pilihSemuaMuridPelaporan(true)" class="text-[11px] font-medium text-emerald-600 hover:underline">Pilih Semua</button>
-            <span class="text-slate-300">|</span>
-            <button type="button" onclick="pilihSemuaMuridPelaporan(false)" class="text-[11px] font-medium text-rose-600 hover:underline">Nyahpilih</button>
+      <form id="formPelaporan" onsubmit="hantarPelaporan(event)" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tarikh (Date)</label>
+            <input type="date" id="inputPelaporanTarikh" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun (Year)</label>
+            <input type="number" id="inputPelaporanTahun" value="2026" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
           </div>
         </div>
-        <div id="kontenaPelaporanMurid" class="border rounded-lg p-2.5 max-h-40 overflow-y-auto space-y-1 bg-slate-50 text-xs">
-          <p class="text-slate-400 italic text-center py-2">Sila pilih Unit di atas untuk memaparkan senarai murid.</p>
-        </div>
-      </div>
 
-      <!-- BUTANG TINDAKAN -->
-      <div class="flex justify-end gap-2 pt-2 border-t">
-        <button type="button" onclick="closeModal('modalPelaporan')" class="px-4 py-2 border rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50">Batal</button>
-        <button type="submit" id="btnSimpanPelaporan" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition shadow-sm">Hantar Laporan</button>
-      </div>
-    </form>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Unit / Kelab / Sukan (Unit)</label>
+          <select id="inputPelaporanUnit" onchange="penapisMuridPelaporan()" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <option value="">-- Pilih Unit --</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Tajuk Aktiviti (Title)</label>
+          <input type="text" id="inputPelaporanTajuk" placeholder="Cth: Perjumpaan Mingguan Ke-3" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Ringkasan Aktiviti (Description)</label>
+          <textarea id="inputPelaporanHuraian" rows="3" placeholder="Nyatakan aktiviti yang dijalankan..." class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Muat Naik Gambar / Dokumentasi (Image)</label>
+          <input type="file" id="inputPelaporanGambar" accept="image/*" class="w-full border rounded-lg px-3 py-1.5 text-sm file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <p class="text-[10px] text-slate-400 mt-0.5">*Pilih gambar dari peranti (JPG, PNG, GIF)</p>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-xs font-semibold text-slate-600">Senarai Murid Terlibat (Names)</label>
+            <div class="flex gap-2">
+              <button type="button" onclick="pilihSemuaMuridPelaporan(true)" class="text-[11px] font-medium text-emerald-600 hover:underline">Pilih Semua</button>
+              <span class="text-slate-300">|</span>
+              <button type="button" onclick="pilihSemuaMuridPelaporan(false)" class="text-[11px] font-medium text-rose-600 hover:underline">Nyahpilih</button>
+            </div>
+          </div>
+          <div id="kontenaPelaporanMurid" class="border rounded-lg p-2.5 max-h-40 overflow-y-auto space-y-1 bg-slate-50 text-xs">
+            <p class="text-slate-400 italic text-center py-2">Sila pilih Unit di atas untuk memaparkan senarai murid.</p>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t">
+          <button type="button" onclick="closeModal('modalPelaporan')" class="px-4 py-2 border rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50">Batal</button>
+          <button type="submit" id="btnSimpanPelaporan" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition shadow-sm">Hantar Laporan</button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
 
   <!-- MODAL 3: MERIT -->
   <div id="modalMerit" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
@@ -616,9 +530,7 @@
         </div>
         <button onclick="tutupModalKehadiran()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
       </div>
-      <div id="modalKandunganNama" class="overflow-y-auto flex-1 flex flex-col gap-2 pr-1">
-        <!-- Senarai nama dimuatkan oleh JS -->
-      </div>
+      <div id="modalKandunganNama" class="overflow-y-auto flex-1 flex flex-col gap-2 pr-1"></div>
       <div class="text-right pt-3 mt-4 border-t">
         <button onclick="tutupModalKehadiran()" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold">Tutup</button>
       </div>
@@ -651,9 +563,7 @@
         </div>
         <button onclick="tutupModalReportsName()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
       </div>
-      <div id="modalKandunganNamaReports" class="overflow-y-auto flex-1 flex flex-col gap-2 pr-1">
-        <!-- Senarai nama dimuatkan oleh JS -->
-      </div>
+      <div id="modalKandunganNamaReports" class="overflow-y-auto flex-1 flex flex-col gap-2 pr-1"></div>
       <div class="text-right pt-3 mt-4 border-t">
         <button onclick="tutupModalReportsName()" class="bg-emerald-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold">Tutup</button>
       </div>
@@ -670,15 +580,22 @@
     let senaraiKehadiranTapis = [];
     let senaraiPelaporanInduk = [];
     let senaraiPelaporanTapis = [];
+    let senaraiPerancanganInduk = [];
+    let senaraiPerancanganTapis = [];
+    let senaraiMeritInduk = [];
+    let senaraiMeritTapis = [];
 
-    // ==========================================
-    // 1. KAWALAN TAB & MODAL
-    // ==========================================
+    // 1. KAWALAN MODAL
     function openModal(modalId) {
       const modal = document.getElementById(modalId);
       if (modal) {
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+      }
+      if (modalId === 'modalPerancangan') {
+        isiDropdownUnitPerancangan();
+      } else if (modalId === 'modalPelaporan') {
+        isiDropdownUnitPelaporan();
       }
     }
 
@@ -690,73 +607,56 @@
       }
     }
 
-// ==========================================
-// 2. AMBIL DATA DARI GOOGLE APPS SCRIPT / FETCH
-// ==========================================
-function muatkanDataKMS() {
-  console.log(">>> Memulakan muatkanDataKMS()...");
+    // 2. MUAT DATA DARI GOOGLE APPS SCRIPT / FETCH
+    function muatkanDataKMS() {
+      console.log(">>> Memulakan muatkanDataKMS()...");
+      const loader = document.getElementById("loadingScreen");
+      if (loader) loader.classList.remove("hidden");
 
-  const loader = document.getElementById("loadingScreen");
-  if (loader) loader.classList.remove("hidden");
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            console.log(">>> Respons diterima dari Apps Script:", res);
+            prosesDataMasuk(res);
+            if (loader) loader.classList.add("hidden");
+          })
+          .withFailureHandler(function(err) {
+            console.error(">>> Ralat google.script.run:", err);
+            if (loader) loader.classList.add("hidden");
+          })
+          .getAllData();
+      } else {
+        fetch(`${WEB_APP_URL}?action=getAllData`)
+          .then(response => response.json())
+          .then(res => {
+            console.log(">>> Respons diterima dari fetch:", res);
+            prosesDataMasuk(res);
+            if (loader) loader.classList.add("hidden");
+          })
+          .catch(err => {
+            console.error(">>> Ralat fetch:", err);
+            if (loader) loader.classList.add("hidden");
+          });
+      }
+    }
 
-  if (typeof google !== 'undefined' && google.script && google.script.run) {
-    google.script.run
-      .withSuccessHandler(function(res) {
-        console.log(">>> Respons diterima dari Apps Script:", res);
-        
-        // Simpan data murid ke pembolehubah global
-        window.senaraiMuridInduk = res.pelajar || res.students || [];
+    function prosesDataMasuk(res) {
+      if (!res) return;
+      window.allData = res;
+      window.senaraiMuridInduk = res.pelajar || res.students || [];
 
-        prosesDanPaparUsers(res);
-        prosesDanPaparMurid(res);
-        prosesDanPaparKehadiran(res);
-        prosesDanPaparPelaporan(res);
-        prosesDanPaparPerancangan(res);
-        prosesDanPaparMerit(res);
+      prosesDanPaparUsers(res);
+      prosesDanPaparMurid(res);
+      prosesDanPaparKehadiran(res);
+      prosesDanPaparPelaporan(res);
+      prosesDanPaparPerancangan(res);
+      prosesDanPaparMerit(res);
 
-        // Isi kedua-dua dropdown unit modal
-        isiDropdownUnitPerancangan();
-        isiDropdownUnitPelaporan();
+      isiDropdownUnitPerancangan();
+      isiDropdownUnitPelaporan();
+    }
 
-        if (loader) loader.classList.add("hidden");
-      })
-      .withFailureHandler(function(err) {
-        console.error(">>> Ralat google.script.run:", err);
-        if (loader) loader.classList.add("hidden");
-      })
-      .getAllData();
-  } else {
-    fetch(`${WEB_APP_URL}?action=getAllData`)
-      .then(response => response.json())
-      .then(res => {
-        console.log(">>> Respons diterima dari fetch:", res);
-        
-        // Simpan data murid ke pembolehubah global
-        window.senaraiMuridInduk = res.pelajar || res.students || [];
-
-        prosesDanPaparUsers(res);
-        prosesDanPaparMurid(res);
-        prosesDanPaparKehadiran(res);
-        prosesDanPaparPelaporan(res);
-        prosesDanPaparPerancangan(res);
-        prosesDanPaparMerit(res);
-
-        // Isi kedua-dua dropdown unit modal
-        isiDropdownUnitPerancangan();
-        isiDropdownUnitPelaporan();
-
-        if (loader) loader.classList.add("hidden");
-      })
-      .catch(err => {
-        console.error(">>> Ralat fetch:", err);
-        if (loader) loader.classList.add("hidden");
-      });
-  }
-}
-    
-    // ==========================================
     // 3. MODUL GURU
-    // ==========================================
     function prosesDanPaparUsers(res) {
       if (res && res.users) {
         senaraiGuruInduk = res.users;
@@ -789,9 +689,7 @@ function muatkanDataKMS() {
         const email = (guru.email || "").toLowerCase().trim();
         const peranan = (guru.peranan || "").toLowerCase().trim();
 
-        if (peranan === "super admin" && email.includes("yba6103")) {
-          return false;
-        }
+        if (peranan === "super admin" && email.includes("yba6103")) return false;
 
         const padanNama = (guru.nama || "").toLowerCase().includes(inputNama);
         const padanKategori = !kategoriDipilih || 
@@ -805,16 +703,9 @@ function muatkanDataKMS() {
       hasilTapis.sort((a, b) => {
         const perananA = (a.peranan || "").toLowerCase().trim();
         const perananB = (b.peranan || "").toLowerCase().trim();
-
-        const isPenyeliaA = perananA === "penyelia";
-        const isPenyeliaB = perananB === "penyelia";
-
-        if (isPenyeliaA && !isPenyeliaB) return -1;
-        if (!isPenyeliaA && isPenyeliaB) return 1;
-
-        const namaA = a.nama || "";
-        const namaB = b.nama || "";
-        return namaA.localeCompare(namaB, 'ms', { sensitivity: 'base' });
+        if (perananA === "penyelia" && perananB !== "penyelia") return -1;
+        if (perananA !== "penyelia" && perananB === "penyelia") return 1;
+        return (a.nama || "").localeCompare(b.nama || "", 'ms', { sensitivity: 'base' });
       });
 
       renderPengurusanGuru(hasilTapis);
@@ -841,30 +732,20 @@ function muatkanDataKMS() {
       `).join('');
     }
 
-    // ==========================================
-// 4. MODUL MURID & ANALISIS PECAHAN
-// ==========================================
-function prosesDanPaparMurid(res) {
-  if (!res) return;
+    // 4. MODUL MURID & ANALISIS PECAHAN
+    function prosesDanPaparMurid(res) {
+      const dataMurid = res.pelajar || res.students || [];
+      if (dataMurid.length > 0) {
+        window.senaraiMuridInduk = dataMurid;
+        senaraiMuridInduk = dataMurid;
 
-  window.allData = res;
-  const dataMurid = res.pelajar || res.students || [];
-
-  if (dataMurid.length > 0) {
-    window.senaraiMuridInduk = dataMurid;
-    senaraiMuridInduk = dataMurid;
-
-    isiDropdownMurid(senaraiMuridInduk);
-    tapisMurid();
-    renderPecahanAnalisis();
-    renderKadTaburanAhli();
-
-    // Panggil automatik pengisian dropdown unit bila data murid siap diproses
-    if (typeof isiDropdownUnitPerancangan === 'function') {
-      isiDropdownUnitPerancangan();
+        isiDropdownMurid(senaraiMuridInduk);
+        tapisMurid();
+        renderPecahanAnalisis();
+        renderKadTaburanAhli();
+      }
     }
-  }
-}
+
     function isiDropdownMurid(muridList) {
       const selectKategori = document.getElementById("filterMuridKategori");
       const selectKelas = document.getElementById("filterMuridKelas");
@@ -898,10 +779,7 @@ function prosesDanPaparMurid(res) {
       const hasilTapis = senaraiMuridInduk.filter(m => {
         const padanCari = (m.nama || "").toLowerCase().includes(inputCari) || 
                           (m.id || "").toLowerCase().includes(inputCari);
-        const padanKat = !katDipilih || 
-                         m.unit === katDipilih || 
-                         m.kelab === katDipilih || 
-                         m.sukan === katDipilih;
+        const padanKat = !katDipilih || m.unit === katDipilih || m.kelab === katDipilih || m.sukan === katDipilih;
         const padanKelas = !kelasDipilih || m.kelas === kelasDipilih;
 
         return padanCari && padanKat && padanKelas;
@@ -957,23 +835,17 @@ function prosesDanPaparMurid(res) {
         const namaKategori = (m[katDipilih] || "").trim();
         if (!namaKategori) return;
 
-        if (!petaAnalisis[namaKategori]) {
-          petaAnalisis[namaKategori] = { lelaki: 0, perempuan: 0 };
-        }
+        if (!petaAnalisis[namaKategori]) petaAnalisis[namaKategori] = { lelaki: 0, perempuan: 0 };
 
         const jantina = (m.jantina || "").toUpperCase().trim();
-        if (jantina === "LELAKI" || jantina === "L") {
-          petaAnalisis[namaKategori].lelaki++;
-        } else if (jantina === "PEREMPUAN" || jantina === "P") {
-          petaAnalisis[namaKategori].perempuan++;
-        }
+        if (jantina === "LELAKI" || jantina === "L") petaAnalisis[namaKategori].lelaki++;
+        else if (jantina === "PEREMPUAN" || jantina === "P") petaAnalisis[namaKategori].perempuan++;
       });
 
       const tbody = document.getElementById("tbodyPecahanAnalisis");
       if (!tbody) return;
 
       const senaraiNama = Object.keys(petaAnalisis).sort();
-
       if (senaraiNama.length === 0) {
         tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:15px;">Tiada data murid bagi kategori ini.</td></tr>`;
         return;
@@ -998,41 +870,30 @@ function prosesDanPaparMurid(res) {
         `;
       }).join('');
 
-      const totalKeseluruhan = totalLelaki + totalPerempuan;
-
-      const htmlFooter = `
+      tbody.innerHTML = htmlBaris + `
         <tr style="background-color: #f8fafc; font-weight: bold; border-top: 2px solid #e2e8f0;">
           <td>JUMLAH KESELURAHAN</td>
           <td style="text-align: center;">${totalLelaki}</td>
           <td style="text-align: center;">${totalPerempuan}</td>
-          <td style="text-align: center; color: #2563eb;">${totalKeseluruhan}</td>
+          <td style="text-align: center; color: #2563eb;">${totalLelaki + totalPerempuan}</td>
         </tr>
       `;
-
-      tbody.innerHTML = htmlBaris + htmlFooter;
     }
 
     function renderKadTaburanAhli() {
       if (!senaraiMuridInduk || senaraiMuridInduk.length === 0) return;
-
       const container = document.getElementById("kandunganTaburanAhli");
       if (!container) return;
 
       const kiraanMap = {};
-
       senaraiMuridInduk.forEach(m => {
         ['unit', 'kelab', 'sukan'].forEach(kat => {
           const nama = (m[kat] || "").trim();
-          if (nama) {
-            kiraanMap[nama] = (kiraanMap[nama] || 0) + 1;
-          }
+          if (nama) kiraanMap[nama] = (kiraanMap[nama] || 0) + 1;
         });
       });
 
-      const senaraiSusun = Object.keys(kiraanMap).sort((a, b) => 
-        a.localeCompare(b, 'ms', { sensitivity: 'base' })
-      );
-
+      const senaraiSusun = Object.keys(kiraanMap).sort((a, b) => a.localeCompare(b, 'ms', { sensitivity: 'base' }));
       if (senaraiSusun.length === 0) {
         container.innerHTML = `<p style="font-size: 12px; color: #94a3b8; text-align: center;">Tiada data unit.</p>`;
         return;
@@ -1046,24 +907,16 @@ function prosesDanPaparMurid(res) {
       `).join('');
     }
 
-    // ==========================================
     // 5. MODUL KEHADIRAN
-    // ==========================================
     function prosesDanPaparKehadiran(res) {
       if (!res || !Array.isArray(res.attendance)) return;
-
       const sesiPerjumpaan = res.attendance;
 
       const statKehadiran = document.getElementById("statTotalKehadiran");
-      if (statKehadiran) {
-        statKehadiran.textContent = sesiPerjumpaan.length.toLocaleString('ms-MY');
-      }
+      if (statKehadiran) statKehadiran.textContent = sesiPerjumpaan.length.toLocaleString('ms-MY');
 
       senaraiKehadiranInduk = sesiPerjumpaan.map(item => {
-        const senaraiNama = item.nama 
-          ? item.nama.split(',').map(n => n.trim()).filter(n => n !== '') 
-          : [];
-
+        const senaraiNama = item.nama ? item.nama.split(',').map(n => n.trim()).filter(Boolean) : [];
         return {
           tarikh: item.tarikh || '-',
           tahun: item.tahun || '-',
@@ -1081,7 +934,6 @@ function prosesDanPaparMurid(res) {
     function isiDropdownKehadiran(list) {
       const selectTahun = document.getElementById("filterKehadiranTahun");
       const selectUnit = document.getElementById("filterKehadiranUnit");
-
       const tahunSet = new Set();
       const unitSet = new Set();
 
@@ -1091,13 +943,10 @@ function prosesDanPaparMurid(res) {
       });
 
       if (selectTahun) {
-        selectTahun.innerHTML = `<option value="">Semua Tahun</option>` + 
-          Array.from(tahunSet).sort().map(t => `<option value="${t}">${t}</option>`).join('');
+        selectTahun.innerHTML = `<option value="">Semua Tahun</option>` + Array.from(tahunSet).sort().map(t => `<option value="${t}">${t}</option>`).join('');
       }
-
       if (selectUnit) {
-        selectUnit.innerHTML = `<option value="">Semua Unit/Kelab/Sukan</option>` + 
-          Array.from(unitSet).sort().map(u => `<option value="${u}">${u}</option>`).join('');
+        selectUnit.innerHTML = `<option value="">Semua Unit/Kelab/Sukan</option>` + Array.from(unitSet).sort().map(u => `<option value="${u}">${u}</option>`).join('');
       }
     }
 
@@ -1110,7 +959,6 @@ function prosesDanPaparMurid(res) {
         const padanNamaMurid = item.senaraiNama.some(nama => nama.toLowerCase().includes(inputCari));
         const padanPerkara = item.perkara.toLowerCase().includes(inputCari);
         const padanCari = !inputCari || padanNamaMurid || padanPerkara;
-
         const padanTahun = !tahunDipilih || item.tahun === tahunDipilih;
         const padanUnit = !unitDipilih || item.unit === unitDipilih;
 
@@ -1152,7 +1000,6 @@ function prosesDanPaparMurid(res) {
       document.getElementById("modalSubtajuk").textContent = `${item.unit} | ${item.tarikh} (${item.jumlahHadir} Murid Hadir)`;
 
       const container = document.getElementById("modalKandunganNama");
-      
       if (item.senaraiNama.length > 0) {
         container.innerHTML = item.senaraiNama.map((nama, i) => `
           <div style="background:#f1f5f9; color:#1e293b; padding:6px 10px; border-radius:6px; font-size:13px; width:100%; border-left:3px solid #2563eb;">
@@ -1166,32 +1013,20 @@ function prosesDanPaparMurid(res) {
       openModal("modalSenaraiHadir");
     };
 
-    window.tutupModalKehadiran = function() {
-      closeModal("modalSenaraiHadir");
-    };
+    window.tutupModalKehadiran = function() { closeModal("modalSenaraiHadir"); };
 
-    // ==========================================
     // 6. MODUL PELAPORAN
-    // ==========================================
     function formatTarikhKemas(rawDate) {
       if (!rawDate || rawDate === '-') return '-';
       try {
         const d = new Date(rawDate);
         if (isNaN(d.getTime())) return rawDate;
-        
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
-        
-        return `${day}/${month}/${year}`;
-      } catch (e) {
-        return rawDate;
-      }
+        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+      } catch (e) { return rawDate; }
     }
 
     function prosesDanPaparPelaporan(res) {
-      const dataReports = res.reports || res.pelaporan || [];
-      senaraiPelaporanInduk = dataReports;
+      senaraiPelaporanInduk = res.reports || res.pelaporan || [];
       senaraiPelaporanTapis = [...senaraiPelaporanInduk];
 
       const statEl = document.getElementById("statTotalPelaporan");
@@ -1205,7 +1040,7 @@ function prosesDanPaparMurid(res) {
       const tbody = document.getElementById("jadualPelaporanBody");
       if (!tbody) return;
 
-      if (data.length === 0) {
+      if (!data || data.length === 0) {
         tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Tiada rekod pelaporan dijumpai.</td></tr>`;
         return;
       }
@@ -1214,14 +1049,11 @@ function prosesDanPaparMurid(res) {
         const adaGambar = item.image && item.image.trim().length > 10;
         const senaraiNama = Array.isArray(item.names) ? item.names : (item.names ? item.names.split(',').map(n => n.trim()) : []);
 
-        const tarikhPaparan = formatTarikhKemas(item.date || item.tarikh);
-        const tajukPaparan = item.title || item.tajuk || item.perkara || '-';
-
         return `
           <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-            <td class="p-3 font-medium text-slate-700">${tarikhPaparan}</td>
+            <td class="p-3 font-medium text-slate-700">${formatTarikhKemas(item.date || item.tarikh)}</td>
             <td class="p-3 text-slate-600">${item.unit || '-'}</td>
-            <td class="p-3 font-semibold text-slate-800">${tajukPaparan}</td>
+            <td class="p-3 font-semibold text-slate-800">${item.title || item.tajuk || item.perkara || '-'}</td>
             <td class="p-3 text-center">
               ${adaGambar 
                 ? `<button onclick="bukaModalImages(${index})" class="bg-cyan-50 text-cyan-700 border border-cyan-200 px-2.5 py-1 rounded-md text-[11px] font-semibold hover:bg-cyan-100">📷 Lihat Gambar</button>` 
@@ -1264,28 +1096,21 @@ function prosesDanPaparMurid(res) {
       if (!item || !item.image) return;
 
       let rawBase64 = item.image.trim();
-      const srcFinal = rawBase64.startsWith("data:image") ? rawBase64 : `data:image/jpeg;base64,${rawBase64}`;
-
-      document.getElementById("imgModalElement").src = srcFinal;
+      document.getElementById("imgModalElement").src = rawBase64.startsWith("data:image") ? rawBase64 : `data:image/jpeg;base64,${rawBase64}`;
       document.getElementById("modalImagesTajuk").textContent = item.title || item.tajuk || "Gambar Laporan";
 
       openModal("modalImages");
     };
 
-    window.tutupModalImages = function() {
-      closeModal("modalImages");
-    };
+    window.tutupModalImages = function() { closeModal("modalImages"); };
 
     window.bukaModalReportsName = function(index) {
       const item = senaraiPelaporanTapis[index];
       if (!item) return;
 
       const senaraiNama = Array.isArray(item.names) ? item.names : (item.names ? item.names.split(',').map(n => n.trim()) : []);
-      const tarikh = formatTarikhKemas(item.date || item.tarikh);
-      const tajuk = item.title || item.tajuk || "Senarai Murid";
-
-      document.getElementById("modalReportsTajuk").textContent = tajuk;
-      document.getElementById("modalReportsSubtajuk").textContent = `${item.unit || '-'} | ${tarikh} (${senaraiNama.length} Murid)`;
+      document.getElementById("modalReportsTajuk").textContent = item.title || item.tajuk || "Senarai Murid";
+      document.getElementById("modalReportsSubtajuk").textContent = `${item.unit || '-'} | ${formatTarikhKemas(item.date || item.tarikh)} (${senaraiNama.length} Murid)`;
 
       const container = document.getElementById("modalKandunganNamaReports");
       if (senaraiNama.length > 0) {
@@ -1301,108 +1126,60 @@ function prosesDanPaparMurid(res) {
       openModal("modalReportsName");
     };
 
-    window.tutupModalReportsName = function() {
-      closeModal("modalReportsName");
+    window.tutupModalReportsName = function() { closeModal("modalReportsName"); };
+
+    // 7. KAWALAN SUB-TAB ANALISIS
+    window.tukarSubTabAnalisis = function(namaSubTab) {
+      document.querySelectorAll('.subtab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.btn-subtab').forEach(btn => {
+        btn.classList.remove('border-blue-600', 'text-blue-600', 'border-amber-500', 'text-amber-600');
+        btn.classList.add('border-transparent', 'text-slate-500');
+      });
+
+      const petaBtn = {
+        'pecahan': 'btnSubtabPecahan',
+        'kehadiran': 'btnSubtabKehadiran',
+        'pelaporan': 'btnSubtabPelaporan',
+        'perancangan': 'btnSubtabPerancangan',
+        'merit': 'btnSubtabMerit'
+      };
+
+      document.getElementById(`subtab-${namaSubTab}`)?.classList.remove('hidden');
+      const btn = document.getElementById(petaBtn[namaSubTab]);
+      if (btn) {
+        const warnaBorder = namaSubTab === 'merit' ? 'border-amber-500' : 'border-blue-600';
+        const warnaTeks = namaSubTab === 'merit' ? 'text-amber-600' : 'text-blue-600';
+        btn.classList.add(warnaBorder, warnaTeks);
+        btn.classList.remove('border-transparent', 'text-slate-500');
+      }
+
+      if (namaSubTab === 'pecahan') renderPecahanAnalisis();
+      else if (namaSubTab === 'kehadiran') renderJadualKehadiran(senaraiKehadiranTapis);
+      else if (namaSubTab === 'pelaporan') renderJadualPelaporan(senaraiPelaporanTapis);
+      else if (namaSubTab === 'perancangan') renderJadualPerancangan(senaraiPerancanganTapis);
+      else if (namaSubTab === 'merit') renderJadualMerit(senaraiMeritTapis);
     };
-    
-    // ==========================================
-// 7. KAWALAN SUB-TAB ANALISIS
-// ==========================================
-window.tukarSubTabAnalisis = function(namaSubTab) {
-  document.querySelectorAll('.subtab-content').forEach(el => el.classList.add('hidden'));
 
-  document.querySelectorAll('.btn-subtab').forEach(btn => {
-    btn.classList.remove('border-blue-600', 'text-blue-600', 'border-amber-500', 'text-amber-600');
-    btn.classList.add('border-transparent', 'text-slate-500');
-  });
-
-  if (namaSubTab === 'pecahan') {
-    document.getElementById('subtab-pecahan')?.classList.remove('hidden');
-    const btn = document.getElementById('btnSubtabPecahan');
-    btn?.classList.add('border-blue-600', 'text-blue-600');
-    btn?.classList.remove('border-transparent', 'text-slate-500');
-    if (typeof renderPecahanAnalisis === 'function') renderPecahanAnalisis();
-
-  } else if (namaSubTab === 'kehadiran') {
-    document.getElementById('subtab-kehadiran')?.classList.remove('hidden');
-    const btn = document.getElementById('btnSubtabKehadiran');
-    btn?.classList.add('border-blue-600', 'text-blue-600');
-    btn?.classList.remove('border-transparent', 'text-slate-500');
-    if (typeof renderJadualKehadiran === 'function' && typeof senaraiKehadiranTapis !== 'undefined') {
-      renderJadualKehadiran(senaraiKehadiranTapis);
-    }
-
-  } else if (namaSubTab === 'pelaporan') {
-    document.getElementById('subtab-pelaporan')?.classList.remove('hidden');
-    const btn = document.getElementById('btnSubtabPelaporan');
-    btn?.classList.add('border-blue-600', 'text-blue-600');
-    btn?.classList.remove('border-transparent', 'text-slate-500');
-    if (typeof renderJadualPelaporan === 'function' && typeof senaraiPelaporanTapis !== 'undefined') {
-      renderJadualPelaporan(senaraiPelaporanTapis);
-    }
-
-  } else if (namaSubTab === 'perancangan') {
-    document.getElementById('subtab-perancangan')?.classList.remove('hidden');
-    const btn = document.getElementById('btnSubtabPerancangan');
-    btn?.classList.add('border-blue-600', 'text-blue-600');
-    btn?.classList.remove('border-transparent', 'text-slate-500');
-    if (typeof renderJadualPerancangan === 'function' && typeof senaraiPerancanganTapis !== 'undefined') {
-      renderJadualPerancangan(senaraiPerancanganTapis);
-    }
-
-  } else if (namaSubTab === 'merit') {
-    document.getElementById('subtab-merit')?.classList.remove('hidden');
-    const btn = document.getElementById('btnSubtabMerit');
-    btn?.classList.add('border-amber-500', 'text-amber-600');
-    btn?.classList.remove('border-transparent', 'text-slate-500');
-    if (typeof renderJadualMerit === 'function' && typeof senaraiMeritTapis !== 'undefined') {
-      renderJadualMerit(senaraiMeritTapis);
-    }
-  }
-};
-
-    // ==========================================
     // 8. KAWALAN TAB UTAMA
-    // ==========================================
     window.tukarTabUtama = function(namaTab) {
       document.querySelectorAll('.tab-utama-content').forEach(el => el.classList.add('hidden'));
-
       document.querySelectorAll('.btn-tab-utama').forEach(btn => {
         btn.classList.remove('border-blue-600', 'text-blue-600', 'font-bold');
         btn.classList.add('border-transparent', 'text-slate-500', 'font-medium');
       });
 
-      if (namaTab === 'analisis') {
-        document.getElementById('tab-analisis')?.classList.remove('hidden');
-        const btn = document.getElementById('btnTabAnalisis');
-        btn?.classList.add('border-blue-600', 'text-blue-600', 'font-bold');
-        btn?.classList.remove('border-transparent', 'text-slate-500', 'font-medium');
-
-      } else if (namaTab === 'guru') {
-        document.getElementById('tab-guru')?.classList.remove('hidden');
-        const btn = document.getElementById('btnTabGuru');
-        btn?.classList.add('border-blue-600', 'text-blue-600', 'font-bold');
-        btn?.classList.remove('border-transparent', 'text-slate-500', 'font-medium');
-
-      } else if (namaTab === 'murid') {
-        document.getElementById('tab-murid')?.classList.remove('hidden');
-        const btn = document.getElementById('btnTabMurid');
-        btn?.classList.add('border-blue-600', 'text-blue-600', 'font-bold');
-        btn?.classList.remove('border-transparent', 'text-slate-500', 'font-medium');
+      const petaBtn = { 'analisis': 'btnTabAnalisis', 'guru': 'btnTabGuru', 'murid': 'btnTabMurid' };
+      document.getElementById(`tab-${namaTab}`)?.classList.remove('hidden');
+      const btn = document.getElementById(petaBtn[namaTab]);
+      if (btn) {
+        btn.classList.add('border-blue-600', 'text-blue-600', 'font-bold');
+        btn.classList.remove('border-transparent', 'text-slate-500', 'font-medium');
       }
     };
-    
-    // ==========================================
+
     // 9. MODUL PERANCANGAN
-    // ==========================================
-    let senaraiPerancanganInduk = [];
-    let senaraiPerancanganTapis = [];
-
     function prosesDanPaparPerancangan(res) {
-      console.log("Data Backend Diterima:", res);
-
-      const dataAnnual = (res && res.annual) ? res.annual : [];
-      senaraiPerancanganInduk = dataAnnual;
+      senaraiPerancanganInduk = (res && res.annual) ? res.annual : [];
       senaraiPerancanganTapis = [...senaraiPerancanganInduk];
 
       const statEl = document.getElementById("statTotalPerancangan");
@@ -1421,33 +1198,24 @@ window.tukarSubTabAnalisis = function(namaSubTab) {
         return;
       }
 
-      tbody.innerHTML = data.map(item => {
-        const tarikh = typeof formatTarikhKemas === 'function' && item.date ? formatTarikhKemas(item.date) : (item.date || '-');
-        const tahun = item.year ? `Tahun ${item.year}` : '-';
-        const unit = item.unit || '-';
-        const tajuk = item.title || '-';
-
-        return `
-          <tr class="border-b border-slate-100 hover:bg-slate-50 transition text-sm">
-            <td class="p-3 font-medium text-slate-700">${tarikh}</td>
-            <td class="p-3 text-slate-600">${tahun}</td>
-            <td class="p-3 text-slate-600"><span class="badge-tag">${unit}</span></td>
-            <td class="p-3 font-semibold text-slate-800">${tajuk}</td>
-          </tr>
-        `;
-      }).join('');
+      tbody.innerHTML = data.map(item => `
+        <tr class="border-b border-slate-100 hover:bg-slate-50 transition text-sm">
+          <td class="p-3 font-medium text-slate-700">${formatTarikhKemas(item.date)}</td>
+          <td class="p-3 text-slate-600">${item.year ? `Tahun ${item.year}` : '-'}</td>
+          <td class="p-3 text-slate-600"><span class="badge-tag">${item.unit || '-'}</span></td>
+          <td class="p-3 font-semibold text-slate-800">${item.title || '-'}</td>
+        </tr>
+      `).join('');
     }
-        
+
     function tapisPerancangan() {
       const cari = (document.getElementById("filterPerancanganCari")?.value || "").toLowerCase().trim();
       const unit = document.getElementById("filterPerancanganUnit")?.value || "";
 
       senaraiPerancanganTapis = senaraiPerancanganInduk.filter(item => {
         const aktiviti = (item.activity || item.aktiviti || item.title || item.tajuk || "").toLowerCase();
-        const itemUnit = item.unit || "";
-        
         const padanCari = !cari || aktiviti.includes(cari);
-        const padanUnit = !unit || itemUnit === unit;
+        const padanUnit = !unit || (item.unit || "") === unit;
         return padanCari && padanUnit;
       });
 
@@ -1462,430 +1230,327 @@ window.tukarSubTabAnalisis = function(namaSubTab) {
         Array.from(unitSet).sort().map(u => `<option value="${u}">${u}</option>`).join('');
     }
 
-    window.prosesDanPaparPerancangan = prosesDanPaparPerancangan;
-    window.renderJadualPerancangan = renderJadualPerancangan;
-    window.tapisPerancangan = tapisPerancangan;
-
+    // 10. MODUL MERIT
     function prosesDanPaparMerit(res) {
-  const dataMerit = (res && res.merits) ? res.merits : [];
-  
-  const statEl = document.getElementById("statTotalMerit");
-  if (statEl) {
-    statEl.textContent = dataMerit.length.toLocaleString('ms-MY');
-  }
-}
+      senaraiMeritInduk = (res && res.merits) ? res.merits : [];
+      senaraiMeritTapis = [...senaraiMeritInduk];
 
-    // ==========================================
-// 10. MODUL MERIT
-// ==========================================
-let senaraiMeritInduk = [];
-let senaraiMeritTapis = [];
+      const statEl = document.getElementById("statTotalMerit");
+      if (statEl) statEl.textContent = senaraiMeritInduk.length.toLocaleString('ms-MY');
 
-function prosesDanPaparMerit(res) {
-  const dataMerit = (res && res.merits) ? res.merits : [];
-  senaraiMeritInduk = dataMerit;
-  senaraiMeritTapis = [...senaraiMeritInduk];
+      isiDropdownFilterMerit();
+      renderJadualMerit(senaraiMeritTapis);
+    }
 
-  // Kemaskini kad statistik
-  const statEl = document.getElementById("statTotalMerit");
-  if (statEl) {
-    statEl.textContent = senaraiMeritInduk.length.toLocaleString('ms-MY');
-  }
+    function renderJadualMerit(data) {
+      const tbody = document.getElementById("tbodyMerit");
+      if (!tbody) return;
 
-  isiDropdownFilterMerit();
-  renderJadualMerit(senaraiMeritTapis);
-}
-
-function renderJadualMerit(data) {
-  const tbody = document.getElementById("tbodyMerit");
-  if (!tbody) return;
-
-  if (!data || data.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px;">Tiada rekod merit dijumpai.</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = data.map(item => {
-    const tarikh = typeof formatTarikhKemas === 'function' && item.date ? formatTarikhKemas(item.date) : (item.date || '-');
-    const mataMerit = (item.merit !== undefined && item.merit !== '') ? item.merit : '0';
-
-    return `
-      <tr>
-        <td>${tarikh}</td>
-        <td>${item.year || '-'}</td>
-        <td><strong>${item.nama || '-'}</strong></td>
-        <td><span class="badge-tag">${item.unit || '-'}</span></td>
-        <td>${item.aktiviti || '-'}</td>
-        <td>${item.peringkat || '-'}</td>
-        <td>${item.keputusan || '-'}</td>
-        <td style="text-align:center;">
-          <span class="bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full text-xs border border-amber-200">
-            +${mataMerit}
-          </span>
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function tapisMerit() {
-  const cari = (document.getElementById("filterMeritCari")?.value || "").toLowerCase().trim();
-  const unit = document.getElementById("filterMeritUnit")?.value || "";
-
-  senaraiMeritTapis = senaraiMeritInduk.filter(item => {
-    const nama = (item.nama || "").toLowerCase();
-    const aktiviti = (item.aktiviti || "").toLowerCase();
-
-    const padanCari = !cari || nama.includes(cari) || aktiviti.includes(cari);
-    const padanUnit = !unit || item.unit === unit;
-
-    return padanCari && padanUnit;
-  });
-
-  renderJadualMerit(senaraiMeritTapis);
-}
-
-function isiDropdownFilterMerit() {
-  const select = document.getElementById("filterMeritUnit");
-  if (!select) return;
-  const unitSet = new Set(senaraiMeritInduk.map(i => i.unit).filter(Boolean));
-  select.innerHTML = `<option value="">Semua Unit/Kelab/Sukan</option>` + 
-    Array.from(unitSet).sort().map(u => `<option value="${u}">${u}</option>`).join('');
-}
-
-// Pastikan fungsi dipanggil dalam pemprosesan utama muatkanDataKMS
-window.prosesDanPaparMerit = prosesDanPaparMerit;
-window.renderJadualMerit = renderJadualMerit;
-window.tapisMerit = tapisMerit;
-
-    // ==========================================
-// MODUL PERANCANGAN: DROPDOWN & PENGHANTARAN DATA
-// ==========================================
-
-// 1. Fungsi Mengisi Dropdown Unit Perancangan dari Master Data
-function isiDropdownUnitPerancangan() {
-  const selectUnit = document.getElementById("inputPerancanganUnit");
-  if (!selectUnit) return;
-
-  // 1. Ambil data daripada pembolehubah global (ditambah window.senaraiMuridInduk)
-  const dataPelajar = window.senaraiMuridInduk || 
-                      (typeof senaraiMuridInduk !== 'undefined' ? senaraiMuridInduk : null) ||
-                      window.senaraiPelajarInduk || 
-                      window.students || 
-                      [];
-
-  // Jika data belum selesai dimuatkan dari Google Sheet
-  if (!dataPelajar || dataPelajar.length === 0) {
-    selectUnit.innerHTML = `<option value="">-- Memuatkan Unit... --</option>`;
-    return;
-  }
-
-  const setUnit = new Set();
-
-  // 2. Semak setiap rekod pelajar bagi lajur UNIT, KELAB, dan SUKAN (tidak kira huruf besar/kecil)
-  dataPelajar.forEach(p => {
-    Object.keys(p).forEach(kunci => {
-      const kunciLower = kunci.trim().toLowerCase();
-      if (['unit', 'kelab', 'sukan'].includes(kunciLower)) {
-        const nilai = p[kunci];
-        if (nilai && typeof nilai === 'string' && nilai.trim() !== '' && nilai.trim() !== '-') {
-          setUnit.add(nilai.trim());
-        }
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:15px;">Tiada rekod merit dijumpai.</td></tr>`;
+        return;
       }
-    });
-  });
 
-  const senaraiUnitSorted = Array.from(setUnit).sort();
+      tbody.innerHTML = data.map(item => `
+        <tr>
+          <td>${formatTarikhKemas(item.date)}</td>
+          <td>${item.year || '-'}</td>
+          <td><strong>${item.nama || '-'}</strong></td>
+          <td><span class="badge-tag">${item.unit || '-'}</span></td>
+          <td>${item.aktiviti || '-'}</td>
+          <td>${item.peringkat || '-'}</td>
+          <td>${item.keputusan || '-'}</td>
+          <td style="text-align:center;">
+            <span class="bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full text-xs border border-amber-200">
+              +${(item.merit !== undefined && item.merit !== '') ? item.merit : '0'}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
 
-  // 3. Jika tiada unit dijumpai
-  if (senaraiUnitSorted.length === 0) {
-    selectUnit.innerHTML = `<option value="">-- Tiada Unit Dijumpai --</option>`;
-    return;
-  }
+    function tapisMerit() {
+      const cari = (document.getElementById("filterMeritCari")?.value || "").toLowerCase().trim();
+      const unit = document.getElementById("filterMeritUnit")?.value || "";
 
-  // 4. Masukkan senarai unit ke dalam dropdown
-  selectUnit.innerHTML = `<option value="">-- Pilih Unit / Kelab / Sukan --</option>` +
-    senaraiUnitSorted.map(u => `<option value="${u}">${u}</option>`).join('');
-}
-    
-// 2. Fungsi Hantar Data Borang Perancangan
-function hantarPerancangan(event) {
-  event.preventDefault();
-
-  const btn = document.getElementById("btnSimpanPerancangan");
-  const originalText = btn.textContent;
-
-  // Sediakan Objek Data mengikut header sheet [annual]
-  const payload = {
-    date: document.getElementById("inputPerancanganTarikh")?.value || "",
-    year: document.getElementById("inputPerancanganTahun")?.value || "",
-    unit: document.getElementById("inputPerancanganUnit")?.value || "",
-    title: document.getElementById("inputPerancanganTajuk")?.value || ""
-  };
-
-  if (!payload.date || !payload.unit || !payload.title) {
-    alert("Sila lengkapkan semua medan yang diwajibkan.");
-    return;
-  }
-
-  // Tukar status butang semasa proses simpan
-  btn.disabled = true;
-  btn.textContent = "Menyimpan...";
-
-  // Panggilan Google Apps Script / Fetch
-  if (typeof google !== 'undefined' && google.script && google.script.run) {
-    google.script.run
-      .withSuccessHandler(function(res) {
-        btn.disabled = false;
-        btn.textContent = originalText;
-
-        if (res.status === "success") {
-          alert(res.message);
-          document.getElementById("formPerancangan").reset();
-          closeModal('modalPerancangan');
-          muatkanDataKMS(); // Muat semula data untuk kemaskini jadual
-        } else {
-          alert("Gagal menyimpan: " + res.message);
-        }
-      })
-      .withFailureHandler(function(err) {
-        btn.disabled = false;
-        btn.textContent = originalText;
-        alert("Ralat sistem: " + err);
-      })
-      .simpanPerancanganData(payload);
-  } else {
-    // Jalur simpanan luar (Fetch API Web App)
-    fetch(WEB_APP_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "simpanPerancangan", data: payload })
-    })
-    .then(res => res.json())
-    .then(res => {
-      btn.disabled = false;
-      btn.textContent = originalText;
-
-      if (res.status === "success") {
-        alert(res.message);
-        document.getElementById("formPerancangan").reset();
-        closeModal('modalPerancangan');
-        muatkanDataKMS();
-      } else {
-        alert("Gagal menyimpan: " + res.message);
-      }
-    })
-    .catch(err => {
-      btn.disabled = false;
-      btn.textContent = originalText;
-      alert("Ralat Rangkaian: " + err);
-    });
-  }
-}
-
-// 3. Kemaskini fungsi openModal untuk mengisi dropdown unit bila modal dibuka
-const originalOpenModal = window.openModal;
-window.openModal = function(idModal) {
-  if (typeof originalOpenModal === 'function') originalOpenModal(idModal);
-  
-  if (idModal === 'modalPerancangan') {
-    isiDropdownUnitPerancangan();
-  } else if (idModal === 'modalPelaporan') {
-    isiDropdownUnitPelaporan();
-  }
-};
-
-    // ==========================================
-// MODUL PELAPORAN: DROPDOWN, PENAPIS MURID & BASE64
-// ==========================================
-
-// 1. Fungsi Menukar Fail Gambar ke Format Base64
-function convertFileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) return resolve({ base64: "", mime: "", name: "" });
-    const reader = new FileReader();
-    reader.onload = () => {
-      resolve({
-        base64: reader.result,
-        mime: file.type,
-        name: file.name
+      senaraiMeritTapis = senaraiMeritInduk.filter(item => {
+        const nama = (item.nama || "").toLowerCase();
+        const aktiviti = (item.aktiviti || "").toLowerCase();
+        const padanCari = !cari || nama.includes(cari) || aktiviti.includes(cari);
+        const padanUnit = !unit || item.unit === unit;
+        return padanCari && padanUnit;
       });
-    };
-    reader.onerror = error => reject(error);
-    reader.readAsDataURL(file);
-  });
-}
 
-// 2. Isi Dropdown Unit Pelaporan
-function isiDropdownUnitPelaporan() {
-  const selectUnit = document.getElementById("inputPelaporanUnit");
-  if (!selectUnit) return;
-
-  const dataPelajar = window.senaraiMuridInduk || window.senaraiPelajarInduk || [];
-  if (!dataPelajar || dataPelajar.length === 0) {
-    selectUnit.innerHTML = `<option value="">-- Memuatkan Unit... --</option>`;
-    return;
-  }
-
-  const setUnit = new Set();
-  dataPelajar.forEach(p => {
-    Object.keys(p).forEach(kunci => {
-      const kunciLower = kunci.trim().toLowerCase();
-      if (['unit', 'kelab', 'sukan'].includes(kunciLower)) {
-        const nilai = p[kunci];
-        if (nilai && typeof nilai === 'string' && nilai.trim() !== '' && nilai.trim() !== '-') {
-          setUnit.add(nilai.trim());
-        }
-      }
-    });
-  });
-
-  const senaraiUnitSorted = Array.from(setUnit).sort();
-  selectUnit.innerHTML = `<option value="">-- Pilih Unit / Kelab / Sukan --</option>` +
-    senaraiUnitSorted.map(u => `<option value="${u}">${u}</option>`).join('');
-}
-
-// 3. Penapis Senarai Murid Mengikut Unit Terpilih
-function penapisMuridPelaporan() {
-  const unitTerpilih = document.getElementById("inputPelaporanUnit")?.value;
-  const kontena = document.getElementById("kontenaPelaporanMurid");
-  if (!kontena) return;
-
-  if (!unitTerpilih) {
-    kontena.innerHTML = `<p class="text-slate-400 italic text-center py-2">Sila pilih Unit di atas untuk memaparkan senarai murid.</p>`;
-    return;
-  }
-
-  const dataPelajar = window.senaraiMuridInduk || window.senaraiPelajarInduk || [];
-  
-  // Tapis murid yang terikat dengan unit/kelab/sukan terpilih
-  const muridTerlibat = dataPelajar.filter(p => {
-    return Object.keys(p).some(kunci => {
-      const kunciLower = kunci.trim().toLowerCase();
-      if (['unit', 'kelab', 'sukan'].includes(kunciLower)) {
-        return p[kunci] && p[kunci].toString().trim() === unitTerpilih;
-      }
-      return false;
-    });
-  });
-
-  if (muridTerlibat.length === 0) {
-    kontena.innerHTML = `<p class="text-slate-400 italic text-center py-2">Tiada murid dijumpai di bawah unit "${unitTerpilih}".</p>`;
-    return;
-  }
-
-  kontena.innerHTML = muridTerlibat.map((m, idx) => {
-    const nama = m.NAMA || m.nama || m.STUDENT_NAME || m.student_name || `Murid ${idx + 1}`;
-    return `
-      <label class="flex items-center gap-2 p-1.5 hover:bg-slate-100 rounded cursor-pointer transition">
-        <input type="checkbox" value="${nama}" class="cb-murid-pelaporan rounded text-emerald-600 focus:ring-emerald-500">
-        <span class="text-slate-700 text-xs font-medium">${nama}</span>
-      </label>
-    `;
-  }).join('');
-}
-
-// 4. Pilih / Nyahpilih Semua Murid
-function pilihSemuaMuridPelaporan(status) {
-  const checkboxes = document.querySelectorAll('.cb-murid-pelaporan');
-  checkboxes.forEach(cb => cb.checked = status);
-}
-
-// 5. Pengendali Penghantaran Borang Pelaporan
-async function hantarPelaporan(event) {
-  event.preventDefault();
-
-  const btn = document.getElementById("btnSimpanPelaporan");
-  const originalText = btn.textContent;
-
-  const fileInput = document.getElementById("inputPelaporanGambar");
-  const file = fileInput?.files[0] || null;
-
-  // Himpunkan nama-nama murid yang ditanda
-  const checkboxes = document.querySelectorAll('.cb-murid-pelaporan:checked');
-  const senaraiNama = Array.from(checkboxes).map(cb => cb.value).join(', ');
-
-  btn.disabled = true;
-  btn.textContent = "Memproses Gambar...";
-
-  try {
-    let imageData = { base64: "", mime: "", name: "" };
-    if (file) {
-      imageData = await convertFileToBase64(file);
+      renderJadualMerit(senaraiMeritTapis);
     }
 
-    const payload = {
-      date: document.getElementById("inputPelaporanTarikh")?.value || "",
-      year: document.getElementById("inputPelaporanTahun")?.value || "",
-      unit: document.getElementById("inputPelaporanUnit")?.value || "",
-      title: document.getElementById("inputPelaporanTajuk")?.value || "",
-      description: document.getElementById("inputPelaporanHuraian")?.value || "",
-      imageBase64: imageData.base64,
-      imageMime: imageData.mime,
-      imageName: imageData.name,
-      names: senaraiNama
-    };
-
-    if (!payload.date || !payload.unit || !payload.title) {
-      alert("Sila lengkapkan tarikh, unit, dan tajuk aktiviti.");
-      btn.disabled = false;
-      btn.textContent = originalText;
-      return;
+    function isiDropdownFilterMerit() {
+      const select = document.getElementById("filterMeritUnit");
+      if (!select) return;
+      const unitSet = new Set(senaraiMeritInduk.map(i => i.unit).filter(Boolean));
+      select.innerHTML = `<option value="">Semua Unit/Kelab/Sukan</option>` + 
+        Array.from(unitSet).sort().map(u => `<option value="${u}">${u}</option>`).join('');
     }
 
-    btn.textContent = "Menyimpan Data...";
+    // 11. DROPDOWN BORANG MODAL PERANCANGAN & PELAPORAN
+    function isiDropdownUnitPerancangan() {
+      const selectUnit = document.getElementById("inputPerancanganUnit");
+      if (!selectUnit) return;
 
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run
-        .withSuccessHandler(function(res) {
+      const dataPelajar = window.senaraiMuridInduk || [];
+      if (dataPelajar.length === 0) {
+        selectUnit.innerHTML = `<option value="">-- Memuatkan Unit... --</option>`;
+        return;
+      }
+
+      const setUnit = new Set();
+      dataPelajar.forEach(p => {
+        ['unit', 'kelab', 'sukan'].forEach(k => {
+          if (p[k] && typeof p[k] === 'string' && p[k].trim() !== '' && p[k].trim() !== '-') {
+            setUnit.add(p[k].trim());
+          }
+        });
+      });
+
+      const senaraiSorted = Array.from(setUnit).sort();
+      selectUnit.innerHTML = `<option value="">-- Pilih Unit / Kelab / Sukan --</option>` +
+        senaraiSorted.map(u => `<option value="${u}">${u}</option>`).join('');
+    }
+
+    function isiDropdownUnitPelaporan() {
+      const selectUnit = document.getElementById("inputPelaporanUnit");
+      if (!selectUnit) return;
+
+      const dataPelajar = window.senaraiMuridInduk || [];
+      if (dataPelajar.length === 0) {
+        selectUnit.innerHTML = `<option value="">-- Memuatkan Unit... --</option>`;
+        return;
+      }
+
+      const setUnit = new Set();
+      dataPelajar.forEach(p => {
+        ['unit', 'kelab', 'sukan'].forEach(k => {
+          if (p[k] && typeof p[k] === 'string' && p[k].trim() !== '' && p[k].trim() !== '-') {
+            setUnit.add(p[k].trim());
+          }
+        });
+      });
+
+      const senaraiSorted = Array.from(setUnit).sort();
+      selectUnit.innerHTML = `<option value="">-- Pilih Unit / Kelab / Sukan --</option>` +
+        senaraiSorted.map(u => `<option value="${u}">${u}</option>`).join('');
+    }
+
+    function penapisMuridPelaporan() {
+      const unitTerpilih = document.getElementById("inputPelaporanUnit")?.value;
+      const kontena = document.getElementById("kontenaPelaporanMurid");
+      if (!kontena) return;
+
+      if (!unitTerpilih) {
+        kontena.innerHTML = `<p class="text-slate-400 italic text-center py-2">Sila pilih Unit di atas untuk memaparkan senarai murid.</p>`;
+        return;
+      }
+
+      const dataPelajar = window.senaraiMuridInduk || [];
+      const muridTerlibat = dataPelajar.filter(p => p.unit === unitTerpilih || p.kelab === unitTerpilih || p.sukan === unitTerpilih);
+
+      if (muridTerlibat.length === 0) {
+        kontena.innerHTML = `<p class="text-slate-400 italic text-center py-2">Tiada murid dijumpai di bawah unit "${unitTerpilih}".</p>`;
+        return;
+      }
+
+      kontena.innerHTML = muridTerlibat.map((m, idx) => {
+        const nama = m.nama || m.NAMA || `Murid ${idx + 1}`;
+        return `
+          <label class="flex items-center gap-2 p-1.5 hover:bg-slate-100 rounded cursor-pointer transition">
+            <input type="checkbox" value="${nama}" class="cb-murid-pelaporan rounded text-emerald-600 focus:ring-emerald-500">
+            <span class="text-slate-700 text-xs font-medium">${nama}</span>
+          </label>
+        `;
+      }).join('');
+    }
+
+    function pilihSemuaMuridPelaporan(status) {
+      document.querySelectorAll('.cb-murid-pelaporan').forEach(cb => cb.checked = status);
+    }
+
+    function convertFileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        if (!file) return resolve({ base64: "", mime: "", name: "" });
+        const reader = new FileReader();
+        reader.onload = () => resolve({ base64: reader.result, mime: file.type, name: file.name });
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // 12. PENGHANTARAN BORANG
+    function hantarPerancangan(event) {
+      event.preventDefault();
+      const btn = document.getElementById("btnSimpanPerancangan");
+      const originalText = btn.textContent;
+
+      const payload = {
+        date: document.getElementById("inputPerancanganTarikh")?.value || "",
+        year: document.getElementById("inputPerancanganTahun")?.value || "",
+        unit: document.getElementById("inputPerancanganUnit")?.value || "",
+        title: document.getElementById("inputPerancanganTajuk")?.value || ""
+      };
+
+      if (!payload.date || !payload.unit || !payload.title) {
+        alert("Sila lengkapkan semua medan yang diwajibkan.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Menyimpan...";
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            btn.disabled = false;
+            btn.textContent = originalText;
+            if (res.status === "success") {
+              alert(res.message);
+              document.getElementById("formPerancangan").reset();
+              closeModal('modalPerancangan');
+              muatkanDataKMS();
+            } else {
+              alert("Gagal menyimpan: " + res.message);
+            }
+          })
+          .withFailureHandler(function(err) {
+            btn.disabled = false;
+            btn.textContent = originalText;
+            alert("Ralat sistem: " + err);
+          })
+          .simpanPerancanganData(payload);
+      } else {
+        fetch(WEB_APP_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "simpanPerancangan", data: payload })
+        })
+        .then(res => res.json())
+        .then(res => {
           btn.disabled = false;
           btn.textContent = originalText;
           if (res.status === "success") {
             alert(res.message);
-            document.getElementById("formPelaporan").reset();
-            document.getElementById("kontenaPelaporanMurid").innerHTML = `<p class="text-slate-400 italic text-center py-2">Sila pilih Unit di atas untuk memaparkan senarai murid.</p>`;
-            closeModal('modalPelaporan');
+            document.getElementById("formPerancangan").reset();
+            closeModal('modalPerancangan');
             muatkanDataKMS();
           } else {
             alert("Gagal menyimpan: " + res.message);
           }
         })
-        .withFailureHandler(function(err) {
+        .catch(err => {
           btn.disabled = false;
           btn.textContent = originalText;
-          alert("Ralat sistem: " + err);
-        })
-        .simpanPelaporanData(payload);
-    } else {
-      fetch(WEB_APP_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "simpanPelaporan", data: payload })
-      })
-      .then(res => res.json())
-      .then(res => {
-        btn.disabled = false;
-        btn.textContent = originalText;
-        if (res.status === "success") {
-          alert(res.message);
-          document.getElementById("formPelaporan").reset();
-          document.getElementById("kontenaPelaporanMurid").innerHTML = `<p class="text-slate-400 italic text-center py-2">Sila pilih Unit di atas untuk memaparkan senarai murid.</p>`;
-          closeModal('modalPelaporan');
-          muatkanDataKMS();
-        } else {
-          alert("Gagal menyimpan: " + res.message);
-        }
-      })
-      .catch(err => {
-        btn.disabled = false;
-        btn.textContent = originalText;
-        alert("Ralat Rangkaian: " + err);
-      });
+          alert("Ralat Rangkaian: " + err);
+        });
+      }
     }
-  } catch (err) {
-    btn.disabled = false;
-    btn.textContent = originalText;
-    alert("Ralat memproses gambar: " + err.message);
-  }
-}
+
+    async function hantarPelaporan(event) {
+      event.preventDefault();
+      const btn = document.getElementById("btnSimpanPelaporan");
+      const originalText = btn.textContent;
+
+      const date = document.getElementById("inputPelaporanTarikh")?.value || "";
+      const year = document.getElementById("inputPelaporanTahun")?.value || "";
+      const unit = document.getElementById("inputPelaporanUnit")?.value || "";
+      const title = document.getElementById("inputPelaporanTajuk")?.value || "";
+      const description = document.getElementById("inputPelaporanHuraian")?.value || "";
+
+      if (!date || !unit || !title) {
+        alert("Sila lengkapkan tarikh, unit, dan tajuk aktiviti.");
+        return;
+      }
+
+      const fileInput = document.getElementById("inputPelaporanGambar");
+      const file = fileInput?.files[0] || null;
+
+      const checkboxes = document.querySelectorAll('.cb-murid-pelaporan:checked');
+      const senaraiNama = Array.from(checkboxes).map(cb => cb.value).join(', ');
+
+      btn.disabled = true;
+      btn.textContent = "Memproses Gambar...";
+
+      try {
+        let imageData = { base64: "", mime: "", name: "" };
+        if (file) imageData = await convertFileToBase64(file);
+
+        const payload = {
+          date: date,
+          year: year,
+          unit: unit,
+          title: title,
+          description: description,
+          imageBase64: imageData.base64,
+          imageMime: imageData.mime,
+          imageName: imageData.name,
+          names: senaraiNama
+        };
+
+        btn.textContent = "Menyimpan Data...";
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function(res) {
+              btn.disabled = false;
+              btn.textContent = originalText;
+              if (res.status === "success") {
+                alert(res.message);
+                document.getElementById("formPelaporan").reset();
+                document.getElementById("kontenaPelaporanMurid").innerHTML = `<p class="text-slate-400 italic text-center py-2">Sila pilih Unit di atas untuk memaparkan senarai murid.</p>`;
+                closeModal('modalPelaporan');
+                muatkanDataKMS();
+              } else {
+                alert("Gagal menyimpan: " + res.message);
+              }
+            })
+            .withFailureHandler(function(err) {
+              btn.disabled = false;
+              btn.textContent = originalText;
+              alert("Ralat sistem: " + err);
+            })
+            .simpanPelaporanData(payload);
+        } else {
+          fetch(WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "simpanPelaporan", data: payload })
+          })
+          .then(res => res.json())
+          .then(res => {
+            btn.disabled = false;
+            btn.textContent = originalText;
+            if (res.status === "success") {
+              alert(res.message);
+              document.getElementById("formPelaporan").reset();
+              document.getElementById("kontenaPelaporanMurid").innerHTML = `<p class="text-slate-400 italic text-center py-2">Sila pilih Unit di atas untuk memaparkan senarai murid.</p>`;
+              closeModal('modalPelaporan');
+              muatkanDataKMS();
+            } else {
+              alert("Gagal menyimpan: " + res.message);
+            }
+          })
+          .catch(err => {
+            btn.disabled = false;
+            btn.textContent = originalText;
+            alert("Ralat Rangkaian: " + err);
+          });
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = originalText;
+        alert("Ralat memproses gambar: " + err.message);
+      }
+    }
+
+    // AUTO-RUN APABILA HALAMAN SELESAI DIMUATKAN
+    document.addEventListener("DOMContentLoaded", function() {
+      muatkanDataKMS();
+    });
   </script>
 </body>
 </html>
