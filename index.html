@@ -1489,6 +1489,115 @@ function isiDropdownFilterMerit() {
 window.prosesDanPaparMerit = prosesDanPaparMerit;
 window.renderJadualMerit = renderJadualMerit;
 window.tapisMerit = tapisMerit;
+
+    // ==========================================
+// MODUL PERANCANGAN: DROPDOWN & PENGHANTARAN DATA
+// ==========================================
+
+// 1. Fungsi Mengisi Dropdown Unit Perancangan dari Master Data
+function isiDropdownUnitPerancangan() {
+  const selectUnit = document.getElementById("inputPerancanganUnit");
+  if (!selectUnit) return;
+
+  // Mengumpul unit berasaskan data pelajar yang dimuatkan
+  const dataPelajar = window.senaraiPelajarInduk || []; 
+  const setUnit = new Set();
+
+  dataPelajar.forEach(p => {
+    if (p.unit) setUnit.add(p.unit);
+    if (p.kelab) setUnit.add(p.kelab);
+    if (p.sukan) setUnit.add(p.sukan);
+  });
+
+  const senaraiUnitSorted = Array.from(setUnit).filter(Boolean).sort();
+
+  selectUnit.innerHTML = `<option value="">-- Pilih Unit / Kelab / Sukan --</option>` +
+    senaraiUnitSorted.map(u => `<option value="${u}">${u}</option>`).join('');
+}
+
+// 2. Fungsi Hantar Data Borang Perancangan
+function hantarPerancangan(event) {
+  event.preventDefault();
+
+  const btn = document.getElementById("btnSimpanPerancangan");
+  const originalText = btn.textContent;
+
+  // Sediakan Objek Data mengikut header sheet [annual]
+  const payload = {
+    date: document.getElementById("inputPerancanganTarikh")?.value || "",
+    year: document.getElementById("inputPerancanganTahun")?.value || "",
+    unit: document.getElementById("inputPerancanganUnit")?.value || "",
+    title: document.getElementById("inputPerancanganTajuk")?.value || ""
+  };
+
+  if (!payload.date || !payload.unit || !payload.title) {
+    alert("Sila lengkapkan semua medan yang diwajibkan.");
+    return;
+  }
+
+  // Tukar status butang semasa proses simpan
+  btn.disabled = true;
+  btn.textContent = "Menyimpan...";
+
+  // Panggilan Google Apps Script / Fetch
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        btn.disabled = false;
+        btn.textContent = originalText;
+
+        if (res.status === "success") {
+          alert(res.message);
+          document.getElementById("formPerancangan").reset();
+          closeModal('modalPerancangan');
+          muatkanDataKMS(); // Muat semula data untuk kemaskini jadual
+        } else {
+          alert("Gagal menyimpan: " + res.message);
+        }
+      })
+      .withFailureHandler(function(err) {
+        btn.disabled = false;
+        btn.textContent = originalText;
+        alert("Ralat sistem: " + err);
+      })
+      .simpanPerancanganData(payload);
+  } else {
+    // Jalur simpanan luar (Fetch API Web App)
+    fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "simpanPerancangan", data: payload })
+    })
+    .then(res => res.json())
+    .then(res => {
+      btn.disabled = false;
+      btn.textContent = originalText;
+
+      if (res.status === "success") {
+        alert(res.message);
+        document.getElementById("formPerancangan").reset();
+        closeModal('modalPerancangan');
+        muatkanDataKMS();
+      } else {
+        alert("Gagal menyimpan: " + res.message);
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.textContent = originalText;
+      alert("Ralat Rangkaian: " + err);
+    });
+  }
+}
+
+// 3. Kemaskini fungsi openModal untuk mengisi dropdown unit bila modal dibuka
+const originalOpenModal = window.openModal;
+window.openModal = function(idModal) {
+  if (typeof originalOpenModal === 'function') originalOpenModal(idModal);
+  
+  if (idModal === 'modalPerancangan') {
+    isiDropdownUnitPerancangan();
+  }
+};
   </script>
 </body>
 </html>
