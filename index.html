@@ -1220,51 +1220,60 @@ document.addEventListener("DOMContentLoaded", function() {
     };
     
     // ==========================================
-    // 7. KAWALAN SUB-TAB ANALISIS
-    // ==========================================
-    window.tukarSubTabAnalisis = function(namaSubTab) {
-      document.querySelectorAll('.subtab-content').forEach(el => el.classList.add('hidden'));
+// 7. KAWALAN SUB-TAB ANALISIS
+// ==========================================
+window.tukarSubTabAnalisis = function(namaSubTab) {
+  document.querySelectorAll('.subtab-content').forEach(el => el.classList.add('hidden'));
 
-      document.querySelectorAll('.btn-subtab').forEach(btn => {
-        btn.classList.remove('border-blue-600', 'text-blue-600');
-        btn.classList.add('border-transparent', 'text-slate-500');
-      });
+  document.querySelectorAll('.btn-subtab').forEach(btn => {
+    btn.classList.remove('border-blue-600', 'text-blue-600', 'border-amber-500', 'text-amber-600');
+    btn.classList.add('border-transparent', 'text-slate-500');
+  });
 
-      if (namaSubTab === 'pecahan') {
-        document.getElementById('subtab-pecahan')?.classList.remove('hidden');
-        const btn = document.getElementById('btnSubtabPecahan');
-        btn?.classList.add('border-blue-600', 'text-blue-600');
-        btn?.classList.remove('border-transparent', 'text-slate-500');
-        if (typeof renderPecahanAnalisis === 'function') renderPecahanAnalisis();
+  if (namaSubTab === 'pecahan') {
+    document.getElementById('subtab-pecahan')?.classList.remove('hidden');
+    const btn = document.getElementById('btnSubtabPecahan');
+    btn?.classList.add('border-blue-600', 'text-blue-600');
+    btn?.classList.remove('border-transparent', 'text-slate-500');
+    if (typeof renderPecahanAnalisis === 'function') renderPecahanAnalisis();
 
-      } else if (namaSubTab === 'kehadiran') {
-        document.getElementById('subtab-kehadiran')?.classList.remove('hidden');
-        const btn = document.getElementById('btnSubtabKehadiran');
-        btn?.classList.add('border-blue-600', 'text-blue-600');
-        btn?.classList.remove('border-transparent', 'text-slate-500');
-        if (typeof renderJadualKehadiran === 'function' && typeof senaraiKehadiranTapis !== 'undefined') {
-          renderJadualKehadiran(senaraiKehadiranTapis);
-        }
+  } else if (namaSubTab === 'kehadiran') {
+    document.getElementById('subtab-kehadiran')?.classList.remove('hidden');
+    const btn = document.getElementById('btnSubtabKehadiran');
+    btn?.classList.add('border-blue-600', 'text-blue-600');
+    btn?.classList.remove('border-transparent', 'text-slate-500');
+    if (typeof renderJadualKehadiran === 'function' && typeof senaraiKehadiranTapis !== 'undefined') {
+      renderJadualKehadiran(senaraiKehadiranTapis);
+    }
 
-      } else if (namaSubTab === 'pelaporan') {
-        document.getElementById('subtab-pelaporan')?.classList.remove('hidden');
-        const btn = document.getElementById('btnSubtabPelaporan');
-        btn?.classList.add('border-blue-600', 'text-blue-600');
-        btn?.classList.remove('border-transparent', 'text-slate-500');
-        if (typeof renderJadualPelaporan === 'function' && typeof senaraiPelaporanTapis !== 'undefined') {
-          renderJadualPelaporan(senaraiPelaporanTapis);
-        }
+  } else if (namaSubTab === 'pelaporan') {
+    document.getElementById('subtab-pelaporan')?.classList.remove('hidden');
+    const btn = document.getElementById('btnSubtabPelaporan');
+    btn?.classList.add('border-blue-600', 'text-blue-600');
+    btn?.classList.remove('border-transparent', 'text-slate-500');
+    if (typeof renderJadualPelaporan === 'function' && typeof senaraiPelaporanTapis !== 'undefined') {
+      renderJadualPelaporan(senaraiPelaporanTapis);
+    }
 
-      } else if (namaSubTab === 'perancangan') {
-        document.getElementById('subtab-perancangan')?.classList.remove('hidden');
-        const btn = document.getElementById('btnSubtabPerancangan');
-        btn?.classList.add('border-blue-600', 'text-blue-600');
-        btn?.classList.remove('border-transparent', 'text-slate-500');
-        if (typeof renderJadualPerancangan === 'function' && typeof senaraiPerancanganTapis !== 'undefined') {
-          renderJadualPerancangan(senaraiPerancanganTapis);
-        }
-      }
-    };
+  } else if (namaSubTab === 'perancangan') {
+    document.getElementById('subtab-perancangan')?.classList.remove('hidden');
+    const btn = document.getElementById('btnSubtabPerancangan');
+    btn?.classList.add('border-blue-600', 'text-blue-600');
+    btn?.classList.remove('border-transparent', 'text-slate-500');
+    if (typeof renderJadualPerancangan === 'function' && typeof senaraiPerancanganTapis !== 'undefined') {
+      renderJadualPerancangan(senaraiPerancanganTapis);
+    }
+
+  } else if (namaSubTab === 'merit') {
+    document.getElementById('subtab-merit')?.classList.remove('hidden');
+    const btn = document.getElementById('btnSubtabMerit');
+    btn?.classList.add('border-amber-500', 'text-amber-600');
+    btn?.classList.remove('border-transparent', 'text-slate-500');
+    if (typeof renderJadualMerit === 'function' && typeof senaraiMeritTapis !== 'undefined') {
+      renderJadualMerit(senaraiMeritTapis);
+    }
+  }
+};
 
     // ==========================================
     // 8. KAWALAN TAB UTAMA
