@@ -1091,16 +1091,39 @@
         Array.from(unitSet).sort().map(u => `<option value="${u}">${u}</option>`).join('');
     }
 
-    window.bukaModalImages = function(index) {
-      const item = senaraiPelaporanTapis[index];
-      if (!item || !item.image) return;
+    // 1. Fungsi penukar URL/Base64
+function dapatkanUrlGambar(imageStr) {
+  if (!imageStr) return "";
+  let str = imageStr.trim();
 
-      let rawBase64 = item.image.trim();
-      document.getElementById("imgModalElement").src = rawBase64.startsWith("data:image") ? rawBase64 : `data:image/jpeg;base64,${rawBase64}`;
-      document.getElementById("modalImagesTajuk").textContent = item.title || item.tajuk || "Gambar Laporan";
+  // Jika pautan Google Drive
+  if (str.includes("drive.google.com")) {
+    const match = str.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) {
+      return `https://lh3.googleusercontent.com/d/${match[1]}`;
+    }
+  }
 
-      openModal("modalImages");
-    };
+  // Jika URL web biasa
+  if (str.startsWith("http://") || str.startsWith("https://")) {
+    return str;
+  }
+
+  // Jika Base64 (Laporan lama)
+  return str.startsWith("data:image") ? str : `data:image/jpeg;base64,${str}`;
+}
+
+// 2. Fungsi buka modal yang dikemas kini
+window.bukaModalImages = function(index) {
+  const item = senaraiPelaporanTapis[index];
+  if (!item || !item.image) return;
+
+  // Guna fungsi pembantu untuk dapatkan URL gambar yang sah
+  document.getElementById("imgModalElement").src = dapatkanUrlGambar(item.image);
+  document.getElementById("modalImagesTajuk").textContent = item.title || item.tajuk || "Gambar Laporan";
+
+  openModal("modalImages");
+};
 
     window.tutupModalImages = function() { closeModal("modalImages"); };
 
@@ -1551,6 +1574,28 @@
     document.addEventListener("DOMContentLoaded", function() {
       muatkanDataKMS();
     });
+
+    // Fungsi untuk memproses pautan gambar (Base64 ATAU Google Drive URL)
+function dapatkanUrlGambar(imageStr) {
+  if (!imageStr) return "";
+
+  // 1. Jika data adalah Base64 (teks mentah imej)
+  if (imageStr.startsWith("data:image/") || imageStr.startsWith("blob:")) {
+    return imageStr;
+  }
+
+  // 2. Jika data adalah Pautan Google Drive
+  if (imageStr.includes("drive.google.com")) {
+    const match = imageStr.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) {
+      // Tukar pautan Drive ke pautan paparan terus (direct display URL) untuk tag <img>
+      return `https://lh3.googleusercontent.com/d/${match[1]}`;
+    }
+  }
+
+  // 3. Jika URL biasa yang lain
+  return imageStr;
+}
   </script>
 </body>
 </html>
