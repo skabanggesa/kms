@@ -497,28 +497,95 @@
   </div>
 
   <!-- MODAL 3: MERIT -->
-  <div id="modalMerit" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-lg text-slate-800">Modul Rekod Merit</h3>
-        <button onclick="closeModal('modalMerit')" class="text-slate-400 hover:text-slate-600">✕</button>
+<div id="modalMerit" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4 border-b pb-3">
+      <div>
+        <h3 class="font-bold text-lg text-slate-800">Modul Rekod Merit Kokurikulum</h3>
+        <p class="text-xs text-slate-500">Merekod pencapaian dan pengiraan markah merit murid.</p>
       </div>
-      <form class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Murid</label>
-          <input type="text" placeholder="Masukkan ID / Nama Murid" class="w-full border rounded-lg px-3 py-2 text-sm">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Mata Merit</label>
-          <input type="number" placeholder="5" class="w-full border rounded-lg px-3 py-2 text-sm">
-        </div>
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeModal('modalMerit')" class="px-4 py-2 border rounded-lg text-xs font-medium">Batal</button>
-          <button type="button" class="px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-medium">Tambah Merit</button>
-        </div>
-      </form>
+      <button type="button" onclick="closeModal('modalMerit')" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
     </div>
+
+    <form id="formMerit" class="space-y-4" onsubmit="hantarMeritEvent(event)">
+      <!-- Tarikh & Tahun -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Tarikh Aktiviti</label>
+          <input type="date" id="inputMeritTarikh" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun</label>
+          <input type="number" id="inputMeritTahun" placeholder="2026" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+        </div>
+      </div>
+
+      <!-- Nama Murid -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Murid</label>
+        <select id="selectMeritNama" onchange="kemaskiniPilihanUnitMerit()" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+          <option value="">-- Pilih Murid --</option>
+          <!-- Diisi secara dinamik daripada senarai murid -->
+        </select>
+      </div>
+
+      <!-- Unit / Kelab / Sukan (Dinamik mengikut murid dipilih) -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Unit / Kelab / Sukan</label>
+        <select id="selectMeritUnit" disabled required class="w-full border rounded-lg px-3 py-2 text-sm bg-slate-50 focus:ring-2 focus:ring-amber-500 outline-none">
+          <option value="">-- Pilih Murid Terlebih Dahulu --</option>
+        </select>
+      </div>
+
+      <!-- Nama Aktiviti / Pertandingan -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Aktiviti / Pertandingan</label>
+        <input type="text" id="inputMeritAktiviti" placeholder="Contoh: Kejohanan Olahraga MSSD" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+      </div>
+
+      <!-- Peringkat & Keputusan -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Peringkat</label>
+          <select id="selectMeritPeringkat" onchange="kiraMarkahMeritAutomatik()" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+            <option value="">-- Pilih Peringkat --</option>
+            <option value="Sekolah">Sekolah</option>
+            <option value="Daerah">Daerah / Zon</option>
+            <option value="Bahagian">Bahagian</option>
+            <option value="Negeri">Negeri</option>
+            <option value="Kebangsaan">Kebangsaan</option>
+            <option value="Antarabangsa">Antarabangsa</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Keputusan / Kedudukan</label>
+          <select id="selectMeritKeputusan" onchange="kiraMarkahMeritAutomatik()" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+            <option value="">-- Pilih Keputusan --</option>
+            <option value="1">Johan (Tempat Pertama)</option>
+            <option value="2">Naib Johan (Tempat Ke-2)</option>
+            <option value="3">Ketiga (Tempat Ke-3)</option>
+            <option value="4">Ke-4</option>
+            <option value="5">Ke-5</option>
+            <option value="Penyertaan">Penyertaan Sahaja / Tempat Ke-6+</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Markah Merit (Auto-Calculated Readonly) -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Mata Merit (Dikira Automatik)</label>
+        <input type="number" id="inputMeritMata" readonly placeholder="0" class="w-full border rounded-lg px-3 py-2 text-sm bg-amber-50 font-bold text-amber-700 outline-none cursor-not-allowed">
+      </div>
+
+      <!-- Butang Aksi -->
+      <div class="flex justify-end gap-2 pt-3 border-t">
+        <button type="button" onclick="closeModal('modalMerit')" class="px-4 py-2 border rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50">Batal</button>
+        <button type="submit" id="btnSimpanMerit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-medium transition-colors">Tambah Rekod Merit</button>
+      </div>
+    </form>
   </div>
+</div>
 
   <!-- MODAL POPUP SENARAI MURID HADIR -->
   <div id="modalSenaraiHadir" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
