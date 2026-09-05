@@ -159,23 +159,24 @@
           </div>
 
               <!-- Jadual Senarai Murid -->
-    <div class="overflow-x-auto rounded-lg border">
-      <table class="table-kms">
-        <thead>
-          <tr>
-            <th>ID / MYKID</th>
-            <th>NAMA MURID</th>
-            <th>KELAS</th>
-            <th>UNIT</th>
-            <th>KELAB</th>
-            <th>SUKAN</th>
-          </tr>
-        </thead>
-        <tbody id="tbodySenaraiMurid">
-          <!-- Baris data murid dimuatkan oleh JS -->
-        </tbody>
-      </table>
-    </div>
+    <div class="w-full overflow-x-auto rounded-lg border border-slate-200">
+  <table class="w-full text-left border-collapse table-auto">
+    <thead>
+      <tr class="border-b border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold uppercase tracking-wider">
+        <th class="p-3 w-[15%]">ID / MYKID</th>
+        <th class="p-3 w-[30%]">NAMA MURID</th>
+        <th class="p-3 w-[15%]">KELAS</th>
+        <th class="p-3 w-[13%]">UNIT</th>
+        <th class="p-3 w-[13.5%]">KELAB</th>
+        <th class="p-3 w-[13.5%]">SUKAN</th>
+      </tr>
+    </thead>
+    <!-- Kekalkan ID asal 'tbodySenaraiMurid' di sini -->
+    <tbody id="tbodySenaraiMurid" class="divide-y divide-slate-100">
+      <!-- Data render melalui JS di sini -->
+    </tbody>
+  </table>
+</div>
         </div>
 
         <!-- TAB 3: ANALISIS -->
