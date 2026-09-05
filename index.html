@@ -1575,26 +1575,27 @@ window.bukaModalImages = function(index) {
       muatkanDataKMS();
     });
 
-    // Fungsi untuk memproses pautan gambar (Base64 ATAU Google Drive URL)
-function dapatkanUrlGambar(imageStr) {
-  if (!imageStr) return "";
+    // Fungsi pembantu untuk mengendali kedu-dua format (Base64 & Google Drive)
+function dapatkanUrlGambar(imageSrc) {
+  if (!imageSrc) return '';
+  
+  const str = imageSrc.toString().trim();
 
-  // 1. Jika data adalah Base64 (teks mentah imej)
-  if (imageStr.startsWith("data:image/") || imageStr.startsWith("blob:")) {
-    return imageStr;
+  // 1. FORMAT LAMA: Base64
+  if (str.startsWith('data:image') || !str.startsWith('http')) {
+    return str.startsWith('data:image') ? str : `data:image/jpeg;base64,${str}`;
   }
 
-  // 2. Jika data adalah Pautan Google Drive
-  if (imageStr.includes("drive.google.com")) {
-    const match = imageStr.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  // 2. FORMAT BARU: Pautan Google Drive
+  if (str.includes('drive.google.com')) {
+    const match = str.match(/\/d\/([a-zA-Z0-9_-]+)/) || str.match(/id=([a-zA-Z0-9_-]+)/);
     if (match && match[1]) {
-      // Tukar pautan Drive ke pautan paparan terus (direct display URL) untuk tag <img>
+      // Ekstrak ID dan tukar terus kepada URL gambar mentah
       return `https://lh3.googleusercontent.com/d/${match[1]}`;
     }
   }
 
-  // 3. Jika URL biasa yang lain
-  return imageStr;
+  return str;
 }
   </script>
 </body>
