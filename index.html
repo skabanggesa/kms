@@ -1749,7 +1749,7 @@ async function hantarMeritEvent(e) {
   e.preventDefault();
 
   const btn = document.getElementById("btnSimpanMerit");
-  const originalText = btn ? btn.textContent : "Tambah Rekod Merit";
+  const originalText = "Tambah Rekod Merit";
 
   const payload = {
     date: document.getElementById("inputMeritTarikh")?.value || "",
@@ -1762,39 +1762,60 @@ async function hantarMeritEvent(e) {
     merit: document.getElementById("inputMeritMata")?.value || 0
   };
 
+  if (!payload.name || !payload.unit || !payload.activity) {
+    alert("Sila lengkapkan nama murid, unit, dan nama aktiviti.");
+    return;
+  }
+
   if (btn) {
     btn.disabled = true;
     btn.textContent = "Menyimpan...";
   }
 
+  // Fungsi pengedali selepas terima maklum balas
+  function selesaiSimpan(res) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+    if (res && (res.status === "success" || res.success === true)) {
+      alert(res.message || "Rekod merit berjaya disimpan!");
+      document.getElementById("formMerit").reset();
+      const selectUnit = document.getElementById("selectMeritUnit");
+      if (selectUnit) selectUnit.disabled = true;
+      if (typeof closeModal === "function") closeModal("modalMerit");
+      if (typeof muatkanDataKMS === "function") muatkanDataKMS();
+    } else {
+      alert("Gagal menyimpan: " + (res ? res.message : "Ralat tidak diketahui"));
+    }
+  }
+
+  function ralatSimpan(err) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+    alert("Ralat sistem: " + (err.message || err));
+  }
+
+  // Semakan persekitaran (Google Script vs Web App URL)
   if (typeof google !== 'undefined' && google.script && google.script.run) {
     google.script.run
-      .withSuccessHandler(function(res) {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = originalText;
-        }
-        if (res && (res.status === "success" || res.success)) {
-          alert(res.message || "Rekod merit berjaya disimpan!");
-          document.getElementById("formMerit").reset();
-          document.getElementById("selectMeritUnit").disabled = true;
-          if (typeof closeModal === "function") closeModal("modalMerit");
-          if (typeof muatkanDataKMS === "function") muatkanDataKMS();
-        } else {
-          alert("Gagal menyimpan: " + (res ? res.message : "Ralat sistem."));
-        }
-      })
-      .withFailureHandler(function(err) {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = originalText;
-        }
-        alert("Ralat sambungan: " + err.message);
-      })
+      .withSuccessHandler(selesaiSimpan)
+      .withFailureHandler(ralatSimpan)
       .simpanMeritData(payload);
+  } else if (typeof WEB_APP_URL !== 'undefined') {
+    fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "simpanMerit", data: payload })
+    })
+    .then(res => res.json())
+    .then(res => selesaiSimpan(res))
+    .catch(err => ralatSimpan(err));
+  } else {
+    ralatSimpan("URL Web App tidak dijumpai.");
   }
 }
-
     function isiDropdownNamaMerit() {
   const select = document.getElementById("selectMeritNama");
   if (!select) return;
