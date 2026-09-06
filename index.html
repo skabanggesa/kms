@@ -675,38 +675,97 @@
     }
 
     // 2. MUAT DATA DARI GOOGLE APPS SCRIPT / FETCH
-    function muatkanDataKMS() {
-      console.log(">>> Memulakan muatkanDataKMS()...");
-      const loader = document.getElementById("loadingScreen");
-      if (loader) loader.classList.remove("hidden");
+    async function muatkanDataKMS() {
+  console.log(">>> Memulakan muatkanDataKMS()...");
+  const loader = document.getElementById("loadingScreen");
+  if (loader) loader.classList.remove("hidden");
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(function(res) {
-            console.log(">>> Respons diterima dari Apps Script:", res);
-            prosesDataMasuk(res);
-            if (loader) loader.classList.add("hidden");
-          })
-          .withFailureHandler(function(err) {
-            console.error(">>> Ralat google.script.run:", err);
-            if (loader) loader.classList.add("hidden");
-          })
-          .getAllData();
-      } else {
-        fetch(`${WEB_APP_URL}?action=getAllData`)
-          .then(response => response.json())
-          .then(res => {
-            console.log(">>> Respons diterima dari fetch:", res);
-            prosesDataMasuk(res);
-            if (loader) loader.classList.add("hidden");
-          })
-          .catch(err => {
-            console.error(">>> Ralat fetch:", err);
-            if (loader) loader.classList.add("hidden");
-          });
-      }
+  // 1. Semak sesi semasa atau minta e-mel pengguna
+  let userEmail = sessionStorage.getItem("kms_user_email");
+
+  if (!userEmail) {
+    userEmail = prompt("Sila masukkan e-mel MOE-DL anda untuk pengesahan akses:");
+    if (userEmail) {
+      userEmail = userEmail.trim().toLowerCase();
+    } else {
+      if (loader) loader.classList.add("hidden");
+      paparSkrinAksesDitolak("Pengesahan e-mel diperlukan untuk mengakses sistem KMS.");
+      return;
     }
+  }
 
+  // 2. Semak e-mel terus ke backend sedia ada (action=semakAkses)
+  try {
+    const checkRes = await fetch(`${WEB_APP_URL}?action=semakAkses&email=${encodeURIComponent(userEmail)}`);
+    const checkData = await checkRes.json();
+
+    if (checkData && checkData.status === "success") {
+      // Akaun WUJUD dalam sheet [users] -> Simpan sesi & kemaskini paparan header
+      sessionStorage.setItem("kms_user_email", userEmail);
+      
+      const emailDisplay = document.getElementById("userEmail");
+      if (emailDisplay) emailDisplay.textContent = userEmail;
+
+      // Panggil fungsi muat data utama
+      muatDataSistemLulus();
+    } else {
+      // Akaun TIADA dalam sheet [users] -> Sekat akses
+      sessionStorage.removeItem("kms_user_email");
+      if (loader) loader.classList.add("hidden");
+      paparSkrinAksesDitolak(`Akses Ditolak: Akaun (${userEmail}) tiada dalam senarai sheet [users].`);
+    }
+  } catch (err) {
+    console.error("Ralat semakan akses:", err);
+    if (loader) loader.classList.add("hidden");
+    paparSkrinAksesDitolak("Ralat sambungan semasa menyemak hak akses.");
+  }
+}
+
+// Fungsi memuatkan data (Hanya dipanggil selepas akses DILULUSKAN)
+function muatDataSistemLulus() {
+  const loader = document.getElementById("loadingScreen");
+
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        console.log(">>> Respons diterima dari Apps Script:", res);
+        prosesDataMasuk(res);
+        if (loader) loader.classList.add("hidden");
+      })
+      .withFailureHandler(function(err) {
+        console.error(">>> Ralat google.script.run:", err);
+        if (loader) loader.classList.add("hidden");
+      })
+      .getAllData();
+  } else {
+    fetch(`${WEB_APP_URL}?action=getAllData`)
+      .then(response => response.json())
+      .then(res => {
+        console.log(">>> Respons diterima dari fetch:", res);
+        prosesDataMasuk(res);
+        if (loader) loader.classList.add("hidden");
+      })
+      .catch(err => {
+        console.error(">>> Ralat fetch:", err);
+        if (loader) loader.classList.add("hidden");
+      });
+  }
+}
+
+// Skrin Sekatan Akses Ditolak
+function paparSkrinAksesDitolak(mesej) {
+  document.body.innerHTML = `
+    <div style="display:flex; height:100vh; align-items:center; justify-content:center; background-color:#f8fafc; font-family:sans-serif; padding:1rem;">
+      <div style="background:white; padding:2.5rem; border-radius:1rem; box-shadow:0 10px 25px -5px rgba(0,0,0,0.1); text-align:center; max-width:420px; width:100%;">
+        <div style="background:#fee2e2; color:#ef4444; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem auto; font-size:1.8rem; font-weight:bold;">✕</div>
+        <h2 style="color:#1e293b; font-weight:bold; margin-bottom:0.5rem; font-size:1.25rem;">Akses Ditolak</h2>
+        <p style="color:#64748b; font-size:0.9rem; margin-bottom:1.5rem; line-height:1.5;">${mesej}</p>
+        <button onclick="sessionStorage.clear(); location.reload();" style="background:#2563eb; color:white; border:none; padding:0.75rem 1.5rem; border-radius:0.5rem; font-weight:600; cursor:pointer; width:100%;">
+          Cuba Masukkan E-mel Lain
+        </button>
+      </div>
+    </div>`;
+}
     function prosesDataMasuk(res) {
       if (!res) return;
       window.allData = res;
