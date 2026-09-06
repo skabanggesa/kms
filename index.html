@@ -61,7 +61,7 @@
     <header class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 mb-6 flex justify-between items-center border border-slate-200 dark:border-slate-700 transition-colors duration-200">
       <div>
         <h1 class="text-2xl font-bold text-slate-800 dark:text-white">KMS Digital — Kokurikulum Management System</h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400">Selamat datang, <span id="userEmail" class="font-semibold text-blue-600 dark:text-blue-400">sekolah-8368@moe-dl.edu.my</span></p>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Selamat datang, <span id="userNama" class="font-semibold text-blue-600 dark:text-blue-400">sekolah-8368@moe-dl.edu.my</span></p>
       </div>
       <div class="flex items-center gap-3">
         <!-- Butang Tindakan Pantas -->
@@ -747,14 +747,20 @@ async function sahkanEmailKMS(userEmail) {
     const checkData = await checkRes.json();
 
     if (checkData && checkData.status === "success") {
+      // 1. Simpan sesi e-mel & nama
       sessionStorage.setItem("kms_user_email", userEmail);
+      const namaUser = checkData.nama || userEmail;
+      sessionStorage.setItem("kms_user_nama", namaUser);
       
-      const emailDisplay = document.getElementById("userEmail");
-      if (emailDisplay) emailDisplay.textContent = userEmail;
+      // 2. Kemaskini paparan nama pada elemen <span id="userNama">
+      const namaDisplay = document.getElementById("userNama");
+      if (namaDisplay) namaDisplay.textContent = namaUser;
 
+      // 3. Teruskan muat data
       muatDataSistemLulus();
     } else {
       sessionStorage.removeItem("kms_user_email");
+      sessionStorage.removeItem("kms_user_nama");
       if (loader) loader.classList.add("hidden");
       paparSkrinAksesDitolak(`Akses Ditolak: Akaun (${userEmail}) tiada dalam senarai sheet [users].`);
     }
