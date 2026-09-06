@@ -73,7 +73,7 @@
 </button>
         
         <!-- Badge Admin -->
-        <span class="bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 px-3 py-1 rounded-full text-xs font-bold uppercase ml-2">ADMIN</span>
+        <span id="userRoleBadge" class="bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 px-3 py-1 rounded-full text-xs font-bold uppercase ml-2">---</span>
       </div>
     </header>
 
@@ -747,20 +747,27 @@ async function sahkanEmailKMS(userEmail) {
     const checkData = await checkRes.json();
 
     if (checkData && checkData.status === "success") {
-      // 1. Simpan sesi e-mel & nama
+      // 1. Simpan sesi (Email, Nama & Role)
       sessionStorage.setItem("kms_user_email", userEmail);
       const namaUser = checkData.nama || userEmail;
-      sessionStorage.setItem("kms_user_nama", namaUser);
+      const roleUser = checkData.role || "GURU";
       
-      // 2. Kemaskini paparan nama pada elemen <span id="userNama">
+      sessionStorage.setItem("kms_user_nama", namaUser);
+      sessionStorage.setItem("kms_user_role", roleUser);
+      
+      // 2. Kemaskini paparan nama
       const namaDisplay = document.getElementById("userNama");
       if (namaDisplay) namaDisplay.textContent = namaUser;
 
-      // 3. Teruskan muat data
+      // 3. Kemaskini Teks & Warna Badge Peranan
+      kemaskiniBadgePeranan(roleUser);
+
+      // 4. Teruskan muat data
       muatDataSistemLulus();
     } else {
       sessionStorage.removeItem("kms_user_email");
       sessionStorage.removeItem("kms_user_nama");
+      sessionStorage.removeItem("kms_user_role");
       if (loader) loader.classList.add("hidden");
       paparSkrinAksesDitolak(`Akses Ditolak: Akaun (${userEmail}) tiada dalam senarai sheet [users].`);
     }
