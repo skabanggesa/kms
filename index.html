@@ -826,12 +826,48 @@ function muatDataSistemLulus() {
   }
 }
 
-// 5. Fungsi Log Keluar
+// --- FUNGSI MODAL LOG KELUAR MODEN ---
+
 function logKeluarKMS() {
-  if (confirm("Adakah anda pasti untuk log keluar daripada sistem?")) {
-    sessionStorage.removeItem("kms_user_email");
-    location.reload();
-  }
+  // Padamkan modal lama jika wujud
+  const modalLama = document.getElementById("kmsLogoutModal");
+  if (modalLama) modalLama.remove();
+
+  const modalHtml = `
+    <div id="kmsLogoutModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.75); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:9999; font-family:sans-serif; padding:1rem;">
+      <div style="background:white; border-radius:1rem; padding:2rem; width:100%; max-width:380px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); text-align:center;">
+        <div style="background:#fee2e2; color:#ef4444; width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem auto; font-size:1.5rem;">
+          🚪
+        </div>
+        <h3 style="margin:0 0 0.5rem 0; color:#1e293b; font-size:1.25rem; font-weight:700;">Pengesahan Log Keluar</h3>
+        <p style="margin:0 0 1.5rem 0; color:#64748b; font-size:0.875rem; line-height:1.4;">Adakah anda pasti untuk keluar daripada sistem KMS Digital?</p>
+        
+        <div style="display:flex; gap:0.75rem;">
+          <button onclick="tutupModalLogKeluar()" style="flex:1; background:#f1f5f9; color:#475569; border:none; padding:0.75rem; border-radius:0.5rem; font-size:0.9rem; font-weight:600; cursor:pointer;">
+            Batal
+          </button>
+          <button onclick="SahkanLogKeluarKMS()" style="flex:1; background:#ef4444; color:white; border:none; padding:0.75rem; border-radius:0.5rem; font-size:0.9rem; font-weight:600; cursor:pointer;">
+            Ya, Log Keluar
+          </button>
+        </div>
+      </div>
+    </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+// Batal & tutup modal
+function tutupModalLogKeluar() {
+  const modal = document.getElementById("kmsLogoutModal");
+  if (modal) modal.remove();
+}
+
+// Laksana log keluar & bersihkan sesi
+function SahkanLogKeluarKMS() {
+  sessionStorage.removeItem("kms_user_email");
+  sessionStorage.removeItem("kms_user_nama");
+  sessionStorage.removeItem("kms_user_role");
+  location.reload();
 }
 
 // 6. Skrin Akses Ditolak
