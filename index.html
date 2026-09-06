@@ -52,34 +52,48 @@
       font-weight: 600;
       border: 1px solid #bfdbfe;
     }
+
+    /* Tatalan Lancar untuk Telefon */
+    .smooth-scroll {
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Menyembunyikan Scrollbar secara Visual (Pilihan) */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
   </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen p-6 transition-colors duration-200">
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen p-3 sm:p-6 transition-colors duration-200">
 
-<div class="max-w-7xl mx-auto p-4 sm:p-6">
-  <!-- Header Utama -->
-  <header class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 mb-6 flex justify-between items-center border border-slate-200 dark:border-slate-700 transition-colors duration-200">
+<div class="max-w-7xl mx-auto">
+  <!-- Header Utama (Responsif Telefon) -->
+  <header class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-4 sm:p-6 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-slate-200 dark:border-slate-700 transition-colors duration-200">
     
     <!-- Bahagian Kiri: Logo + Tajuk -->
-    <div class="flex items-center gap-4">
-      <img src="kms.png" alt="Logo KMS" class="h-12 w-auto object-contain">
-      <div>
-        <h1 class="text-2xl font-bold text-slate-800 dark:text-white">KMS Digital — Kokurikulum Management System</h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400">Selamat datang, <span id="userNama" class="font-semibold text-blue-600 dark:text-blue-400">sekolah-8368@moe-dl.edu.my</span></p>
+    <div class="flex items-center gap-3 sm:gap-4 w-full md:w-auto">
+      <img src="kms.png" alt="Logo KMS" class="h-10 sm:h-12 w-auto object-contain flex-shrink-0">
+      <div class="min-w-0 flex-1">
+        <h1 class="text-lg sm:text-2xl font-bold text-slate-800 dark:text-white leading-snug truncate sm:whitespace-normal">KMS Digital — Kokurikulum Management System</h1>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">Selamat datang, <span id="userNama" class="font-semibold text-blue-600 dark:text-blue-400">sekolah-8368@moe-dl.edu.my</span></p>
       </div>
     </div>
 
     <!-- Bahagian Kanan: Butang & Badge -->
-    <div class="flex items-center gap-3">
-      <button onclick="openModal('modalPerancangan')" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-sm">+ Perancangan</button>
-      <button onclick="openModal('modalPelaporan')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-sm">+ Pelaporan</button>
-      <button onclick="openModal('modalMerit')" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-sm">+ Merit</button>
-      <button onclick="logKeluarKMS()" style="background:#ef4444; color:white; border:none; padding:0.4rem 0.8rem; border-radius:0.375rem; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:0.3rem;">
+    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-start md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-100 dark:border-slate-700">
+      <button onclick="openModal('modalPerancangan')" class="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-sm text-center">+ Perancangan</button>
+      <button onclick="openModal('modalPelaporan')" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-sm text-center">+ Pelaporan</button>
+      <button onclick="openModal('modalMerit')" class="flex-1 sm:flex-none bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-sm text-center">+ Merit</button>
+      <button onclick="logKeluarKMS()" class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1">
         🚪 Log Keluar
       </button>
       
       <!-- Badge Peranan -->
-      <span id="userRoleBadge" class="bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 px-3 py-1 rounded-full text-xs font-bold uppercase ml-2">---</span>
+      <span id="userRoleBadge" class="bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 px-3 py-1 rounded-full text-xs font-bold uppercase ml-auto md:ml-2">---</span>
     </div>
   </header>
 
@@ -92,20 +106,20 @@
       </div>
     </div>
 
-    <!-- 2. SUSUNAN TAB UTAMA BAHARU -->
-    <div class="flex border-b border-slate-200 gap-2 mb-6">
-      <button id="btnTabAnalisis" onclick="tukarTabUtama('analisis')" class="btn-tab-utama px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600">
+    <!-- 2. SUSUNAN TAB UTAMA (Boleh Skrol di Telefon) -->
+    <div class="flex border-b border-slate-200 gap-2 mb-6 overflow-x-auto whitespace-nowrap smooth-scroll pb-1">
+      <button id="btnTabAnalisis" onclick="tukarTabUtama('analisis')" class="btn-tab-utama px-4 py-2 text-sm font-bold text-blue-600 border-b-2 border-blue-600 flex-shrink-0">
         Analisis
       </button>
-      <button id="btnTabGuru" onclick="tukarTabUtama('guru')" class="btn-tab-utama px-4 py-2 text-sm font-medium text-slate-500 border-b-2 border-transparent">
+      <button id="btnTabGuru" onclick="tukarTabUtama('guru')" class="btn-tab-utama px-4 py-2 text-sm font-medium text-slate-500 border-b-2 border-transparent flex-shrink-0">
         Senarai Guru
       </button>
-      <button id="btnTabMurid" onclick="tukarTabUtama('murid')" class="btn-tab-utama px-4 py-2 text-sm font-medium text-slate-500 border-b-2 border-transparent">
+      <button id="btnTabMurid" onclick="tukarTabUtama('murid')" class="btn-tab-utama px-4 py-2 text-sm font-medium text-slate-500 border-b-2 border-transparent flex-shrink-0">
         Senarai Murid
       </button>
     </div>
     
-    <div class="p-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+    <div class="p-4 sm:p-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
       
       <!-- TAB 1: ANALISIS -->
       <div id="tab-analisis" class="tab-utama-content tab-content">
@@ -140,51 +154,51 @@
             <p class="text-xs text-amber-600/80 mt-2 font-medium">Jumlah Rekod Merit</p>
           </div>
 
-          <div class="p-4 border border-slate-200 border-l-4 border-l-blue-500 rounded-xl bg-white shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200 flex flex-col justify-between min-w-[220px]">
+          <div class="p-4 border border-slate-200 border-l-4 border-l-blue-500 rounded-xl bg-white shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-200 flex flex-col justify-between min-w-full sm:min-w-[220px]">
             <div class="flex justify-between items-center mb-2 pb-1.5 border-b border-slate-100">
               <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Taburan Ahli</span>
               <span class="text-[10px] bg-blue-50 text-blue-600 font-bold px-2 py-0.5 rounded-full border border-blue-100">Ringkasan</span>
             </div>
-            <div id="kandunganTaburanAhli" class="max-h-[105px] overflow-y-auto pr-1">
+            <div id="kandunganTaburanAhli" class="max-h-[105px] overflow-y-auto pr-1 smooth-scroll">
               <p class="text-xs text-slate-400 text-center mt-4">Memuatkan data...</p>
             </div>
           </div>
         </div>
 
-        <!-- MENU SUB-TAB ANALISIS -->
-        <div class="border-b border-slate-200 mb-4 flex flex-wrap gap-2">
-          <button onclick="tukarSubTabAnalisis('pecahan')" id="btnSubtabPecahan" class="btn-subtab font-semibold py-2 px-4 border-b-2 border-blue-600 text-blue-600 text-sm">
+        <!-- MENU SUB-TAB ANALISIS (Boleh Skrol di Telefon) -->
+        <div class="border-b border-slate-200 mb-4 flex gap-2 overflow-x-auto whitespace-nowrap smooth-scroll pb-1">
+          <button onclick="tukarSubTabAnalisis('pecahan')" id="btnSubtabPecahan" class="btn-subtab font-semibold py-2 px-3 sm:px-4 border-b-2 border-blue-600 text-blue-600 text-xs sm:text-sm flex-shrink-0">
             Analisis Pecahan Murid
           </button>
-          <button onclick="tukarSubTabAnalisis('kehadiran')" id="btnSubtabKehadiran" class="btn-subtab font-semibold py-2 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 text-sm">
+          <button onclick="tukarSubTabAnalisis('kehadiran')" id="btnSubtabKehadiran" class="btn-subtab font-semibold py-2 px-3 sm:px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 text-xs sm:text-sm flex-shrink-0">
             Kehadiran
           </button>
-          <button onclick="tukarSubTabAnalisis('pelaporan')" id="btnSubtabPelaporan" class="btn-subtab font-semibold py-2 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 text-sm">
+          <button onclick="tukarSubTabAnalisis('pelaporan')" id="btnSubtabPelaporan" class="btn-subtab font-semibold py-2 px-3 sm:px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 text-xs sm:text-sm flex-shrink-0">
             Pelaporan
           </button>
-          <button onclick="tukarSubTabAnalisis('perancangan')" id="btnSubtabPerancangan" class="btn-subtab font-semibold py-2 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 text-sm">
+          <button onclick="tukarSubTabAnalisis('perancangan')" id="btnSubtabPerancangan" class="btn-subtab font-semibold py-2 px-3 sm:px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 text-xs sm:text-sm flex-shrink-0">
             Perancangan
           </button>
-          <button id="btnSubtabMerit" onclick="tukarSubTabAnalisis('merit')" class="btn-subtab font-semibold py-2 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 text-sm">
+          <button id="btnSubtabMerit" onclick="tukarSubTabAnalisis('merit')" class="btn-subtab font-semibold py-2 px-3 sm:px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 text-xs sm:text-sm flex-shrink-0">
             Merit
           </button>
         </div>
 
         <!-- KANDUNGAN SUB-TAB 1: PECAHAN MURID -->
-        <div id="subtab-pecahan" class="subtab-content p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+        <div id="subtab-pecahan" class="subtab-content p-4 sm:p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <div>
-              <h4 class="text-lg font-bold text-slate-800">Analisis Pecahan Murid</h4>
+              <h4 class="text-base sm:text-lg font-bold text-slate-800">Analisis Pecahan Murid</h4>
               <p class="text-xs text-slate-500">Pecahan bilangan murid mengikut jantina</p>
             </div>
-            <select id="selectAnalisisKategori" onchange="renderPecahanAnalisis()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+            <select id="selectAnalisisKategori" onchange="renderPecahanAnalisis()" class="w-full sm:w-auto border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
               <option value="unit">Unit Beruniform</option>
               <option value="kelab">Kelab & Persatuan</option>
               <option value="sukan">Sukan & Permainan</option>
             </select>
           </div>
 
-          <div class="overflow-x-auto rounded-lg border">
+          <div class="overflow-x-auto rounded-lg border smooth-scroll">
             <table class="table-kms">
               <thead>
                 <tr>
@@ -200,24 +214,24 @@
         </div>
 
         <!-- KANDUNGAN SUB-TAB 2: KEHADIRAN -->
-        <div id="subtab-kehadiran" class="subtab-content hidden p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+        <div id="subtab-kehadiran" class="subtab-content hidden p-4 sm:p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
             <div>
-              <h4 class="text-lg font-bold text-slate-800">Rekod Kehadiran</h4>
+              <h4 class="text-base sm:text-lg font-bold text-slate-800">Rekod Kehadiran</h4>
               <p class="text-xs text-slate-500">Senarai penuh rekod kehadiran murid</p>
             </div>
-            <div class="flex flex-wrap gap-2 w-full md:w-auto">
+            <div class="flex flex-col sm:flex-row flex-wrap gap-2 w-full md:w-auto">
               <input type="text" id="filterKehadiranCari" placeholder="Cari nama / perkara..." oninput="tapisKehadiran()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-48">
-              <select id="filterKehadiranTahun" onchange="tapisKehadiran()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <select id="filterKehadiranTahun" onchange="tapisKehadiran()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
                 <option value="">Semua Tahun</option>
               </select>
-              <select id="filterKehadiranUnit" onchange="tapisKehadiran()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <select id="filterKehadiranUnit" onchange="tapisKehadiran()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
                 <option value="">Semua Unit/Kelab/Sukan</option>
               </select>
             </div>
           </div>
 
-          <div class="overflow-x-auto rounded-lg border">
+          <div class="overflow-x-auto rounded-lg border smooth-scroll">
             <table class="table-kms">
               <thead>
                 <tr>
@@ -234,20 +248,20 @@
         </div>
 
         <!-- KANDUNGAN SUB-TAB 3: PELAPORAN -->
-        <div id="subtab-pelaporan" class="subtab-content hidden p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+        <div id="subtab-pelaporan" class="subtab-content hidden p-4 sm:p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
             <div>
-              <h4 class="text-lg font-bold text-slate-800">Rekod Pelaporan Aktiviti</h4>
+              <h4 class="text-base sm:text-lg font-bold text-slate-800">Rekod Pelaporan Aktiviti</h4>
               <p class="text-xs text-slate-500">Senarai laporan aktiviti kokurikulum</p>
             </div>
-            <div class="flex flex-wrap gap-2 items-center">
+            <div class="flex flex-col sm:flex-row flex-wrap gap-2 w-full md:w-auto">
               <input type="text" id="filterPelaporanCari" onkeyup="tapisPelaporan()" placeholder="Cari tajuk / aktiviti..." class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64">
-              <select id="filterPelaporanUnit" onchange="tapisPelaporan()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <select id="filterPelaporanUnit" onchange="tapisPelaporan()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto">
                 <option value="">Semua Unit/Kelab/Sukan</option>
               </select>
             </div>
           </div>
-          <div class="overflow-x-auto rounded-lg border">
+          <div class="overflow-x-auto rounded-lg border smooth-scroll">
             <table class="table-kms">
               <thead>
                 <tr>
@@ -266,21 +280,21 @@
         </div>
 
         <!-- KANDUNGAN SUB-TAB 4: PERANCANGAN TAHUNAN -->
-        <div id="subtab-perancangan" class="subtab-content hidden p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
+        <div id="subtab-perancangan" class="subtab-content hidden p-4 sm:p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
           <div class="mb-4">
-            <h4 class="text-lg font-bold text-slate-800">Perancangan Tahunan Aktiviti</h4>
+            <h4 class="text-base sm:text-lg font-bold text-slate-800">Perancangan Tahunan Aktiviti</h4>
             <p class="text-xs text-slate-500">Senarai perancangan dan takwim aktiviti kokurikulum</p>
           </div>
 
-          <div class="flex flex-col md:flex-row gap-3 mb-4">
-            <input type="text" id="filterPerancanganCari" oninput="tapisPerancangan()" placeholder="Cari tajuk / perancangan..." class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-purple-500" />
-            <select id="filterPerancanganUnit" onchange="tapisPerancangan()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-purple-500">
+          <div class="flex flex-col sm:flex-row gap-3 mb-4">
+            <input type="text" id="filterPerancanganCari" oninput="tapisPerancangan()" placeholder="Cari tajuk / perancangan..." class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+            <select id="filterPerancanganUnit" onchange="tapisPerancangan()" class="px-3 py-2 border border-slate-300 rounded-lg text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-purple-500">
               <option value="">Semua Unit/Kelab/Sukan</option>
             </select>
           </div>
 
-          <div class="w-full overflow-x-auto rounded-lg border border-slate-200">
-            <table class="w-full text-left border-collapse table-auto">
+          <div class="w-full overflow-x-auto rounded-lg border border-slate-200 smooth-scroll">
+            <table class="w-full text-left border-collapse table-auto min-w-[600px]">
               <thead>
                 <tr class="border-b border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold uppercase tracking-wider">
                   <th class="p-3 w-[20%]">TARIKH (DATE)</th>
@@ -297,21 +311,21 @@
         </div>
 
         <!-- KANDUNGAN SUB-TAB 5: MERIT -->
-        <div id="subtab-merit" class="subtab-content hidden p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+        <div id="subtab-merit" class="subtab-content hidden p-4 sm:p-5 border rounded-xl bg-white border-slate-200 shadow-sm">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
             <div>
-              <h4 class="text-lg font-bold text-slate-800">Rekod Merit Murid</h4>
+              <h4 class="text-base sm:text-lg font-bold text-slate-800">Rekod Merit Murid</h4>
               <p class="text-xs text-slate-500">Senarai pencapaian dan pemberian mata merit murid</p>
             </div>
-            <div class="flex flex-wrap gap-2 w-full md:w-auto">
+            <div class="flex flex-col sm:flex-row flex-wrap gap-2 w-full md:w-auto">
               <input type="text" id="filterMeritCari" placeholder="Cari nama murid / aktiviti..." oninput="tapisMerit()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-64">
-              <select id="filterMeritUnit" onchange="tapisMerit()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+              <select id="filterMeritUnit" onchange="tapisMerit()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-auto">
                 <option value="">Semua Unit/Kelab/Sukan</option>
               </select>
             </div>
           </div>
 
-          <div class="overflow-x-auto rounded-lg border">
+          <div class="overflow-x-auto rounded-lg border smooth-scroll">
             <table class="table-kms">
               <thead>
                 <tr>
@@ -335,16 +349,16 @@
 
       <!-- TAB 2: PENGURUSAN GURU -->
       <div id="tab-guru" class="tab-utama-content tab-content hidden">
-        <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
-          <div class="flex flex-1 gap-2">
-            <input type="text" id="filterGuruNama" placeholder="Cari nama guru..." oninput="tapisGuru()" class="w-full md:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <select id="filterGuruUnit" onchange="tapisGuru()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <div class="flex flex-col sm:flex-row justify-between gap-3 mb-4">
+          <div class="flex flex-col sm:flex-row flex-1 gap-2">
+            <input type="text" id="filterGuruNama" placeholder="Cari nama guru..." oninput="tapisGuru()" class="w-full sm:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select id="filterGuruUnit" onchange="tapisGuru()" class="w-full sm:w-auto border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Semua Unit / Kelab / Sukan</option>
             </select>
           </div>
         </div>
 
-        <div class="overflow-x-auto rounded-lg border">
+        <div class="overflow-x-auto rounded-lg border smooth-scroll">
           <table class="table-kms">
             <thead>
               <tr>
@@ -363,20 +377,20 @@
 
       <!-- TAB 3: SENARAI MURID -->
       <div id="tab-murid" class="tab-utama-content tab-content hidden">
-        <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
-          <div class="flex flex-wrap flex-1 gap-2">
-            <input type="text" id="filterMuridCari" placeholder="Cari nama murid / ID..." oninput="tapisMurid()" class="w-full md:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <select id="filterMuridKategori" onchange="tapisMurid()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <div class="flex flex-col sm:flex-row justify-between gap-3 mb-4">
+          <div class="flex flex-col sm:flex-row flex-wrap flex-1 gap-2">
+            <input type="text" id="filterMuridCari" placeholder="Cari nama murid / ID..." oninput="tapisMurid()" class="w-full sm:w-64 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select id="filterMuridKategori" onchange="tapisMurid()" class="w-full sm:w-auto border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Semua Unit / Kelab / Sukan</option>
             </select>
-            <select id="filterMuridKelas" onchange="tapisMurid()" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select id="filterMuridKelas" onchange="tapisMurid()" class="w-full sm:w-auto border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Semua Tingkatan/Kelas</option>
             </select>
           </div>
         </div>
 
-        <div class="w-full overflow-x-auto rounded-lg border border-slate-200">
-          <table class="w-full text-left border-collapse table-auto">
+        <div class="w-full overflow-x-auto rounded-lg border border-slate-200 smooth-scroll">
+          <table class="w-full text-left border-collapse table-auto min-w-[650px]">
             <thead>
               <tr class="border-b border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold uppercase tracking-wider">
                 <th class="p-3 w-[15%]">ID / MYKID</th>
@@ -396,14 +410,14 @@
   </div>
 
   <!-- MODAL 1: PERANCANGAN TAHUNAN -->
-  <div id="modalPerancangan" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+  <div id="modalPerancangan" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4 z-50">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-5 sm:p-6 max-h-[90vh] overflow-y-auto smooth-scroll">
       <div class="flex justify-between items-center mb-4">
         <div>
-          <h3 class="font-bold text-lg text-slate-800">Tambah Perancangan Tahunan</h3>
+          <h3 class="font-bold text-base sm:text-lg text-slate-800">Tambah Perancangan Tahunan</h3>
           <p class="text-xs text-slate-500">Merekod takwim aktiviti baharu ke sheet [annual]</p>
         </div>
-        <button onclick="closeModal('modalPerancangan')" class="text-slate-400 hover:text-slate-600">✕</button>
+        <button onclick="closeModal('modalPerancangan')" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
       </div>
 
       <form id="formPerancangan" onsubmit="hantarPerancangan(event)" class="space-y-4">
@@ -430,26 +444,26 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeModal('modalPerancangan')" class="px-4 py-2 border rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50">Batal</button>
-          <button type="submit" id="btnSimpanPerancangan" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium transition">Simpan Perancangan</button>
+          <button type="button" onclick="closeModal('modalPerancangan')" class="flex-1 sm:flex-none px-4 py-2 border rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50">Batal</button>
+          <button type="submit" id="btnSimpanPerancangan" class="flex-1 sm:flex-none px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-medium transition">Simpan Perancangan</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- MODAL 2: PELAPORAN -->
-  <div id="modalPelaporan" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+  <div id="modalPelaporan" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4 z-50">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-5 sm:p-6 max-h-[90vh] overflow-y-auto smooth-scroll">
       <div class="flex justify-between items-center mb-4 border-b pb-3">
         <div>
-          <h3 class="font-bold text-lg text-slate-800">Modul Pelaporan Aktiviti</h3>
+          <h3 class="font-bold text-base sm:text-lg text-slate-800">Modul Pelaporan Aktiviti</h3>
           <p class="text-xs text-slate-500">Merekod pelaporan aktiviti dan kehadiran ke sheet [reports]</p>
         </div>
-        <button onclick="closeModal('modalPelaporan')" class="text-slate-400 hover:text-slate-600">✕</button>
+        <button onclick="closeModal('modalPelaporan')" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
       </div>
 
       <form id="formPelaporan" onsubmit="hantarPelaporan(event)" class="space-y-4">
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Tarikh (Date)</label>
             <input type="date" id="inputPelaporanTarikh" required class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
@@ -492,25 +506,25 @@
               <button type="button" onclick="pilihSemuaMuridPelaporan(false)" class="text-[11px] font-medium text-rose-600 hover:underline">Nyahpilih</button>
             </div>
           </div>
-          <div id="kontenaPelaporanMurid" class="border rounded-lg p-2.5 max-h-40 overflow-y-auto space-y-1 bg-slate-50 text-xs">
+          <div id="kontenaPelaporanMurid" class="border rounded-lg p-2.5 max-h-40 overflow-y-auto space-y-1 bg-slate-50 text-xs smooth-scroll">
             <p class="text-slate-400 italic text-center py-2">Sila pilih Unit di atas untuk memaparkan senarai murid.</p>
           </div>
         </div>
 
         <div class="flex justify-end gap-2 pt-2 border-t">
-          <button type="button" onclick="closeModal('modalPelaporan')" class="px-4 py-2 border rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50">Batal</button>
-          <button type="submit" id="btnSimpanPelaporan" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition shadow-sm">Hantar Laporan</button>
+          <button type="button" onclick="closeModal('modalPelaporan')" class="flex-1 sm:flex-none px-4 py-2 border rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50">Batal</button>
+          <button type="submit" id="btnSimpanPelaporan" class="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition shadow-sm">Hantar Laporan</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- MODAL 3: MERIT -->
-<div id="modalMerit" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-  <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+<div id="modalMerit" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4 z-50">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-5 sm:p-6 max-h-[90vh] overflow-y-auto smooth-scroll">
     <div class="flex justify-between items-center mb-4 border-b pb-3">
       <div>
-        <h3 class="font-bold text-lg text-slate-800">Modul Rekod Merit Kokurikulum</h3>
+        <h3 class="font-bold text-base sm:text-lg text-slate-800">Modul Rekod Merit Kokurikulum</h3>
         <p class="text-xs text-slate-500">Merekod pencapaian dan pengiraan markah merit murid.</p>
       </div>
       <button type="button" onclick="closeModal('modalMerit')" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
@@ -518,15 +532,15 @@
 
     <form id="formMerit" class="space-y-4" onsubmit="hantarMeritEvent(event)">
       <!-- Tarikh & Tahun -->
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Tarikh Aktiviti</label>
           <input type="date" id="inputMeritTarikh" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
         </div>
         <div>
-  <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun</label>
-  <input type="number" id="inputMeritTahun" value="2026" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-</div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun</label>
+          <input type="number" id="inputMeritTahun" value="2026" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+        </div>
       </div>
 
       <!-- Nama Murid -->
@@ -534,11 +548,10 @@
         <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Murid</label>
         <select id="selectMeritNama" onchange="kemaskiniPilihanUnitMerit()" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
           <option value="">-- Pilih Murid --</option>
-          <!-- Diisi secara dinamik daripada senarai murid -->
         </select>
       </div>
 
-      <!-- Unit / Kelab / Sukan (Dinamik mengikut murid dipilih) -->
+      <!-- Unit / Kelab / Sukan -->
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1">Unit / Kelab / Sukan</label>
         <select id="selectMeritUnit" disabled required class="w-full border rounded-lg px-3 py-2 text-sm bg-slate-50 focus:ring-2 focus:ring-amber-500 outline-none">
@@ -546,14 +559,14 @@
         </select>
       </div>
 
-      <!-- Nama Aktiviti / Pertandingan -->
+      <!-- Nama Aktiviti -->
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Aktiviti / Pertandingan</label>
         <input type="text" id="inputMeritAktiviti" placeholder="Contoh: Kejohanan Olahraga MSSD" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
       </div>
 
       <!-- Peringkat & Keputusan -->
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Peringkat</label>
           <select id="selectMeritPeringkat" onchange="kiraMarkahMeritAutomatik()" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
@@ -581,7 +594,7 @@
         </div>
       </div>
 
-      <!-- Markah Merit (Auto-Calculated Readonly) -->
+      <!-- Markah Merit -->
       <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1">Mata Merit (Dikira Automatik)</label>
         <input type="number" id="inputMeritMata" readonly placeholder="0" class="w-full border rounded-lg px-3 py-2 text-sm bg-amber-50 font-bold text-amber-700 outline-none cursor-not-allowed">
@@ -589,59 +602,59 @@
 
       <!-- Butang Aksi -->
       <div class="flex justify-end gap-2 pt-3 border-t">
-        <button type="button" onclick="closeModal('modalMerit')" class="px-4 py-2 border rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50">Batal</button>
-        <button type="submit" id="btnSimpanMerit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-medium transition-colors">Tambah Rekod Merit</button>
+        <button type="button" onclick="closeModal('modalMerit')" class="flex-1 sm:flex-none px-4 py-2 border rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50">Batal</button>
+        <button type="submit" id="btnSimpanMerit" class="flex-1 sm:flex-none px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-medium transition-colors">Tambah Rekod Merit</button>
       </div>
     </form>
   </div>
 </div>
 
   <!-- MODAL POPUP SENARAI MURID HADIR -->
-  <div id="modalSenaraiHadir" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 max-h-[80vh] flex flex-col">
+  <div id="modalSenaraiHadir" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4 z-50">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-5 sm:p-6 max-h-[80vh] flex flex-col">
       <div class="flex justify-between items-center border-b pb-3 mb-4">
         <div>
           <h3 id="modalTajuk" class="font-bold text-base text-slate-800">Senarai Murid Hadir</h3>
           <p id="modalSubtajuk" class="text-xs text-slate-500"></p>
         </div>
-        <button onclick="tutupModalKehadiran()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+        <button onclick="tutupModalKehadiran()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
       </div>
-      <div id="modalKandunganNama" class="overflow-y-auto flex-1 flex flex-col gap-2 pr-1"></div>
+      <div id="modalKandunganNama" class="overflow-y-auto flex-1 flex flex-col gap-2 pr-1 smooth-scroll"></div>
       <div class="text-right pt-3 mt-4 border-t">
-        <button onclick="tutupModalKehadiran()" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold">Tutup</button>
+        <button onclick="tutupModalKehadiran()" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold w-full sm:w-auto">Tutup</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL POPUP GAMBAR PELAPORAN -->
-  <div id="modalImages" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[85vh] flex flex-col items-center">
+  <div id="modalImages" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4 z-50">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-5 sm:p-6 max-h-[85vh] flex flex-col items-center">
       <div class="flex justify-between items-center w-full border-b pb-3 mb-4">
         <h3 id="modalImagesTajuk" class="font-bold text-base text-slate-800">Gambar Laporan</h3>
-        <button onclick="tutupModalImages()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+        <button onclick="tutupModalImages()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
       </div>
-      <div class="flex-1 overflow-y-auto w-full flex justify-center items-center bg-slate-50 rounded-lg p-2">
+      <div class="flex-1 overflow-y-auto w-full flex justify-center items-center bg-slate-50 rounded-lg p-2 smooth-scroll">
         <img id="imgModalElement" src="" alt="Gambar Laporan" class="max-w-full max-h-[55vh] rounded object-contain">
       </div>
       <div class="w-full text-right pt-3 mt-4 border-t">
-        <button onclick="tutupModalImages()" class="bg-slate-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold">Tutup</button>
+        <button onclick="tutupModalImages()" class="bg-slate-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold w-full sm:w-auto">Tutup</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL POPUP MURID TERLIBAT PELAPORAN -->
-  <div id="modalReportsName" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 max-h-[80vh] flex flex-col">
+  <div id="modalReportsName" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4 z-50">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-5 sm:p-6 max-h-[80vh] flex flex-col">
       <div class="flex justify-between items-center border-b pb-3 mb-4">
         <div>
           <h3 id="modalReportsTajuk" class="font-bold text-base text-slate-800">Senarai Murid Terlibat</h3>
           <p id="modalReportsSubtajuk" class="text-xs text-slate-500"></p>
         </div>
-        <button onclick="tutupModalReportsName()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+        <button onclick="tutupModalReportsName()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
       </div>
-      <div id="modalKandunganNamaReports" class="overflow-y-auto flex-1 flex flex-col gap-2 pr-1"></div>
+      <div id="modalKandunganNamaReports" class="overflow-y-auto flex-1 flex flex-col gap-2 pr-1 smooth-scroll"></div>
       <div class="text-right pt-3 mt-4 border-t">
-        <button onclick="tutupModalReportsName()" class="bg-emerald-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold">Tutup</button>
+        <button onclick="tutupModalReportsName()" class="bg-emerald-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold w-full sm:w-auto">Tutup</button>
       </div>
     </div>
   </div>
@@ -706,22 +719,22 @@ function paparModalLogMasuk() {
 
   const modalHtml = `
     <div id="kmsAuthModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.75); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:9999; font-family:sans-serif; padding:1rem;">
-      <div style="background:white; border-radius:1rem; padding:2rem; width:100%; max-width:400px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); text-align:center;">
+      <div style="background:white; border-radius:1rem; padding:1.5rem; width:100%; max-width:380px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); text-align:center;">
         
         <!-- Paparan Logo KMS -->
-        <div style="margin:0 auto 1.25rem auto; display:flex; justify-content:center; align-items:center;">
-          <img src="kms.png" alt="Logo KMS" style="max-width:80px; height:auto; object-fit:contain;">
+        <div style="margin:0 auto 1rem auto; display:flex; justify-content:center; align-items:center;">
+          <img src="kms.png" alt="Logo KMS" style="max-width:70px; height:auto; object-fit:contain;">
         </div>
 
-        <h3 style="margin:0 0 0.5rem 0; color:#1e293b; font-size:1.25rem; font-weight:700;">Pengesahan Akses KMS</h3>
-        <p style="margin:0 0 1.5rem 0; color:#64748b; font-size:0.875rem; line-height:1.4;">Sila masukkan e-mel MOE-DL anda untuk mengesahkan hak akses sistem.</p>
+        <h3 style="margin:0 0 0.5rem 0; color:#1e293b; font-size:1.15rem; font-weight:700;">Pengesahan Akses KMS</h3>
+        <p style="margin:0 0 1.25rem 0; color:#64748b; font-size:0.85rem; line-height:1.4;">Sila masukkan e-mel MOE-DL anda untuk mengesahkan hak akses sistem.</p>
         
         <div style="margin-bottom:1.25rem; text-align:left;">
           <label style="display:block; font-size:0.75rem; font-weight:600; color:#475569; margin-bottom:0.375rem; text-transform:uppercase;">E-mel MOE-DL</label>
-          <input type="email" id="kmsEmailInput" placeholder="g-12345678@moe-dl.edu.my" style="width:100%; padding:0.75rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; font-size:0.95rem; outline:none; box-sizing:border-box;">
+          <input type="email" id="kmsEmailInput" placeholder="g-12345678@moe-dl.edu.my" style="width:100%; padding:0.75rem 1rem; border:1px solid #cbd5e1; border-radius:0.5rem; font-size:0.9rem; outline:none; box-sizing:border-box;">
         </div>
         
-        <button onclick="prosesHantarEmailModal()" style="width:100%; background:#4f46e5; color:white; border:none; padding:0.75rem; border-radius:0.5rem; font-size:0.95rem; font-weight:600; cursor:pointer;">
+        <button onclick="prosesHantarEmailModal()" style="width:100%; background:#4f46e5; color:white; border:none; padding:0.75rem; border-radius:0.5rem; font-size:0.9rem; font-weight:600; cursor:pointer;">
           Hantar & Sahkan
         </button>
       </div>
@@ -756,7 +769,6 @@ async function sahkanEmailKMS(userEmail) {
     const checkData = await checkRes.json();
 
     if (checkData && checkData.status === "success") {
-      // 1. Simpan sesi (Email, Nama & Role)
       sessionStorage.setItem("kms_user_email", userEmail);
       const namaUser = checkData.nama || userEmail;
       const roleUser = checkData.role || "GURU";
@@ -764,14 +776,10 @@ async function sahkanEmailKMS(userEmail) {
       sessionStorage.setItem("kms_user_nama", namaUser);
       sessionStorage.setItem("kms_user_role", roleUser);
       
-      // 2. Kemaskini paparan nama
       const namaDisplay = document.getElementById("userNama");
       if (namaDisplay) namaDisplay.textContent = namaUser;
 
-      // 3. Kemaskini Teks & Warna Badge Peranan
       kemaskiniBadgePeranan(roleUser);
-
-      // 4. Teruskan muat data
       muatDataSistemLulus();
     } else {
       sessionStorage.removeItem("kms_user_email");
@@ -787,7 +795,6 @@ async function sahkanEmailKMS(userEmail) {
   }
 }
 
-    // --- FUNGSI TUKAR BADGE PERANAN ---
 function kemaskiniBadgePeranan(role) {
   const badge = document.getElementById("userRoleBadge");
   if (!badge) return;
@@ -795,18 +802,15 @@ function kemaskiniBadgePeranan(role) {
   const cleanRole = String(role || "GURU").toUpperCase();
   badge.textContent = cleanRole;
 
-  // Penukaran warna badge mengikut peranan
   if (cleanRole === "ADMIN" || cleanRole === "PENTADBIR") {
     badge.className = "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 px-3 py-1 rounded-full text-xs font-bold uppercase ml-2";
   } else if (cleanRole.includes("PENYELARAS") || cleanRole.includes("PK")) {
     badge.className = "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 px-3 py-1 rounded-full text-xs font-bold uppercase ml-2";
   } else {
-    // Lalai untuk GURU / Pengguna biasa
     badge.className = "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-bold uppercase ml-2";
   }
 }
 
-// 4. Muat Data Utama selepas LULUS
 function muatDataSistemLulus() {
   const loader = document.getElementById("loadingScreen");
 
@@ -835,29 +839,26 @@ function muatDataSistemLulus() {
   }
 }
 
-// --- FUNGSI MODAL LOG KELUAR DENGAN LOGO KMS ---
-
 function logKeluarKMS() {
   const modalLama = document.getElementById("kmsLogoutModal");
   if (modalLama) modalLama.remove();
 
   const modalHtml = `
     <div id="kmsLogoutModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.75); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:9999; font-family:sans-serif; padding:1rem;">
-      <div style="background:white; border-radius:1rem; padding:2rem; width:100%; max-width:380px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); text-align:center;">
+      <div style="background:white; border-radius:1rem; padding:1.5rem; width:100%; max-width:360px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); text-align:center;">
         
-        <!-- Paparan Logo KMS -->
-        <div style="margin:0 auto 1.25rem auto; display:flex; justify-content:center; align-items:center;">
-          <img src="kms.png" alt="Logo KMS" style="max-width:80px; height:auto; object-fit:contain;">
+        <div style="margin:0 auto 1rem auto; display:flex; justify-content:center; align-items:center;">
+          <img src="kms.png" alt="Logo KMS" style="max-width:70px; height:auto; object-fit:contain;">
         </div>
 
-        <h3 style="margin:0 0 0.5rem 0; color:#1e293b; font-size:1.25rem; font-weight:700;">Pengesahan Log Keluar</h3>
-        <p style="margin:0 0 1.5rem 0; color:#64748b; font-size:0.875rem; line-height:1.4;">Adakah anda pasti untuk keluar daripada sistem KMS Digital?</p>
+        <h3 style="margin:0 0 0.5rem 0; color:#1e293b; font-size:1.15rem; font-weight:700;">Pengesahan Log Keluar</h3>
+        <p style="margin:0 0 1.25rem 0; color:#64748b; font-size:0.85rem; line-height:1.4;">Adakah anda pasti untuk keluar daripada sistem KMS Digital?</p>
         
-        <div style="display:flex; gap:0.75rem;">
-          <button onclick="tutupModalLogKeluar()" style="flex:1; background:#f1f5f9; color:#475569; border:none; padding:0.75rem; border-radius:0.5rem; font-size:0.9rem; font-weight:600; cursor:pointer;">
+        <div style="display:flex; gap:0.5rem;">
+          <button onclick="tutupModalLogKeluar()" style="flex:1; background:#f1f5f9; color:#475569; border:none; padding:0.75rem; border-radius:0.5rem; font-size:0.875rem; font-weight:600; cursor:pointer;">
             Batal
           </button>
-          <button onclick="SahkanLogKeluarKMS()" style="flex:1; background:#ef4444; color:white; border:none; padding:0.75rem; border-radius:0.5rem; font-size:0.9rem; font-weight:600; cursor:pointer;">
+          <button onclick="SahkanLogKeluarKMS()" style="flex:1; background:#ef4444; color:white; border:none; padding:0.75rem; border-radius:0.5rem; font-size:0.875rem; font-weight:600; cursor:pointer;">
             Ya, Log Keluar
           </button>
         </div>
@@ -867,13 +868,11 @@ function logKeluarKMS() {
   document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
-// Batal & tutup modal
 function tutupModalLogKeluar() {
   const modal = document.getElementById("kmsLogoutModal");
   if (modal) modal.remove();
 }
 
-// Laksana log keluar & bersihkan sesi
 function SahkanLogKeluarKMS() {
   sessionStorage.removeItem("kms_user_email");
   sessionStorage.removeItem("kms_user_nama");
@@ -881,15 +880,14 @@ function SahkanLogKeluarKMS() {
   location.reload();
 }
 
-// 6. Skrin Akses Ditolak
 function paparSkrinAksesDitolak(mesej) {
   document.body.innerHTML = `
     <div style="display:flex; height:100vh; align-items:center; justify-content:center; background-color:#f8fafc; font-family:sans-serif; padding:1rem;">
-      <div style="background:white; padding:2.5rem; border-radius:1rem; box-shadow:0 10px 25px -5px rgba(0,0,0,0.1); text-align:center; max-width:420px; width:100%;">
-        <div style="background:#fee2e2; color:#ef4444; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem auto; font-size:1.8rem; font-weight:bold;">✕</div>
-        <h2 style="color:#1e293b; font-weight:bold; margin-bottom:0.5rem; font-size:1.25rem;">Akses Ditolak</h2>
-        <p style="color:#64748b; font-size:0.9rem; margin-bottom:1.5rem; line-height:1.5;">${mesej}</p>
-        <button onclick="sessionStorage.clear(); location.reload();" style="background:#2563eb; color:white; border:none; padding:0.75rem 1.5rem; border-radius:0.5rem; font-weight:600; cursor:pointer; width:100%;">
+      <div style="background:white; padding:2rem; border-radius:1rem; box-shadow:0 10px 25px -5px rgba(0,0,0,0.1); text-align:center; max-width:400px; width:100%;">
+        <div style="background:#fee2e2; color:#ef4444; width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem auto; font-size:1.5rem; font-weight:bold;">✕</div>
+        <h2 style="color:#1e293b; font-weight:bold; margin-bottom:0.5rem; font-size:1.15rem;">Akses Ditolak</h2>
+        <p style="color:#64748b; font-size:0.85rem; margin-bottom:1.25rem; line-height:1.5;">${mesej}</p>
+        <button onclick="sessionStorage.clear(); location.reload();" style="background:#2563eb; color:white; border:none; padding:0.75rem 1.25rem; border-radius:0.5rem; font-weight:600; cursor:pointer; width:100%; font-size:0.9rem;">
           Cuba Masukkan E-mel Lain
         </button>
       </div>
@@ -946,10 +944,9 @@ function tapisGuru() {
     const email = (guru.email || "").toLowerCase().trim();
     const peranan = (guru.peranan || "").toLowerCase().trim();
 
-    // Sembunyikan jika peranan Super Admin ATAU email sekolah-8368@moe-dl.edu.my
     if (peranan === "super admin" || email === "sekolah-8368@moe-dl.edu.my" || email.includes("yba6103")) {
-  return false;
-}
+      return false;
+    }
 
     const padanNama = (guru.nama || "").toLowerCase().includes(inputNama);
     const padanKategori = !kategoriDipilih || 
@@ -1351,12 +1348,10 @@ function renderPengurusanGuru(usersList) {
         Array.from(unitSet).sort().map(u => `<option value="${u}">${u}</option>`).join('');
     }
 
-    // 1. Fungsi penukar URL/Base64
 function dapatkanUrlGambar(imageStr) {
   if (!imageStr) return "";
   let str = imageStr.trim();
 
-  // Jika pautan Google Drive
   if (str.includes("drive.google.com")) {
     const match = str.match(/\/d\/([a-zA-Z0-9_-]+)/);
     if (match && match[1]) {
@@ -1364,21 +1359,17 @@ function dapatkanUrlGambar(imageStr) {
     }
   }
 
-  // Jika URL web biasa
   if (str.startsWith("http://") || str.startsWith("https://")) {
     return str;
   }
 
-  // Jika Base64 (Laporan lama)
   return str.startsWith("data:image") ? str : `data:image/jpeg;base64,${str}`;
 }
 
-// 2. Fungsi buka modal yang dikemas kini
 window.bukaModalImages = function(index) {
   const item = senaraiPelaporanTapis[index];
   if (!item || !item.image) return;
 
-  // Guna fungsi pembantu untuk dapatkan URL gambar yang sah
   document.getElementById("imgModalElement").src = dapatkanUrlGambar(item.image);
   document.getElementById("modalImagesTajuk").textContent = item.title || item.tajuk || "Gambar Laporan";
 
@@ -1830,35 +1821,10 @@ window.bukaModalImages = function(index) {
       }
     }
 
-    // AUTO-RUN APABILA HALAMAN SELESAI DIMUATKAN
     document.addEventListener("DOMContentLoaded", function() {
       muatkanDataKMS();
     });
 
-    // Fungsi pembantu untuk mengendali kedu-dua format (Base64 & Google Drive)
-function dapatkanUrlGambar(imageSrc) {
-  if (!imageSrc) return '';
-  
-  const str = imageSrc.toString().trim();
-
-  // 1. FORMAT LAMA: Base64
-  if (str.startsWith('data:image') || !str.startsWith('http')) {
-    return str.startsWith('data:image') ? str : `data:image/jpeg;base64,${str}`;
-  }
-
-  // 2. FORMAT BARU: Pautan Google Drive
-  if (str.includes('drive.google.com')) {
-    const match = str.match(/\/d\/([a-zA-Z0-9_-]+)/) || str.match(/id=([a-zA-Z0-9_-]+)/);
-    if (match && match[1]) {
-      // Ekstrak ID dan tukar terus kepada URL gambar mentah
-      return `https://lh3.googleusercontent.com/d/${match[1]}`;
-    }
-  }
-
-  return str;
-}
-
-    // A. Logik Pengiraan Markah Merit Automatik
 function kiraMarkahMeritAutomatik() {
   const peringkat = document.getElementById("selectMeritPeringkat")?.value;
   const keputusan = document.getElementById("selectMeritKeputusan")?.value;
@@ -1869,7 +1835,6 @@ function kiraMarkahMeritAutomatik() {
     return;
   }
 
-  // 1. Markah Asas Penglibatan Mengikut Peringkat
   const markahPeringkatMap = {
     "Sekolah": 8,
     "Daerah": 11,
@@ -1879,7 +1844,6 @@ function kiraMarkahMeritAutomatik() {
     "Antarabangsa": 20
   };
 
-  // 2. Matriks Markah Pencapaian Tambahan (Mengikut Peringkat & Kedudukan)
   const markahPencapaianMap = {
     "Antarabangsa": { "1": 20, "2": 19, "3": 18, "4": 17, "5": 16, "Penyertaan": 0 },
     "Kebangsaan":   { "1": 17, "2": 16, "3": 15, "4": 14, "5": 13, "Penyertaan": 0 },
@@ -1892,13 +1856,9 @@ function kiraMarkahMeritAutomatik() {
   const markahPenglibatan = markahPeringkatMap[peringkat] || 0;
   const markahPencapaian = markahPencapaianMap[peringkat]?.[keputusan] || 0;
 
-  // Penjumlahan Markah Penglibatan + Markah Pencapaian
-  const jumlahMerit = markahPenglibatan + markahPencapaian;
-
-  inputMata.value = jumlahMerit;
+  inputMata.value = markahPenglibatan + markahPencapaian;
 }
     
-// B. Paparkan Pilihan Unit/Kelab/Sukan Dinamik Mengikut Murid
 function kemaskiniPilihanUnitMerit() {
   const selectNama = document.getElementById("selectMeritNama");
   const selectUnit = document.getElementById("selectMeritUnit");
@@ -1911,7 +1871,6 @@ function kemaskiniPilihanUnitMerit() {
     return;
   }
 
-  // Menggunakan window.senaraiMuridInduk
   const senarai = window.senaraiMuridInduk || [];
   const murid = senarai.find(m => (m.nama || m.name || m.NAMA) === namaDipilih);
 
@@ -1936,7 +1895,6 @@ function kemaskiniPilihanUnitMerit() {
   }
 }
 
-// C. Penghantaran Data Borang Merit ke Backend
 async function hantarMeritEvent(e) {
   e.preventDefault();
 
@@ -1964,7 +1922,6 @@ async function hantarMeritEvent(e) {
     btn.textContent = "Menyimpan...";
   }
 
-  // Fungsi pengedali selepas terima maklum balas
   function selesaiSimpan(res) {
     if (btn) {
       btn.disabled = false;
@@ -1990,7 +1947,6 @@ async function hantarMeritEvent(e) {
     alert("Ralat sistem: " + (err.message || err));
   }
 
-  // Semakan persekitaran (Google Script vs Web App URL)
   if (typeof google !== 'undefined' && google.script && google.script.run) {
     google.script.run
       .withSuccessHandler(selesaiSimpan)
@@ -2008,14 +1964,14 @@ async function hantarMeritEvent(e) {
     ralatSimpan("URL Web App tidak dijumpai.");
   }
 }
-    function isiDropdownNamaMerit() {
+
+function isiDropdownNamaMerit() {
   const select = document.getElementById("selectMeritNama");
   if (!select) return;
 
   select.innerHTML = '<option value="">-- Pilih Murid --</option>';
   const senarai = window.senaraiMuridInduk || [];
 
-  // Susun nama murid mengikut abjad
   senarai.sort((a, b) => (a.nama || a.name || "").localeCompare(b.nama || b.name || ""));
 
   senarai.forEach(m => {
