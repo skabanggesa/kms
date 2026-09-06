@@ -778,6 +778,25 @@ async function sahkanEmailKMS(userEmail) {
   }
 }
 
+    // --- FUNGSI TUKAR BADGE PERANAN ---
+function kemaskiniBadgePeranan(role) {
+  const badge = document.getElementById("userRoleBadge");
+  if (!badge) return;
+
+  const cleanRole = String(role || "GURU").toUpperCase();
+  badge.textContent = cleanRole;
+
+  // Penukaran warna badge mengikut peranan
+  if (cleanRole === "ADMIN" || cleanRole === "PENTADBIR") {
+    badge.className = "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 px-3 py-1 rounded-full text-xs font-bold uppercase ml-2";
+  } else if (cleanRole.includes("PENYELARAS") || cleanRole.includes("PK")) {
+    badge.className = "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 px-3 py-1 rounded-full text-xs font-bold uppercase ml-2";
+  } else {
+    // Lalai untuk GURU / Pengguna biasa
+    badge.className = "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-bold uppercase ml-2";
+  }
+}
+
 // 4. Muat Data Utama selepas LULUS
 function muatDataSistemLulus() {
   const loader = document.getElementById("loadingScreen");
