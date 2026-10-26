@@ -270,10 +270,11 @@
                   <th>Tajuk / Aktiviti</th>
                   <th style="text-align:center;">Gambar</th>
                   <th style="text-align:center;">Murid Terlibat</th>
+                  <th style="text-align:center;">Perincian</th>
                 </tr>
               </thead>
               <tbody id="jadualPelaporanBody">
-                <tr><td colspan="5" style="text-align:center; padding:15px;">Memuatkan data pelaporan...</td></tr>
+                <tr><td colspan="6" style="text-align:center; padding:15px;">Memuatkan data pelaporan...</td></tr>
               </tbody>
             </table>
           </div>
@@ -656,6 +657,40 @@
       <div class="text-right pt-3 mt-4 border-t">
         <button onclick="tutupModalReportsName()" class="bg-emerald-600 text-white px-4 py-1.5 rounded-lg text-xs font-semibold w-full sm:w-auto">Tutup</button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL PERINCIAN PELAPORAN -->
+  <div id="modalPerincianPelaporan" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4 z-50">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl p-5 sm:p-6 max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-start gap-3 border-b pb-3 mb-4">
+        <div>
+          <p class="text-[11px] uppercase tracking-wider font-bold text-emerald-600">Perincian Pelaporan Aktiviti</p>
+          <h3 id="detailPelaporanTajuk" class="font-bold text-lg text-slate-800 mt-1">Tajuk Aktiviti</h3>
+          <p id="detailPelaporanSubtajuk" class="text-xs text-slate-500 mt-1"></p>
+        </div>
+        <button onclick="tutupModalPerincianPelaporan()" aria-label="Tutup perincian" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+      </div>
+      <div class="overflow-y-auto flex-1 space-y-4 pr-1 smooth-scroll">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="rounded-lg bg-slate-50 border border-slate-100 p-3"><p class="text-[11px] font-semibold text-slate-500 uppercase">Tarikh Aktiviti</p><p id="detailPelaporanTarikh" class="text-sm font-semibold text-slate-800 mt-1">-</p></div>
+          <div class="rounded-lg bg-slate-50 border border-slate-100 p-3"><p class="text-[11px] font-semibold text-slate-500 uppercase">Tahun</p><p id="detailPelaporanTahun" class="text-sm font-semibold text-slate-800 mt-1">-</p></div>
+          <div class="rounded-lg bg-slate-50 border border-slate-100 p-3 sm:col-span-2"><p class="text-[11px] font-semibold text-slate-500 uppercase">Unit / Kelab / Sukan</p><p id="detailPelaporanUnit" class="text-sm font-semibold text-slate-800 mt-1">-</p></div>
+        </div>
+        <section>
+          <h4 class="text-sm font-bold text-slate-700 mb-2">Huraian / Perincian Aktiviti</h4>
+          <div id="detailPelaporanHuraian" class="text-sm text-slate-600 whitespace-pre-wrap rounded-lg border border-slate-100 bg-white p-3 min-h-[64px]">Tiada huraian direkodkan.</div>
+        </section>
+        <section id="detailPelaporanBahagianGambar" class="hidden">
+          <h4 class="text-sm font-bold text-slate-700 mb-2">Gambar Pelaporan</h4>
+          <div class="rounded-lg bg-slate-50 border p-2 flex justify-center"><img id="detailPelaporanGambar" src="" alt="Gambar pelaporan aktiviti" class="max-w-full max-h-80 object-contain rounded"></div>
+        </section>
+        <section>
+          <div class="flex items-center justify-between gap-2 mb-2"><h4 class="text-sm font-bold text-slate-700">Murid Terlibat</h4><span id="detailPelaporanBilanganMurid" class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">0 murid</span></div>
+          <div id="detailPelaporanSenaraiMurid" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+        </section>
+      </div>
+      <div class="text-right pt-3 mt-4 border-t"><button onclick="tutupModalPerincianPelaporan()" class="bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-semibold w-full sm:w-auto">Tutup</button></div>
     </div>
   </div>
 
@@ -1298,7 +1333,7 @@ function renderPengurusanGuru(usersList) {
       if (!tbody) return;
 
       if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Tiada rekod pelaporan dijumpai.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Tiada rekod pelaporan dijumpai.</td></tr>`;
         return;
       }
 
@@ -1320,6 +1355,9 @@ function renderPengurusanGuru(usersList) {
               <button onclick="bukaModalReportsName(${index})" class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-md text-[11px] font-semibold hover:bg-emerald-100">
                 👥 ${senaraiNama.length} Orang
               </button>
+            </td>
+            <td class="p-3 text-center">
+              <button onclick="bukaModalPerincianPelaporan(${index})" class="bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded-md text-[11px] font-semibold hover:bg-indigo-100 whitespace-nowrap">📋 Lihat Perincian</button>
             </td>
           </tr>
         `;
@@ -1401,6 +1439,51 @@ window.bukaModalImages = function(index) {
     };
 
     window.tutupModalReportsName = function() { closeModal("modalReportsName"); };
+
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    }
+
+    window.bukaModalPerincianPelaporan = function(index) {
+      const item = senaraiPelaporanTapis[index];
+      if (!item) return;
+
+      const tajuk = item.title || item.tajuk || item.perkara || 'Pelaporan Aktiviti';
+      const tarikh = item.date || item.tarikh || '';
+      const tahun = item.year || item.tahun || (tarikh ? String(tarikh).slice(0, 4) : '-');
+      const unit = item.unit || item.kelab || item.sukan || '-';
+      const huraian = item.description || item.huraian || item.ringkasan || item.activity || item.aktiviti || '';
+      const senaraiNama = Array.isArray(item.names) ? item.names : (item.names ? String(item.names).split(',').map(n => n.trim()).filter(Boolean) : []);
+      const imej = item.image ? dapatkanUrlGambar(item.image) : '';
+
+      document.getElementById('detailPelaporanTajuk').textContent = tajuk;
+      document.getElementById('detailPelaporanSubtajuk').textContent = `${unit} • ${formatTarikhKemas(tarikh)}`;
+      document.getElementById('detailPelaporanTarikh').textContent = formatTarikhKemas(tarikh);
+      document.getElementById('detailPelaporanTahun').textContent = tahun || '-';
+      document.getElementById('detailPelaporanUnit').textContent = unit;
+      document.getElementById('detailPelaporanHuraian').textContent = huraian.trim() || 'Tiada huraian direkodkan untuk laporan ini.';
+      document.getElementById('detailPelaporanBilanganMurid').textContent = `${senaraiNama.length} murid`;
+
+      const senaraiMuridEl = document.getElementById('detailPelaporanSenaraiMurid');
+      senaraiMuridEl.innerHTML = senaraiNama.length
+        ? senaraiNama.map((nama, i) => `<div class="bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-lg px-3 py-2 text-xs"><span class="font-bold mr-1">${i + 1}.</span>${escapeHTML(nama)}</div>`).join('')
+        : '<p class="text-xs text-slate-400 italic">Tiada nama murid direkodkan.</p>';
+
+      const bahagianGambar = document.getElementById('detailPelaporanBahagianGambar');
+      const gambarEl = document.getElementById('detailPelaporanGambar');
+      if (imej) {
+        gambarEl.src = imej;
+        bahagianGambar.classList.remove('hidden');
+      } else {
+        gambarEl.removeAttribute('src');
+        bahagianGambar.classList.add('hidden');
+      }
+      openModal('modalPerincianPelaporan');
+    };
+
+    window.tutupModalPerincianPelaporan = function() {
+      closeModal('modalPerincianPelaporan');
+    };
 
     // 7. KAWALAN SUB-TAB ANALISIS
     window.tukarSubTabAnalisis = function(namaSubTab) {
