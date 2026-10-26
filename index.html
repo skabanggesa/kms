@@ -787,7 +787,13 @@
     function jadualCetak(tajuk, headers, rows) {
       const th = headers.map(h=>`<th>${escapeHTML(h)}</th>`).join('');
       const tr = rows.length ? rows.map(row=>`<tr>${row.map(cell=>`<td>${cell == null || cell === '' ? '—' : cell}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${headers.length}" class="empty">Tiada rekod bagi pilihan ini.</td></tr>`;
-      return `<h2>${escapeHTML(tajuk)}</h2><table><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table>`;
+      const kelasJadual = tajuk.toLowerCase().includes('pelaporan') ? 'report-table pelaporan-table' : 'report-table';
+      return `<h2>${escapeHTML(tajuk)}</h2><table class="${kelasJadual}"><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table>`;
+    }
+    function namaMuridCetak(senarai) {
+      const nama = (Array.isArray(senarai) ? senarai : []).map(n => String(n || '').trim()).filter(Boolean);
+      if (!nama.length) return '—';
+      return '<ol class="senarai-nama">' + nama.map(n => '<li>' + escapeHTML(n) + '</li>').join('') + '</ol>';
     }
     function janaKandunganLaporanCetak(jenis, kat, namaDipilih) {
       const labelKat = kategoriLabelCetak(kat) + (namaDipilih ? ' — ' + namaDipilih : '');
@@ -805,17 +811,17 @@
         });
         const rows = Object.keys(peta).sort((a,b)=>a.localeCompare(b,'ms')).map(k=>[
           escapeHTML(k), peta[k].L.length, peta[k].P.length, peta[k].L.length+peta[k].P.length+peta[k].lain.length,
-          `<div class="names"><strong>Lelaki:</strong> ${peta[k].L.map(escapeHTML).join(', ') || '—'}<br><strong>Perempuan:</strong> ${peta[k].P.map(escapeHTML).join(', ') || '—'}${peta[k].lain.length?`<br><strong>Jantina tidak dinyatakan:</strong> ${peta[k].lain.map(escapeHTML).join(', ')}`:''}</div>`
+          `<div class="names"><strong>Lelaki:</strong> ${peta[k].L.map(n => escapeHTML(n)).join('<br>') || '—'}<br><strong>Perempuan:</strong> ${peta[k].P.map(n => escapeHTML(n)).join('<br>') || '—'}${peta[k].lain.length?`<br><strong>Jantina tidak dinyatakan:</strong> ${peta[k].lain.map(n => escapeHTML(n)).join('<br>')}`:''}</div>`
         ]);
         return jadualCetak('Analisis Pecahan Murid', ['Kelab / Unit / Sukan','Lelaki','Perempuan','Jumlah','Senarai Nama Murid'], rows);
       }
       if (jenis === 'kehadiran') {
         const list = tapisRekodUnitCetak(senaraiKehadiranInduk, kat, namaDipilih);
-        return jadualCetak('Analisis Kehadiran', ['Tarikh','Tahun','Kelab / Unit / Sukan','Aktiviti','Bil. Hadir','Nama Murid Hadir'], list.map(i=>[(i.tarikh||'-'),escapeHTML(i.tahun||'-'),escapeHTML(i.unit||'-'),escapeHTML(i.perkara||'-'),(i.senaraiNama||[]).length,escapeHTML((i.senaraiNama||[]).join(', '))]));
+        return jadualCetak('Analisis Kehadiran', ['Tarikh','Tahun','Kelab / Unit / Sukan','Aktiviti','Bil. Hadir','Nama Murid Hadir'], list.map(i=>[(i.tarikh||'-'),escapeHTML(i.tahun||'-'),escapeHTML(i.unit||'-'),escapeHTML(i.perkara||'-'),(i.senaraiNama||[]).length,namaMuridCetak(i.senaraiNama||[])]));
       }
       if (jenis === 'pelaporan') {
         const list = tapisRekodUnitCetak(senaraiPelaporanInduk, kat, namaDipilih);
-        return jadualCetak('Pelaporan Aktiviti Kokurikulum', ['Tarikh','Tahun','Kelab / Unit / Sukan','Tajuk / Aktiviti','Huraian','Murid Terlibat'], list.map(i=>[(formatTarikhKemas(i.date||i.tarikh)),escapeHTML(i.year||i.tahun||'-'),escapeHTML(i.unit||'-'),escapeHTML(i.title||i.tajuk||i.perkara||'-'),escapeHTML(i.description||i.huraian||i.ringkasan||i.activity||i.aktiviti||'-'),escapeHTML((Array.isArray(i.names)?i.names:String(i.names||'').split(',').map(n=>n.trim()).filter(Boolean)).join(', '))]));
+        return jadualCetak('Pelaporan Aktiviti Kokurikulum', ['Tarikh','Tahun','Kelab / Unit / Sukan','Tajuk / Aktiviti','Huraian','Murid Terlibat'], list.map(i=>[(formatTarikhKemas(i.date||i.tarikh)),escapeHTML(i.year||i.tahun||'-'),escapeHTML(i.unit||'-'),escapeHTML(i.title||i.tajuk||i.perkara||'-'),escapeHTML(i.description||i.huraian||i.ringkasan||i.activity||i.aktiviti||'-'),namaMuridCetak(Array.isArray(i.names)?i.names:String(i.names||'').split(',').map(n=>n.trim()).filter(Boolean))]));
       }
       if (jenis === 'perancangan') {
         const list = tapisRekodUnitCetak(senaraiPerancanganInduk, kat, namaDipilih);
@@ -839,7 +845,19 @@
       const win = window.open('', '_blank');
       if (!win) { alert('Tetingkap pratonton disekat oleh pelayar. Benarkan pop-up untuk laman KMS dan cuba semula.'); return; }
       const dokumen = `<!DOCTYPE html><html lang="ms"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHTML(tajukMap[jenis])} - KMS Digital</title><style>
-        *{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#1e293b;margin:0;background:#eef2f7}.toolbar{position:sticky;top:0;background:#1d4ed8;color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;z-index:2}.toolbar button{background:#fff;color:#1d4ed8;border:0;border-radius:7px;padding:10px 14px;font-weight:700;cursor:pointer}.sheet{background:#fff;max-width:1100px;margin:22px auto;padding:28px;box-shadow:0 3px 16px #0001}.school{text-align:center;border-bottom:2px solid #1d4ed8;padding-bottom:14px;margin-bottom:18px}.school h1{font-size:20px;margin:0 0 5px}.school p{font-size:12px;margin:0;color:#64748b}.meta{display:flex;justify-content:space-between;gap:12px;font-size:12px;margin:12px 0 20px;color:#475569}h2{font-size:17px;margin:22px 0 10px}table{width:100%;border-collapse:collapse;font-size:11px;margin:10px 0 20px}th,td{border:1px solid #cbd5e1;padding:7px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#eff6ff;color:#1e3a8a}.names{line-height:1.6;min-width:220px}.empty{text-align:center;color:#64748b;padding:20px}.foot{margin-top:30px;font-size:10px;color:#64748b;text-align:right}@media print{body{background:#fff}.toolbar{display:none}.sheet{margin:0;max-width:none;padding:0;box-shadow:none}@page{size:A4 landscape;margin:12mm}tr{break-inside:avoid}thead{display:table-header-group}}
+        *{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#172033;margin:0;background:#eef2f7}.toolbar{position:sticky;top:0;background:#1d4ed8;color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;z-index:2}.toolbar button{background:#fff;color:#1d4ed8;border:0;border-radius:7px;padding:10px 14px;font-weight:700;cursor:pointer}.sheet{background:#fff;max-width:1200px;margin:22px auto;padding:30px;box-shadow:0 3px 16px #0001}.school{text-align:center;border-bottom:2px solid #1d4ed8;padding-bottom:14px;margin-bottom:18px}.school h1{font-size:20px;margin:0 0 5px}.school p{font-size:12px;margin:0;color:#64748b}.meta{display:flex;justify-content:space-between;gap:16px;font-size:12px;margin:12px 0 20px;color:#475569;flex-wrap:wrap}h2{font-size:16px;margin:20px 0 10px;page-break-after:avoid}table{width:100%;border-collapse:collapse;table-layout:auto;font-size:10px;margin:10px 0 20px}th,td{border:1px solid #cbd5e1;padding:7px 8px;text-align:left;vertical-align:top;overflow-wrap:normal;word-break:normal;white-space:normal}th{background:#eff6ff;color:#1e3a8a;font-weight:700;line-height:1.25}.names{line-height:1.5;min-width:180px}.senarai-nama{margin:0;padding-left:20px;line-height:1.45}.senarai-nama li{padding:1px 0;break-inside:avoid}.empty{text-align:center;color:#64748b;padding:20px}.foot{margin-top:24px;padding-top:8px;border-top:1px solid #cbd5e1;font-size:10px;color:#64748b;text-align:right} .report-table th:nth-child(1),.report-table td:nth-child(1){white-space:nowrap}.report-table th:nth-child(2),.report-table td:nth-child(2){white-space:nowrap}
+        /* Pelaporan: tetapkan lebar lajur supaya nama murid dan huraian tidak menghimpit */
+        .pelaporan-table{table-layout:fixed;width:100%;font-size:9px}
+        .pelaporan-table th,.pelaporan-table td{overflow-wrap:anywhere;word-break:normal;vertical-align:top;padding:6px}
+        .pelaporan-table th:nth-child(1),.pelaporan-table td:nth-child(1){width:8%;white-space:normal}
+        .pelaporan-table th:nth-child(2),.pelaporan-table td:nth-child(2){width:5%;white-space:normal}
+        .pelaporan-table th:nth-child(3),.pelaporan-table td:nth-child(3){width:10%}
+        .pelaporan-table th:nth-child(4),.pelaporan-table td:nth-child(4){width:12%}
+        .pelaporan-table th:nth-child(5),.pelaporan-table td:nth-child(5){width:43%;line-height:1.45}
+        .pelaporan-table th:nth-child(6),.pelaporan-table td:nth-child(6){width:22%}
+        .pelaporan-table .senarai-nama{padding-left:16px;margin:0;line-height:1.4}
+        .pelaporan-table .senarai-nama li{padding:0 0 4px;overflow-wrap:anywhere}
+        @media print{body{background:#fff;font-size:10pt}.toolbar{display:none}.sheet{margin:0;max-width:none;padding:0;box-shadow:none}.meta{margin-bottom:14px}table{font-size:9pt;break-inside:auto}th,td{padding:5px 6px}tr{break-inside:avoid;page-break-inside:avoid}.pelaporan-table{font-size:8.5pt;table-layout:fixed}.pelaporan-table th,.pelaporan-table td{padding:5px;overflow-wrap:anywhere}.pelaporan-table tbody tr{break-inside:auto;page-break-inside:auto}.pelaporan-table td:nth-child(5){line-height:1.4}.pelaporan-table .senarai-nama li{break-inside:avoid;page-break-inside:avoid}thead{display:table-header-group}tfoot{display:table-footer-group}.school h1{font-size:16pt}.school p{font-size:9pt}.senarai-nama{padding-left:17px}.senarai-nama li{break-inside:avoid;page-break-inside:avoid}@page{size:A4 landscape;margin:10mm}}
         </style></head><body><div class="toolbar"><span><strong>Pratonton Cetakan</strong> · ${escapeHTML(kategoriLabelCetak(kat)+(namaDipilih?' — '+namaDipilih:''))}</span><button onclick="window.print()">🖨️ Cetak / Simpan PDF</button></div><main class="sheet"><header class="school"><h1>SEKOLAH KEBANGSAAN ABANG GESA</h1><p>KMS DIGITAL — KOKURIKULUM MANAGEMENT SYSTEM</p></header><div class="meta"><span><strong>Laporan:</strong> ${escapeHTML(tajukMap[jenis])}</span><span><strong>Kategori:</strong> ${escapeHTML(kategoriLabelCetak(kat)+(namaDipilih?' — '+namaDipilih:''))}</span><span><strong>Tarikh dijana:</strong> ${new Date().toLocaleDateString('ms-MY')}</span></div>${kandungan}<div class="foot">Dijana melalui KMS Digital</div></main></body></html>`;
       win.document.open(); win.document.write(dokumen); win.document.close();
     };
