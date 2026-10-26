@@ -88,6 +88,7 @@
       <button onclick="openModal('modalPerancangan')" class="flex-1 sm:flex-none bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-sm text-center">+ Perancangan</button>
       <button onclick="openModal('modalPelaporan')" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-sm text-center">+ Pelaporan</button>
       <button onclick="openModal('modalMerit')" class="flex-1 sm:flex-none bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-sm text-center">+ Merit</button>
+      <button onclick="bukaModalCetakKMS()" class="flex-1 sm:flex-none bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-sm text-center">🖨️ Cetak</button>
       <button onclick="logKeluarKMS()" class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1">
         🚪 Log Keluar
       </button>
@@ -694,6 +695,31 @@
     </div>
   </div>
 
+  <!-- MODAL PUSAT CETAKAN -->
+  <div id="modalCetakKMS" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4 z-[70]">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden">
+      <div class="bg-blue-700 text-white px-5 py-4 flex items-center justify-between gap-3">
+        <div><h3 class="font-bold text-lg">Pusat Cetakan KMS</h3><p class="text-xs text-blue-100">Pilih laporan dan kategori untuk pratonton</p></div>
+        <button onclick="tutupModalCetakKMS()" class="text-white/80 hover:text-white text-2xl" aria-label="Tutup">×</button>
+      </div>
+      <div class="p-5 space-y-4">
+        <div><label for="cetakJenisLaporan" class="block text-sm font-semibold text-slate-700 mb-1.5">Jenis Laporan</label>
+          <select id="cetakJenisLaporan" onchange="kemaskiniPilihanCetak()" class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="pecahan">Cetak Analisis Pecahan Murid</option><option value="kehadiran">Cetak Analisis Kehadiran</option><option value="pelaporan">Cetak Pelaporan</option><option value="perancangan">Cetak Jadual Perancangan</option><option value="merit">Cetak Merit</option>
+          </select>
+        </div>
+        <div><label for="cetakKategori" class="block text-sm font-semibold text-slate-700 mb-1.5">Kategori</label>
+          <select id="cetakKategori" onchange="kemaskiniPilihanCetak()" class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="keseluruhan">Keseluruhan</option><option value="kelab">Kelab & Persatuan</option><option value="unit">Unit Beruniform</option><option value="sukan">Sukan & Permainan</option>
+          </select>
+        </div>
+        <div id="cetakPilihanUnitWrap" class="hidden"><label for="cetakNamaKategori" class="block text-sm font-semibold text-slate-700 mb-1.5">Nama Kelab / Unit / Sukan (pilihan)</label><select id="cetakNamaKategori" class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Semua dalam kategori</option></select><p class="text-xs text-slate-500 mt-1">Pilih satu kumpulan tertentu atau kekalkan “Semua dalam kategori”.</p></div>
+        <div class="rounded-lg bg-blue-50 border border-blue-100 p-3 text-xs text-blue-800">Pratonton akan dibuka dalam tetingkap berasingan. Dari situ, tekan <strong>Cetak / Simpan PDF</strong> selepas menyemak kandungan.</div>
+        <div class="flex gap-2 justify-end pt-1"><button onclick="tutupModalCetakKMS()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-slate-600">Batal</button><button onclick="janaPratontonCetakKMS()" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-sm font-semibold">👁️ Papar Pratonton</button></div>
+      </div>
+    </div>
+  </div>
+
   <!-- SCRIPT UTAMA KAWALAN APLIKASI -->
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMcWyfOAkHawx3WjhAWQGjkB9MbbRcFkYTfDmXllz1mGKnUzB9Syi7ppsKPeDhFU2vqA/exec"; 
@@ -708,6 +734,115 @@
     let senaraiPerancanganTapis = [];
     let senaraiMeritInduk = [];
     let senaraiMeritTapis = [];
+
+    // PUSAT CETAKAN: pratonton berasingan sebelum cetak / simpan PDF
+    window.bukaModalCetakKMS = function() {
+      kemaskiniPilihanCetak();
+      openModal('modalCetakKMS');
+    };
+    window.tutupModalCetakKMS = function() { closeModal('modalCetakKMS'); };
+
+    function kategoriLabelCetak(kat) {
+      return ({kelab:'Kelab & Persatuan', unit:'Unit Beruniform', sukan:'Sukan & Permainan', keseluruhan:'Keseluruhan'})[kat] || 'Keseluruhan';
+    }
+    function nilaiKategoriMurid(m, kat) {
+      const kunci = kat === 'keseluruhan' ? '' : kat;
+      return kunci ? String(m[kunci] || '').trim() : '';
+    }
+    function senaraiNamaKategoriCetak(kat) {
+      if (kat === 'keseluruhan') return [];
+      return [...new Set((senaraiMuridInduk || []).map(m => nilaiKategoriMurid(m, kat)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ms'));
+    }
+    window.kemaskiniPilihanCetak = function() {
+      const jenis = document.getElementById('cetakJenisLaporan')?.value || 'pecahan';
+      const kat = document.getElementById('cetakKategori')?.value || 'keseluruhan';
+      const wrap = document.getElementById('cetakPilihanUnitWrap');
+      const select = document.getElementById('cetakNamaKategori');
+      if (!wrap || !select) return;
+      const nama = senaraiNamaKategoriCetak(kat);
+      wrap.classList.toggle('hidden', kat === 'keseluruhan' || nama.length === 0);
+      select.innerHTML = '<option value="">Semua dalam kategori</option>' + nama.map(n=>`<option value="${escapeHTML(n)}">${escapeHTML(n)}</option>`).join('');
+      // Semua jenis laporan menggunakan pemilih kategori yang sama; pecahan dan merit menyertakan nama murid.
+      const jenisSelect = document.getElementById('cetakJenisLaporan');
+      if (jenisSelect) jenisSelect.title = jenis === 'pecahan' || jenis === 'merit' ? 'Laporan ini menyertakan senarai nama murid.' : '';
+    };
+
+    function tapisMuridCetak(kat, namaDipilih) {
+      return (senaraiMuridInduk || []).filter(m => {
+        if (kat === 'keseluruhan') return true;
+        const nama = nilaiKategoriMurid(m, kat);
+        return !!nama && (!namaDipilih || nama === namaDipilih);
+      });
+    }
+    function tapisRekodUnitCetak(list, kat, namaDipilih) {
+      if (kat === 'keseluruhan') return list || [];
+      const namaKategori = new Set(senaraiNamaKategoriCetak(kat));
+      return (list || []).filter(item => {
+        const unit = String(item.unit || item.kelab || item.sukan || '').trim();
+        if (namaDipilih) return unit === namaDipilih;
+        // Jika rekod mempunyai nama unit, hanya kekalkan rekod yang sepadan dengan kategori pilihan.
+        return namaKategori.has(unit);
+      });
+    }
+    function jadualCetak(tajuk, headers, rows) {
+      const th = headers.map(h=>`<th>${escapeHTML(h)}</th>`).join('');
+      const tr = rows.length ? rows.map(row=>`<tr>${row.map(cell=>`<td>${cell == null || cell === '' ? '—' : cell}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${headers.length}" class="empty">Tiada rekod bagi pilihan ini.</td></tr>`;
+      return `<h2>${escapeHTML(tajuk)}</h2><table><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table>`;
+    }
+    function janaKandunganLaporanCetak(jenis, kat, namaDipilih) {
+      const labelKat = kategoriLabelCetak(kat) + (namaDipilih ? ' — ' + namaDipilih : '');
+      const murid = tapisMuridCetak(kat, namaDipilih);
+      if (jenis === 'pecahan') {
+        const peta = {};
+        murid.forEach(m => {
+          const kumpulan = kat === 'keseluruhan' ? 'Semua Kumpulan' : nilaiKategoriMurid(m, kat);
+          if (!kumpulan) return;
+          if (!peta[kumpulan]) peta[kumpulan] = {L:[],P:[],lain:[]};
+          const j = String(m.jantina || '').toUpperCase().trim();
+          if (j === 'LELAKI' || j === 'L') peta[kumpulan].L.push(m.nama || m.namamurid || m.name || 'Nama tidak tersedia');
+          else if (j === 'PEREMPUAN' || j === 'P') peta[kumpulan].P.push(m.nama || m.namamurid || m.name || 'Nama tidak tersedia');
+          else peta[kumpulan].lain.push(m.nama || m.namamurid || m.name || 'Nama tidak tersedia');
+        });
+        const rows = Object.keys(peta).sort((a,b)=>a.localeCompare(b,'ms')).map(k=>[
+          escapeHTML(k), peta[k].L.length, peta[k].P.length, peta[k].L.length+peta[k].P.length+peta[k].lain.length,
+          `<div class="names"><strong>Lelaki:</strong> ${peta[k].L.map(escapeHTML).join(', ') || '—'}<br><strong>Perempuan:</strong> ${peta[k].P.map(escapeHTML).join(', ') || '—'}${peta[k].lain.length?`<br><strong>Jantina tidak dinyatakan:</strong> ${peta[k].lain.map(escapeHTML).join(', ')}`:''}</div>`
+        ]);
+        return jadualCetak('Analisis Pecahan Murid', ['Kelab / Unit / Sukan','Lelaki','Perempuan','Jumlah','Senarai Nama Murid'], rows);
+      }
+      if (jenis === 'kehadiran') {
+        const list = tapisRekodUnitCetak(senaraiKehadiranInduk, kat, namaDipilih);
+        return jadualCetak('Analisis Kehadiran', ['Tarikh','Tahun','Kelab / Unit / Sukan','Aktiviti','Bil. Hadir','Nama Murid Hadir'], list.map(i=>[(i.tarikh||'-'),escapeHTML(i.tahun||'-'),escapeHTML(i.unit||'-'),escapeHTML(i.perkara||'-'),(i.senaraiNama||[]).length,escapeHTML((i.senaraiNama||[]).join(', '))]));
+      }
+      if (jenis === 'pelaporan') {
+        const list = tapisRekodUnitCetak(senaraiPelaporanInduk, kat, namaDipilih);
+        return jadualCetak('Pelaporan Aktiviti Kokurikulum', ['Tarikh','Tahun','Kelab / Unit / Sukan','Tajuk / Aktiviti','Huraian','Murid Terlibat'], list.map(i=>[(formatTarikhKemas(i.date||i.tarikh)),escapeHTML(i.year||i.tahun||'-'),escapeHTML(i.unit||'-'),escapeHTML(i.title||i.tajuk||i.perkara||'-'),escapeHTML(i.description||i.huraian||i.ringkasan||i.activity||i.aktiviti||'-'),escapeHTML((Array.isArray(i.names)?i.names:String(i.names||'').split(',').map(n=>n.trim()).filter(Boolean)).join(', '))]));
+      }
+      if (jenis === 'perancangan') {
+        const list = tapisRekodUnitCetak(senaraiPerancanganInduk, kat, namaDipilih);
+        return jadualCetak('Jadual Perancangan Tahunan', ['Tarikh','Tahun','Kelab / Unit / Sukan','Perancangan / Aktiviti'], list.map(i=>[(formatTarikhKemas(i.date||i.tarikh)),escapeHTML(i.year||i.tahun||'-'),escapeHTML(i.unit||'-'),escapeHTML(i.title||i.tajuk||i.activity||i.aktiviti||'-')]));
+      }
+      if (jenis === 'merit') {
+        const namaDibenarkan = new Set(murid.map(m=>String(m.nama||m.namamurid||m.name||'').trim()).filter(Boolean));
+        let list = (senaraiMeritInduk||[]).filter(i=>kat==='keseluruhan' || (namaDipilih ? String(i.unit||'').trim()===namaDipilih : senaraiNamaKategoriCetak(kat).includes(String(i.unit||'').trim())));
+        // Jika unit dalam rekod merit tidak sepadan dengan label kategori murid, gunakan padanan nama murid.
+        if (kat !== 'keseluruhan') list = list.filter(i=>namaDibenarkan.has(String(i.nama||i.namamurid||i.name||'').trim()));
+        return jadualCetak('Laporan Merit Murid', ['Tarikh','Tahun','Nama Murid','Kelab / Unit / Sukan','Aktiviti','Peringkat','Keputusan','Mata Merit'], list.map(i=>[(formatTarikhKemas(i.date||i.tarikh)),escapeHTML(i.year||i.tahun||'-'),escapeHTML(i.nama||i.namamurid||i.name||'-'),escapeHTML(i.unit||'-'),escapeHTML(i.aktiviti||i.activity||'-'),escapeHTML(i.peringkat||'-'),escapeHTML(i.keputusan||'-'),escapeHTML(i.merit??'0')]));
+      }
+      return '<p>Jenis laporan tidak dikenali.</p>';
+    }
+    window.janaPratontonCetakKMS = function() {
+      const jenis = document.getElementById('cetakJenisLaporan')?.value || 'pecahan';
+      const kat = document.getElementById('cetakKategori')?.value || 'keseluruhan';
+      const namaDipilih = document.getElementById('cetakNamaKategori')?.value || '';
+      const tajukMap = {pecahan:'Analisis Pecahan Murid',kehadiran:'Analisis Kehadiran',pelaporan:'Pelaporan',perancangan:'Jadual Perancangan',merit:'Analisis Merit'};
+      const kandungan = janaKandunganLaporanCetak(jenis, kat, namaDipilih);
+      const win = window.open('', '_blank');
+      if (!win) { alert('Tetingkap pratonton disekat oleh pelayar. Benarkan pop-up untuk laman KMS dan cuba semula.'); return; }
+      const dokumen = `<!DOCTYPE html><html lang="ms"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHTML(tajukMap[jenis])} - KMS Digital</title><style>
+        *{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#1e293b;margin:0;background:#eef2f7}.toolbar{position:sticky;top:0;background:#1d4ed8;color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;z-index:2}.toolbar button{background:#fff;color:#1d4ed8;border:0;border-radius:7px;padding:10px 14px;font-weight:700;cursor:pointer}.sheet{background:#fff;max-width:1100px;margin:22px auto;padding:28px;box-shadow:0 3px 16px #0001}.school{text-align:center;border-bottom:2px solid #1d4ed8;padding-bottom:14px;margin-bottom:18px}.school h1{font-size:20px;margin:0 0 5px}.school p{font-size:12px;margin:0;color:#64748b}.meta{display:flex;justify-content:space-between;gap:12px;font-size:12px;margin:12px 0 20px;color:#475569}h2{font-size:17px;margin:22px 0 10px}table{width:100%;border-collapse:collapse;font-size:11px;margin:10px 0 20px}th,td{border:1px solid #cbd5e1;padding:7px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#eff6ff;color:#1e3a8a}.names{line-height:1.6;min-width:220px}.empty{text-align:center;color:#64748b;padding:20px}.foot{margin-top:30px;font-size:10px;color:#64748b;text-align:right}@media print{body{background:#fff}.toolbar{display:none}.sheet{margin:0;max-width:none;padding:0;box-shadow:none}@page{size:A4 landscape;margin:12mm}tr{break-inside:avoid}thead{display:table-header-group}}
+        </style></head><body><div class="toolbar"><span><strong>Pratonton Cetakan</strong> · ${escapeHTML(kategoriLabelCetak(kat)+(namaDipilih?' — '+namaDipilih:''))}</span><button onclick="window.print()">🖨️ Cetak / Simpan PDF</button></div><main class="sheet"><header class="school"><h1>SEKOLAH KEBANGSAAN ABANG GESA</h1><p>KMS DIGITAL — KOKURIKULUM MANAGEMENT SYSTEM</p></header><div class="meta"><span><strong>Laporan:</strong> ${escapeHTML(tajukMap[jenis])}</span><span><strong>Kategori:</strong> ${escapeHTML(kategoriLabelCetak(kat)+(namaDipilih?' — '+namaDipilih:''))}</span><span><strong>Tarikh dijana:</strong> ${new Date().toLocaleDateString('ms-MY')}</span></div>${kandungan}<div class="foot">Dijana melalui KMS Digital</div></main></body></html>`;
+      win.document.open(); win.document.write(dokumen); win.document.close();
+    };
 
     // 1. KAWALAN MODAL
     function openModal(modalId) {
